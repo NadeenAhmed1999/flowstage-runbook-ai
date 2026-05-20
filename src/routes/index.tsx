@@ -1,26 +1,33 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Hero } from "@/components/landing/hero";
+import { SamplePreview } from "@/components/landing/sample-preview";
+import { FeatureGrid } from "@/components/landing/feature-grid";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "FlowStage — AI Run-of-Show Generator for Events" },
+      {
+        name: "description",
+        content:
+          "Generate professional, timecoded run-of-show documents in seconds. Built for stage managers, broadcast producers, and event leads.",
+      },
+      { property: "og:title", content: "FlowStage — AI Run-of-Show Generator" },
+      {
+        property: "og:description",
+        content: "Operational clarity for high-stakes stage production.",
+      },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. For sites with multiple pages (About, Services, Contact, etc.),
-// create separate route files (about.tsx, services.tsx, contact.tsx) — don't put all pages in this file.
-function PlaceholderIndex() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
-
 function Index() {
-  return <PlaceholderIndex />;
+  return (
+    <>
+      <Hero />
+      <SamplePreview />
+      <FeatureGrid />
+    </>
+  );
 }
