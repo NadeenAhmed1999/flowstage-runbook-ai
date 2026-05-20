@@ -1,0 +1,507 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEvent, type Person, type Session, type Break, type Sponsor } from "@/components/event-context";
+
+export const Route = createFileRoute("/generate")({
+  head: () => ({
+    meta: [
+      { title: "Generate Run-of-Show · FlowStage" },
+      {
+        name: "description",
+        content:
+          "Input event details, sessions, speakers, breaks, and AV requirements to generate a professional run-of-show document.",
+      },
+      { property: "og:title", content: "FlowStage Generator" },
+      { property: "og:description", content: "Build a professional run-of-show document in minutes." },
+    ],
+  }),
+  component: GeneratePage,
+});
+
+const labelCls = "text-[11px] font-semibold uppercase tracking-wider text-muted-foreground";
+const inputCls =
+  "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
+
+function GeneratePage() {
+  const { event, setEvent, newId } = useEvent();
+  const navigate = useNavigate();
+
+  const update = <K extends keyof typeof event>(k: K, v: (typeof event)[K]) =>
+    setEvent({ ...event, [k]: v });
+
+  return (
+    <div className="mx-auto max-w-5xl px-6 py-16">
+      <div className="mb-10 flex items-end justify-between gap-6">
+        <div>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-accent">
+            New Document
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-navy">Configure your event</h1>
+          <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+            Provide the essentials. FlowStage builds the timeline, cues, transitions, and backstage notes
+            from your inputs.
+          </p>
+        </div>
+      </div>
+
+      <form
+        className="space-y-10"
+        onSubmit={(e) => {
+          e.preventDefault();
+          navigate({ to: "/run-of-show" });
+        }}
+      >
+        {/* Event basics */}
+        <Section title="Event Details" step="01">
+          <div className="grid gap-4 md:grid-cols-[2fr_1fr_1fr]">
+            <Field label="Event Name">
+              <input
+                className={inputCls}
+                value={event.name}
+                onChange={(e) => update("name", e.target.value)}
+                maxLength={120}
+                required
+              />
+            </Field>
+            <Field label="Type">
+              <select
+                className={inputCls}
+                value={event.type}
+                onChange={(e) => update("type", e.target.value)}
+              >
+                {["Conference", "Summit", "Corporate Event", "Panel", "Hybrid Panel"].map((t) => (
+                  <option key={t}>{t}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Date">
+              <input
+                type="date"
+                className={inputCls}
+                value={event.date}
+                onChange={(e) => update("date", e.target.value)}
+              />
+            </Field>
+          </div>
+        </Section>
+
+        {/* Sessions */}
+        <Section
+          title="Sessions"
+          step="02"
+          action={
+            <button
+              type="button"
+              onClick={() =>
+                update("sessions", [
+                  ...event.sessions,
+                  {
+                    id: newId(),
+                    title: "New Session",
+                    startTime: "12:00",
+                    durationMin: 30,
+                    description: "",
+                    speakerIds: [],
+                    moderatorIds: [],
+                  } satisfies Session,
+                ])
+              }
+            >
+              + Add session
+            </button>
+          }
+        >
+          <div className="space-y-4">
+            {event.sessions.map((s, i) => (
+              <div key={s.id} className="rounded-lg border border-border bg-surface p-4">
+                <div className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_auto]">
+                  <input
+                    className={inputCls}
+                    value={s.title}
+                    placeholder="Session title"
+                    onChange={(e) => {
+                      const next = [...event.sessions];
+                      next[i] = { ...s, title: e.target.value };
+                      update("sessions", next);
+                    }}
+                  />
+                  <input
+                    type="time"
+                    className={inputCls}
+                    value={s.startTime}
+                    onChange={(e) => {
+                      const next = [...event.sessions];
+                      next[i] = { ...s, startTime: e.target.value };
+                      update("sessions", next);
+                    }}
+                  />
+                  <input
+                    type="number"
+                    min={5}
+                    max={480}
+                    className={inputCls}
+                    value={s.durationMin}
+                    onChange={(e) => {
+                      const next = [...event.sessions];
+                      next[i] = { ...s, durationMin: Number(e.target.value) };
+                      update("sessions", next);
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="text-xs font-medium text-muted-foreground hover:text-destructive"
+                    onClick={() =>
+                      update(
+                        "sessions",
+                        event.sessions.filter((x) => x.id !== s.id),
+                      )
+                    }
+                  >
+                    Remove
+                  </button>
+                </div>
+                <textarea
+                  rows={2}
+                  placeholder="Short description for cue logic"
+                  className={`${inputCls} mt-3`}
+                  value={s.description}
+                  onChange={(e) => {
+                    const next = [...event.sessions];
+                    next[i] = { ...s, description: e.target.value };
+                    update("sessions", next);
+                  }}
+                />
+                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  <PeopleSelect
+                    label="Speakers"
+                    options={event.speakers}
+                    selected={s.speakerIds}
+                    onChange={(ids) => {
+                      const next = [...event.sessions];
+                      next[i] = { ...s, speakerIds: ids };
+                      update("sessions", next);
+                    }}
+                  />
+                  <PeopleSelect
+                    label="Moderators"
+                    options={event.moderators}
+                    selected={s.moderatorIds}
+                    onChange={(ids) => {
+                      const next = [...event.sessions];
+                      next[i] = { ...s, moderatorIds: ids };
+                      update("sessions", next);
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        {/* Speakers */}
+        <PeopleSection
+          step="03"
+          title="Speakers"
+          people={event.speakers}
+          onChange={(ps) => update("speakers", ps)}
+          newId={newId}
+          placeholderRole="e.g. CTO, Acme"
+        />
+
+        {/* Moderators */}
+        <PeopleSection
+          step="04"
+          title="Moderators"
+          people={event.moderators}
+          onChange={(ps) => update("moderators", ps)}
+          newId={newId}
+          placeholderRole="e.g. Editor, The Brief"
+        />
+
+        {/* Breaks */}
+        <Section
+          title="Networking Breaks"
+          step="05"
+          action={
+            <button
+              type="button"
+              onClick={() =>
+                update("breaks", [
+                  ...event.breaks,
+                  { id: newId(), label: "Break", startTime: "12:00", durationMin: 20 } satisfies Break,
+                ])
+              }
+            >
+              + Add break
+            </button>
+          }
+        >
+          <div className="space-y-3">
+            {event.breaks.map((b, i) => (
+              <div key={b.id} className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_auto]">
+                <input
+                  className={inputCls}
+                  value={b.label}
+                  onChange={(e) => {
+                    const next = [...event.breaks];
+                    next[i] = { ...b, label: e.target.value };
+                    update("breaks", next);
+                  }}
+                />
+                <input
+                  type="time"
+                  className={inputCls}
+                  value={b.startTime}
+                  onChange={(e) => {
+                    const next = [...event.breaks];
+                    next[i] = { ...b, startTime: e.target.value };
+                    update("breaks", next);
+                  }}
+                />
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={b.durationMin}
+                  onChange={(e) => {
+                    const next = [...event.breaks];
+                    next[i] = { ...b, durationMin: Number(e.target.value) };
+                    update("breaks", next);
+                  }}
+                />
+                <button
+                  type="button"
+                  className="text-xs font-medium text-muted-foreground hover:text-destructive"
+                  onClick={() => update("breaks", event.breaks.filter((x) => x.id !== b.id))}
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        {/* Sponsors */}
+        <Section
+          title="Sponsor Mentions"
+          step="06"
+          action={
+            <button
+              type="button"
+              onClick={() =>
+                update("sponsors", [
+                  ...event.sponsors,
+                  { id: newId(), name: "New Sponsor", placement: "Opening remarks" } satisfies Sponsor,
+                ])
+              }
+            >
+              + Add sponsor
+            </button>
+          }
+        >
+          <div className="space-y-3">
+            {event.sponsors.map((sp, i) => (
+              <div key={sp.id} className="grid gap-3 md:grid-cols-[1fr_2fr_auto]">
+                <input
+                  className={inputCls}
+                  value={sp.name}
+                  onChange={(e) => {
+                    const next = [...event.sponsors];
+                    next[i] = { ...sp, name: e.target.value };
+                    update("sponsors", next);
+                  }}
+                />
+                <input
+                  className={inputCls}
+                  value={sp.placement}
+                  placeholder="Where to mention"
+                  onChange={(e) => {
+                    const next = [...event.sponsors];
+                    next[i] = { ...sp, placement: e.target.value };
+                    update("sponsors", next);
+                  }}
+                />
+                <button
+                  type="button"
+                  className="text-xs font-medium text-muted-foreground hover:text-destructive"
+                  onClick={() => update("sponsors", event.sponsors.filter((x) => x.id !== sp.id))}
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        {/* AV */}
+        <Section title="AV Requirements" step="07">
+          <textarea
+            rows={4}
+            className={inputCls}
+            value={event.avRequirements}
+            onChange={(e) => update("avRequirements", e.target.value)}
+            placeholder="Microphones, screens, lighting notes, walk-on music…"
+          />
+        </Section>
+
+        {/* Sticky CTA */}
+        <div className="sticky bottom-0 -mx-6 border-t border-border bg-background/90 px-6 py-4 backdrop-blur-md no-print">
+          <div className="flex items-center justify-between gap-4">
+            <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
+              ← Back to home
+            </Link>
+            <button
+              type="submit"
+              className="rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground shadow-sm hover:bg-accent/90 transition-colors"
+            >
+              Generate Run-of-Show →
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function Section({
+  title,
+  step,
+  action,
+  children,
+}: {
+  title: string;
+  step: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="border-t border-border pt-8">
+      <div className="mb-5 flex items-end justify-between">
+        <div>
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">
+            STEP {step}
+          </p>
+          <h2 className="mt-1 text-lg font-semibold text-navy">{title}</h2>
+        </div>
+        {action && (
+          <div className="text-xs font-semibold text-accent hover:underline cursor-pointer">{action}</div>
+        )}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <label className={labelCls}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function PeopleSection({
+  step,
+  title,
+  people,
+  onChange,
+  newId,
+  placeholderRole,
+}: {
+  step: string;
+  title: string;
+  people: Person[];
+  onChange: (next: Person[]) => void;
+  newId: () => string;
+  placeholderRole: string;
+}) {
+  return (
+    <Section
+      title={title}
+      step={step}
+      action={
+        <button
+          type="button"
+          onClick={() => onChange([...people, { id: newId(), name: "", role: "" }])}
+        >
+          + Add {title.toLowerCase().slice(0, -1)}
+        </button>
+      }
+    >
+      <div className="space-y-3">
+        {people.map((p, i) => (
+          <div key={p.id} className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+            <input
+              className={inputCls}
+              value={p.name}
+              placeholder="Full name"
+              onChange={(e) => {
+                const next = [...people];
+                next[i] = { ...p, name: e.target.value };
+                onChange(next);
+              }}
+            />
+            <input
+              className={inputCls}
+              value={p.role}
+              placeholder={placeholderRole}
+              onChange={(e) => {
+                const next = [...people];
+                next[i] = { ...p, role: e.target.value };
+                onChange(next);
+              }}
+            />
+            <button
+              type="button"
+              className="text-xs font-medium text-muted-foreground hover:text-destructive"
+              onClick={() => onChange(people.filter((x) => x.id !== p.id))}
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+function PeopleSelect({
+  label,
+  options,
+  selected,
+  onChange,
+}: {
+  label: string;
+  options: Person[];
+  selected: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  return (
+    <div>
+      <p className={`${labelCls} mb-2`}>{label}</p>
+      <div className="flex flex-wrap gap-2">
+        {options.length === 0 && (
+          <span className="text-xs text-muted-foreground italic">Add people above</span>
+        )}
+        {options.map((o) => {
+          const active = selected.includes(o.id);
+          return (
+            <button
+              key={o.id}
+              type="button"
+              onClick={() =>
+                onChange(active ? selected.filter((x) => x !== o.id) : [...selected, o.id])
+              }
+              className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                active
+                  ? "border-accent bg-accent/10 text-accent"
+                  : "border-border bg-background text-muted-foreground hover:border-foreground/30"
+              }`}
+            >
+              {o.name || "Untitled"}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
