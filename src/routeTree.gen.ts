@@ -13,6 +13,12 @@ import { Route as RunOfShowRouteImport } from './routes/run-of-show'
 import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppTalentRouteImport } from './routes/app.talent'
+import { Route as AppRunOfShowRouteImport } from './routes/app.run-of-show'
+import { Route as AppEventsRouteImport } from './routes/app.events'
+import { Route as AppAvRouteImport } from './routes/app.av'
+import { Route as AppActivityRouteImport } from './routes/app.activity'
 
 const RunOfShowRoute = RunOfShowRouteImport.update({
   id: '/run-of-show',
@@ -34,37 +40,114 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTalentRoute = AppTalentRouteImport.update({
+  id: '/talent',
+  path: '/talent',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRunOfShowRoute = AppRunOfShowRouteImport.update({
+  id: '/run-of-show',
+  path: '/run-of-show',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEventsRoute = AppEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAvRoute = AppAvRouteImport.update({
+  id: '/av',
+  path: '/av',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppActivityRoute = AppActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
   '/generate': typeof GenerateRoute
   '/run-of-show': typeof RunOfShowRoute
+  '/app/activity': typeof AppActivityRoute
+  '/app/av': typeof AppAvRoute
+  '/app/events': typeof AppEventsRoute
+  '/app/run-of-show': typeof AppRunOfShowRoute
+  '/app/talent': typeof AppTalentRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
   '/generate': typeof GenerateRoute
   '/run-of-show': typeof RunOfShowRoute
+  '/app/activity': typeof AppActivityRoute
+  '/app/av': typeof AppAvRoute
+  '/app/events': typeof AppEventsRoute
+  '/app/run-of-show': typeof AppRunOfShowRoute
+  '/app/talent': typeof AppTalentRoute
+  '/app': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
   '/generate': typeof GenerateRoute
   '/run-of-show': typeof RunOfShowRoute
+  '/app/activity': typeof AppActivityRoute
+  '/app/av': typeof AppAvRoute
+  '/app/events': typeof AppEventsRoute
+  '/app/run-of-show': typeof AppRunOfShowRoute
+  '/app/talent': typeof AppTalentRoute
+  '/app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/generate' | '/run-of-show'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/generate'
+    | '/run-of-show'
+    | '/app/activity'
+    | '/app/av'
+    | '/app/events'
+    | '/app/run-of-show'
+    | '/app/talent'
+    | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/generate' | '/run-of-show'
-  id: '__root__' | '/' | '/app' | '/generate' | '/run-of-show'
+  to:
+    | '/'
+    | '/generate'
+    | '/run-of-show'
+    | '/app/activity'
+    | '/app/av'
+    | '/app/events'
+    | '/app/run-of-show'
+    | '/app/talent'
+    | '/app'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/generate'
+    | '/run-of-show'
+    | '/app/activity'
+    | '/app/av'
+    | '/app/events'
+    | '/app/run-of-show'
+    | '/app/talent'
+    | '/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRoute: typeof AppRoute
+  AppRoute: typeof AppRouteWithChildren
   GenerateRoute: typeof GenerateRoute
   RunOfShowRoute: typeof RunOfShowRoute
 }
@@ -99,12 +182,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/talent': {
+      id: '/app/talent'
+      path: '/talent'
+      fullPath: '/app/talent'
+      preLoaderRoute: typeof AppTalentRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/run-of-show': {
+      id: '/app/run-of-show'
+      path: '/run-of-show'
+      fullPath: '/app/run-of-show'
+      preLoaderRoute: typeof AppRunOfShowRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/events': {
+      id: '/app/events'
+      path: '/events'
+      fullPath: '/app/events'
+      preLoaderRoute: typeof AppEventsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/av': {
+      id: '/app/av'
+      path: '/av'
+      fullPath: '/app/av'
+      preLoaderRoute: typeof AppAvRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/activity': {
+      id: '/app/activity'
+      path: '/activity'
+      fullPath: '/app/activity'
+      preLoaderRoute: typeof AppActivityRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppActivityRoute: typeof AppActivityRoute
+  AppAvRoute: typeof AppAvRoute
+  AppEventsRoute: typeof AppEventsRoute
+  AppRunOfShowRoute: typeof AppRunOfShowRoute
+  AppTalentRoute: typeof AppTalentRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppActivityRoute: AppActivityRoute,
+  AppAvRoute: AppAvRoute,
+  AppEventsRoute: AppEventsRoute,
+  AppRunOfShowRoute: AppRunOfShowRoute,
+  AppTalentRoute: AppTalentRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRoute: AppRoute,
+  AppRoute: AppRouteWithChildren,
   GenerateRoute: GenerateRoute,
   RunOfShowRoute: RunOfShowRoute,
 }
