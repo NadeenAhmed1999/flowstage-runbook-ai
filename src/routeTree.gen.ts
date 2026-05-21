@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RunOfShowRouteImport } from './routes/run-of-show'
 import { Route as GenerateRouteImport } from './routes/generate'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 
 const RunOfShowRoute = RunOfShowRouteImport.update({
@@ -23,6 +24,11 @@ const GenerateRoute = GenerateRouteImport.update({
   path: '/generate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,30 +37,34 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRoute
   '/generate': typeof GenerateRoute
   '/run-of-show': typeof RunOfShowRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app': typeof AppRoute
   '/generate': typeof GenerateRoute
   '/run-of-show': typeof RunOfShowRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRoute
   '/generate': typeof GenerateRoute
   '/run-of-show': typeof RunOfShowRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/generate' | '/run-of-show'
+  fullPaths: '/' | '/app' | '/generate' | '/run-of-show'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/generate' | '/run-of-show'
-  id: '__root__' | '/' | '/generate' | '/run-of-show'
+  to: '/' | '/app' | '/generate' | '/run-of-show'
+  id: '__root__' | '/' | '/app' | '/generate' | '/run-of-show'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRoute
   GenerateRoute: typeof GenerateRoute
   RunOfShowRoute: typeof RunOfShowRoute
 }
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GenerateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRoute,
   GenerateRoute: GenerateRoute,
   RunOfShowRoute: RunOfShowRoute,
 }
