@@ -10,17 +10,18 @@ export function SiteNav() {
           </Link>
           <div className="hidden gap-6 text-sm font-medium text-muted-foreground md:flex">
             <Link to="/" className="hover:text-foreground transition-colors">Platform</Link>
+            <Link to="/app" className="hover:text-foreground transition-colors">Dashboard</Link>
             <Link to="/run-of-show" className="hover:text-foreground transition-colors">Showcase</Link>
             <a href="#" className="hover:text-foreground transition-colors">Documentation</a>
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <button className="text-sm font-medium text-muted-foreground hover:text-foreground">Sign in</button>
+          <Link to="/app" className="text-sm font-medium text-muted-foreground hover:text-foreground">Sign in</Link>
           <Link
-            to="/generate"
+            to="/app"
             className="rounded-md bg-navy px-3.5 py-1.5 text-sm font-medium text-navy-foreground shadow-sm hover:bg-navy/90 transition-colors"
           >
-            Generate Run-of-Show
+            Open dashboard
           </Link>
         </div>
       </div>

@@ -13,7 +13,7 @@ export const Route = createFileRoute("/app")({
 
 function AppLayout() {
   return (
-    <div className="-mt-14 flex min-h-screen bg-surface pt-14 lg:mt-0 lg:pt-0">
+    <div className="flex min-h-screen bg-surface">
       <AppSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <Outlet />
