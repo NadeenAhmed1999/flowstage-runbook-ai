@@ -27,8 +27,52 @@ export const Route = createFileRoute("/run-of-show")({
 });
 
 function RunOfShowPage() {
-  const { event } = useEvent();
+  const { event, runSheet, setRunSheet } = useEvent();
+  const generateFn = useServerFn(generateRunSheet);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const rows = buildTimeline(event);
+
+  const handleGenerate = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const sheet = await generateFn({
+        data: {
+          eventName: event.name,
+          eventType: event.type,
+          eventDate: event.date,
+          sessions: event.sessions.map((s) => ({
+            title: s.title,
+            startTime: s.startTime,
+            durationMin: s.durationMin,
+            description: s.description,
+            speakers: s.speakerIds
+              .map((id) => event.speakers.find((p) => p.id === id))
+              .filter(Boolean)
+              .map((p) => `${p!.name} (${p!.role})`),
+            moderators: s.moderatorIds
+              .map((id) => event.moderators.find((p) => p.id === id))
+              .filter(Boolean)
+              .map((p) => `${p!.name} (${p!.role})`),
+          })),
+          breaks: event.breaks.map((b) => ({
+            label: b.label,
+            startTime: b.startTime,
+            durationMin: b.durationMin,
+          })),
+          sponsors: event.sponsors.map((s) => ({ name: s.name, placement: s.placement })),
+          avRequirements: event.avRequirements,
+        },
+      });
+      setRunSheet(sheet);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Generation failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const moderationNotes = rows
     .filter((r) => r.moderationNote)
