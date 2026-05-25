@@ -79,20 +79,32 @@ export const seedEvent: EventData = {
     "Dual projection screens, four lapel microphones, one handheld for audience Q&A, confidence monitor downstage center, walk-on music cue ready at FOH.",
 };
 
+import type { RunSheet } from "@/lib/generate-run-sheet.functions";
+
 type Ctx = {
   event: EventData;
   setEvent: (next: EventData) => void;
   reset: () => void;
   newId: () => string;
+  runSheet: RunSheet | null;
+  setRunSheet: (s: RunSheet | null) => void;
 };
 
 const EventCtx = createContext<Ctx | null>(null);
 
 export function EventProvider({ children }: { children: ReactNode }) {
   const [event, setEvent] = useState<EventData>(seedEvent);
+  const [runSheet, setRunSheet] = useState<RunSheet | null>(null);
   return (
     <EventCtx.Provider
-      value={{ event, setEvent, reset: () => setEvent(seedEvent), newId: uid }}
+      value={{
+        event,
+        setEvent,
+        reset: () => setEvent(seedEvent),
+        newId: uid,
+        runSheet,
+        setRunSheet,
+      }}
     >
       {children}
     </EventCtx.Provider>
