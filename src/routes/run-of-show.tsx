@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEvent } from "@/components/event-context";
 import { buildTimeline } from "@/lib/run-of-show";
 import { TimelineTable } from "@/components/document/timeline-table";
+import { AiRunSheet } from "@/components/document/ai-run-sheet";
+import { generateRunSheet } from "@/lib/generate-run-sheet.functions";
 
 export const Route = createFileRoute("/run-of-show")({
   head: () => ({
@@ -23,8 +27,52 @@ export const Route = createFileRoute("/run-of-show")({
 });
 
 function RunOfShowPage() {
-  const { event } = useEvent();
+  const { event, runSheet, setRunSheet } = useEvent();
+  const generateFn = useServerFn(generateRunSheet);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const rows = buildTimeline(event);
+
+  const handleGenerate = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const sheet = await generateFn({
+        data: {
+          eventName: event.name,
+          eventType: event.type,
+          eventDate: event.date,
+          sessions: event.sessions.map((s) => ({
+            title: s.title,
+            startTime: s.startTime,
+            durationMin: s.durationMin,
+            description: s.description,
+            speakers: s.speakerIds
+              .map((id) => event.speakers.find((p) => p.id === id))
+              .filter(Boolean)
+              .map((p) => `${p!.name} (${p!.role})`),
+            moderators: s.moderatorIds
+              .map((id) => event.moderators.find((p) => p.id === id))
+              .filter(Boolean)
+              .map((p) => `${p!.name} (${p!.role})`),
+          })),
+          breaks: event.breaks.map((b) => ({
+            label: b.label,
+            startTime: b.startTime,
+            durationMin: b.durationMin,
+          })),
+          sponsors: event.sponsors.map((s) => ({ name: s.name, placement: s.placement })),
+          avRequirements: event.avRequirements,
+        },
+      });
+      setRunSheet(sheet);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Generation failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const moderationNotes = rows
     .filter((r) => r.moderationNote)
@@ -63,6 +111,21 @@ function RunOfShowPage() {
           </Link>
           <button
             type="button"
+            onClick={handleGenerate}
+            disabled={loading}
+            className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent/90 disabled:opacity-60"
+          >
+            {loading ? (
+              <>
+                <span className="h-3 w-3 animate-spin rounded-full border-2 border-accent-foreground/40 border-t-accent-foreground" />
+                Generating…
+              </>
+            ) : (
+              <>✶ {runSheet ? "Regenerate" : "Generate"} Run Sheet</>
+            )}
+          </button>
+          <button
+            type="button"
             onClick={() => window.print()}
             className="rounded-md bg-navy px-4 py-2 text-sm font-medium text-navy-foreground hover:bg-navy/90"
           >
@@ -70,6 +133,31 @@ function RunOfShowPage() {
           </button>
         </div>
       </div>
+
+      {error && (
+        <div className="no-print mb-6 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
+
+      {loading && !runSheet && (
+        <div className="no-print mb-6 space-y-3 rounded-sm border border-border bg-surface p-6">
+          <div className="flex items-center gap-3">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-accent">
+              AI generating production document
+            </p>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Calling cues, sequencing transitions, drafting backstage notes…
+          </p>
+          <div className="space-y-2">
+            <div className="h-2 w-3/4 animate-pulse rounded bg-border" />
+            <div className="h-2 w-2/3 animate-pulse rounded bg-border" />
+            <div className="h-2 w-5/6 animate-pulse rounded bg-border" />
+          </div>
+        </div>
+      )}
 
       {/* Document */}
       <article className="rounded-sm border border-border bg-background p-8 shadow-sm sm:p-12">
@@ -101,31 +189,36 @@ function RunOfShowPage() {
           </div>
         </section>
 
-        {/* Notes grid */}
-        <div className="grid gap-8 md:grid-cols-2">
-          <NotesBlock title="Moderation Notes" items={moderationNotes} />
-          <NotesBlock title="Backstage Coordination" items={backstageNotes} />
-          <NotesBlock
-            title="AV Reminders"
-            items={[
-              event.avRequirements,
-              "Mic check 30 minutes prior to doors.",
-              "Confirm walk-on music levels with FOH.",
-              "Lower thirds queued in order of session.",
-            ].filter(Boolean)}
-          />
-          <NotesBlock
-            title="Operational Reminders"
-            items={[
-              "Stage manager calls all cues from booth.",
-              "Green Room A reserved for keynote speakers.",
-              "Holding area available stage-right 15 minutes before each session.",
-              event.sponsors.length
-                ? `Sponsor acknowledgements: ${event.sponsors.map((s) => s.name).join(", ")}.`
-                : "",
-            ].filter(Boolean)}
-          />
-        </div>
+        {runSheet ? (
+          <section className="mt-2">
+            <AiRunSheet sheet={runSheet} />
+          </section>
+        ) : (
+          <div className="grid gap-8 md:grid-cols-2">
+            <NotesBlock title="Moderation Notes" items={moderationNotes} />
+            <NotesBlock title="Backstage Coordination" items={backstageNotes} />
+            <NotesBlock
+              title="AV Reminders"
+              items={[
+                event.avRequirements,
+                "Mic check 30 minutes prior to doors.",
+                "Confirm walk-on music levels with FOH.",
+                "Lower thirds queued in order of session.",
+              ].filter(Boolean)}
+            />
+            <NotesBlock
+              title="Operational Reminders"
+              items={[
+                "Stage manager calls all cues from booth.",
+                "Green Room A reserved for keynote speakers.",
+                "Holding area available stage-right 15 minutes before each session.",
+                event.sponsors.length
+                  ? `Sponsor acknowledgements: ${event.sponsors.map((s) => s.name).join(", ")}.`
+                  : "",
+              ].filter(Boolean)}
+            />
+          </div>
+        )}
 
         <footer className="mt-12 border-t border-border pt-6">
           <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
