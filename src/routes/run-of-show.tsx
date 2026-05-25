@@ -189,31 +189,36 @@ function RunOfShowPage() {
           </div>
         </section>
 
-        {/* Notes grid */}
-        <div className="grid gap-8 md:grid-cols-2">
-          <NotesBlock title="Moderation Notes" items={moderationNotes} />
-          <NotesBlock title="Backstage Coordination" items={backstageNotes} />
-          <NotesBlock
-            title="AV Reminders"
-            items={[
-              event.avRequirements,
-              "Mic check 30 minutes prior to doors.",
-              "Confirm walk-on music levels with FOH.",
-              "Lower thirds queued in order of session.",
-            ].filter(Boolean)}
-          />
-          <NotesBlock
-            title="Operational Reminders"
-            items={[
-              "Stage manager calls all cues from booth.",
-              "Green Room A reserved for keynote speakers.",
-              "Holding area available stage-right 15 minutes before each session.",
-              event.sponsors.length
-                ? `Sponsor acknowledgements: ${event.sponsors.map((s) => s.name).join(", ")}.`
-                : "",
-            ].filter(Boolean)}
-          />
-        </div>
+        {runSheet ? (
+          <section className="mt-2">
+            <AiRunSheet sheet={runSheet} />
+          </section>
+        ) : (
+          <div className="grid gap-8 md:grid-cols-2">
+            <NotesBlock title="Moderation Notes" items={moderationNotes} />
+            <NotesBlock title="Backstage Coordination" items={backstageNotes} />
+            <NotesBlock
+              title="AV Reminders"
+              items={[
+                event.avRequirements,
+                "Mic check 30 minutes prior to doors.",
+                "Confirm walk-on music levels with FOH.",
+                "Lower thirds queued in order of session.",
+              ].filter(Boolean)}
+            />
+            <NotesBlock
+              title="Operational Reminders"
+              items={[
+                "Stage manager calls all cues from booth.",
+                "Green Room A reserved for keynote speakers.",
+                "Holding area available stage-right 15 minutes before each session.",
+                event.sponsors.length
+                  ? `Sponsor acknowledgements: ${event.sponsors.map((s) => s.name).join(", ")}.`
+                  : "",
+              ].filter(Boolean)}
+            />
+          </div>
+        )}
 
         <footer className="mt-12 border-t border-border pt-6">
           <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
