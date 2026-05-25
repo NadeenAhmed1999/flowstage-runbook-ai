@@ -111,6 +111,21 @@ function RunOfShowPage() {
           </Link>
           <button
             type="button"
+            onClick={handleGenerate}
+            disabled={loading}
+            className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent/90 disabled:opacity-60"
+          >
+            {loading ? (
+              <>
+                <span className="h-3 w-3 animate-spin rounded-full border-2 border-accent-foreground/40 border-t-accent-foreground" />
+                Generating…
+              </>
+            ) : (
+              <>✶ {runSheet ? "Regenerate" : "Generate"} Run Sheet</>
+            )}
+          </button>
+          <button
+            type="button"
             onClick={() => window.print()}
             className="rounded-md bg-navy px-4 py-2 text-sm font-medium text-navy-foreground hover:bg-navy/90"
           >
@@ -118,6 +133,31 @@ function RunOfShowPage() {
           </button>
         </div>
       </div>
+
+      {error && (
+        <div className="no-print mb-6 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
+
+      {loading && !runSheet && (
+        <div className="no-print mb-6 space-y-3 rounded-sm border border-border bg-surface p-6">
+          <div className="flex items-center gap-3">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
+            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-accent">
+              AI generating production document
+            </p>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Calling cues, sequencing transitions, drafting backstage notes…
+          </p>
+          <div className="space-y-2">
+            <div className="h-2 w-3/4 animate-pulse rounded bg-border" />
+            <div className="h-2 w-2/3 animate-pulse rounded bg-border" />
+            <div className="h-2 w-5/6 animate-pulse rounded bg-border" />
+          </div>
+        </div>
+      )}
 
       {/* Document */}
       <article className="rounded-sm border border-border bg-background p-8 shadow-sm sm:p-12">
