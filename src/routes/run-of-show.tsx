@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEvent } from "@/components/event-context";
 import { buildTimeline } from "@/lib/run-of-show";
 import { TimelineTable } from "@/components/document/timeline-table";
+import { AiRunSheet } from "@/components/document/ai-run-sheet";
+import { generateRunSheet } from "@/lib/generate-run-sheet.functions";
 
 export const Route = createFileRoute("/run-of-show")({
   head: () => ({
