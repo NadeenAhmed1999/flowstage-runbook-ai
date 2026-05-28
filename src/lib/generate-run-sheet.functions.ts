@@ -22,17 +22,18 @@ const NoteSchema = z.object({
 
 const RunSheetSchema = z.object({
   documentTitle: z.string(),
+const RunSheetSchema = z.object({
+  documentTitle: z.string(),
   productionSummary: z.string().describe("2-3 sentence executive summary of the show"),
-  timeline: z.array(TimelineBlockSchema).min(4),
-  avReminders: z.array(NoteSchema).min(3),
-  backstageCoordination: z.array(NoteSchema).min(3),
-  moderatorCues: z.array(NoteSchema).min(2),
+  timeline: z.array(TimelineBlockSchema),
+  avReminders: z.array(NoteSchema),
+  backstageCoordination: z.array(NoteSchema),
+  moderatorCues: z.array(NoteSchema),
   sponsorVisibility: z.array(NoteSchema),
   networkingBreaks: z.array(NoteSchema),
-  productionNotes: z.array(NoteSchema).min(3),
-  contingencyReminders: z.array(NoteSchema).min(3),
+  productionNotes: z.array(NoteSchema),
+  contingencyReminders: z.array(NoteSchema),
 });
-
 export type RunSheet = z.infer<typeof RunSheetSchema>;
 
 const InputSchema = z.object({
