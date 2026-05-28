@@ -131,14 +131,6 @@ export const seedEvent: EventData = {
     "Main stage with dual 16:9 projection screens and center IMAG. Four lavalier mics (panel) + two handhelds for audience Q&A + one lectern mic (gooseneck) for keynote. Confidence monitor downstage center showing speaker timer and next-cue prompt. FOH desk at rear-of-house with comms to stage manager, lighting, and video. Walk-on music presets loaded for keynote, panel, fireside, and workshop. Lower-thirds package preloaded in order of run. Sponsor video loops queued for breaks. Live captioning feed for keynote and panel. Registration desk with 4 check-in stations, badge printers, and overflow queue managers. Sponsor area with 6 pods adjacent to coffee service. Backup wireless mic kit and spare lav packs in green room.",
 };
 
-  sponsors: [
-    { id: "sp1", name: "CloudStream Systems", placement: "Opening keynote intro" },
-    { id: "sp2", name: "Northwind Capital", placement: "Pre-lunch thank-you" },
-  ],
-  avRequirements:
-    "Dual projection screens, four lapel microphones, one handheld for audience Q&A, confidence monitor downstage center, walk-on music cue ready at FOH.",
-};
-
 import type { RunSheet } from "@/lib/generate-run-sheet.functions";
 
 type Ctx = {
