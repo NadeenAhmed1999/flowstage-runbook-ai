@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEvent } from "@/components/event-context";
@@ -72,6 +72,15 @@ function RunOfShowPage() {
       setLoading(false);
     }
   };
+
+  const autoTriggered = useRef(false);
+  useEffect(() => {
+    if (!runSheet && !loading && !autoTriggered.current) {
+      autoTriggered.current = true;
+      void handleGenerate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
 
   const moderationNotes = rows
