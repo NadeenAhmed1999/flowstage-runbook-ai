@@ -145,7 +145,8 @@ function inferTimelineKind(title: string): z.infer<typeof TimelineBlockSchema>["
 function normalizeTimelineEntry(entry: unknown) {
   if (!entry || typeof entry !== "object") return null;
   const record = entry as Record<string, unknown>;
-  const title = pickString(record.title) ?? pickString(record.session);
+  const title =
+    pickString(record.title) ?? pickString(record.session) ?? pickString(record.segment_title);
   if (!title) return null;
 
   const cueSource = [
@@ -153,10 +154,11 @@ function normalizeTimelineEntry(entry: unknown) {
     ...normalizeCueList(record.audio),
     ...normalizeCueList(record.video),
     ...normalizeCueList(record.lighting),
+    ...normalizeCueList(record.av_cues),
   ];
 
   const timelineBlock = {
-    time: normalizeTime(record.time),
+    time: normalizeTime(record.time ?? record.time_start),
     durationMin: normalizeDuration(record.durationMin ?? record.duration),
     kind:
       typeof record.kind === "string" &&
@@ -164,15 +166,40 @@ function normalizeTimelineEntry(entry: unknown) {
         ? (record.kind as z.infer<typeof TimelineBlockSchema>["kind"])
         : inferTimelineKind(title),
     title,
-    subtitle: pickString(record.subtitle),
+    subtitle: pickString(record.subtitle) ?? pickString(record.stage_status),
     talent: pickString(record.talent),
     cues: cueSource,
     moderatorCue: pickString(record.moderatorCue),
-    backstageNote: pickString(record.backstageNote) ?? pickString(record.notes),
+    backstageNote:
+      pickString(record.backstageNote) ??
+      pickString(record.backstage) ??
+      pickString(record.notes),
   };
 
   const parsed = TimelineBlockSchema.safeParse(timelineBlock);
   return parsed.success ? parsed.data : null;
+}
+
+function deriveNotesFromTimeline(
+  entries: unknown[],
+  detailKeys: string[],
+  fallbackTitle: string,
+): z.infer<typeof NoteSchema>[] {
+  return entries.flatMap((entry) => {
+    if (!entry || typeof entry !== "object") return [];
+
+    const record = entry as Record<string, unknown>;
+    const detail = detailKeys.map((key) => pickString(record[key])).find(Boolean);
+    if (!detail) return [];
+
+    const title =
+      pickString(record.title) ??
+      pickString(record.session) ??
+      pickString(record.segment_title) ??
+      fallbackTitle;
+
+    return [{ title, detail }];
+  });
 }
 
 function normalizeNoteArray(value: unknown): z.infer<typeof NoteSchema>[] {
@@ -280,6 +307,8 @@ function normalizeRunSheetPayload(raw: unknown, data: RunSheetInput): RunSheet {
     ? record.timeline
     : Array.isArray(record.run_of_show)
       ? record.run_of_show
+      : Array.isArray(record.production_schedule)
+        ? record.production_schedule
       : [];
 
   const timeline = timelineSource
@@ -290,15 +319,39 @@ function normalizeRunSheetPayload(raw: unknown, data: RunSheetInput): RunSheet {
     throw new Error("AI returned JSON, but no usable timeline entries were found.");
   }
 
+  const eventDetails =
+    record.event_details && typeof record.event_details === "object"
+      ? (record.event_details as Record<string, unknown>)
+      : undefined;
+  const derivedAvReminders = deriveNotesFromTimeline(timelineSource, ["av_cues"], "AV cue");
+  const derivedBackstage = deriveNotesFromTimeline(timelineSource, ["backstage"], "Backstage");
+  const derivedProduction = deriveNotesFromTimeline(
+    timelineSource,
+    ["production_notes", "notes"],
+    "Production note",
+  );
+  const derivedContingencies = deriveNotesFromTimeline(
+    timelineSource,
+    ["contingency"],
+    "Contingency",
+  );
+
   return RunSheetSchema.parse({
-    documentTitle: pickString(record.documentTitle) ?? `Run-of-Show: ${data.eventName}`,
+    documentTitle:
+      pickString(record.documentTitle) ??
+      pickString(eventDetails?.event_name) ??
+      `Run-of-Show: ${data.eventName}`,
     productionSummary: pickString(record.productionSummary) ?? createFallbackSummary(data),
     timeline,
     avReminders: normalizeNoteArray(record.avReminders).length
       ? normalizeNoteArray(record.avReminders)
+      : derivedAvReminders.length
+        ? derivedAvReminders
       : fallbackNotes.avReminders,
     backstageCoordination: normalizeNoteArray(record.backstageCoordination).length
       ? normalizeNoteArray(record.backstageCoordination)
+      : derivedBackstage.length
+        ? derivedBackstage
       : fallbackNotes.backstageCoordination,
     moderatorCues: normalizeNoteArray(record.moderatorCues).length
       ? normalizeNoteArray(record.moderatorCues)
@@ -311,9 +364,13 @@ function normalizeRunSheetPayload(raw: unknown, data: RunSheetInput): RunSheet {
       : fallbackNotes.networkingBreaks,
     productionNotes: normalizeNoteArray(record.productionNotes).length
       ? normalizeNoteArray(record.productionNotes)
+      : derivedProduction.length
+        ? derivedProduction
       : fallbackNotes.productionNotes,
     contingencyReminders: normalizeNoteArray(record.contingencyReminders).length
       ? normalizeNoteArray(record.contingencyReminders)
+      : derivedContingencies.length
+        ? derivedContingencies
       : fallbackNotes.contingencyReminders,
   });
 }
