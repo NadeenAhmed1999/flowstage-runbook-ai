@@ -31,46 +31,109 @@ const uid = () => Math.random().toString(36).slice(2, 9);
 export const seedEvent: EventData = {
   name: "Global Tech Summit 2025",
   type: "Conference",
-  date: "2025-11-14",
+export const seedEvent: EventData = {
+  name: "GCC Healthcare Innovation Summit 2026",
+  type: "Healthcare Conference",
+  date: "2026-03-12",
   speakers: [
-    { id: "s1", name: "Elena Thorne", role: "CTO, Northwind" },
-    { id: "s2", name: "Marcus Chen", role: "Product Lead, Vega" },
-    { id: "s3", name: "Dr. Aris Patel", role: "Researcher, Helix Labs" },
+    { id: "s1", name: "Dr. Hana Al-Mansoori", role: "Conference Chair" },
+    { id: "s2", name: "Dr. Khalid Al-Rashid", role: "Senior Representative, Regional Health Authority" },
+    { id: "s3", name: "Dr. Layla Haddad", role: "Health Authority Representative" },
+    { id: "s4", name: "Omar Farouk", role: "Regulatory Affairs Lead, Pharma Consortium" },
+    { id: "s5", name: "Prof. Reema Nasser", role: "Clinical Research Expert, Gulf Medical University" },
+    { id: "s6", name: "Dr. Yusuf Karim", role: "Clinical Innovation Lead, Regional AI Health Initiative" },
+    { id: "s7", name: "Sara Belhaj", role: "Senior Digital Health Consultant" },
   ],
-  moderators: [{ id: "m1", name: "Sarah Jenkins", role: "Editor, The Brief" }],
+  moderators: [
+    { id: "m1", name: "Noura El-Sayed", role: "Industry Affairs Director" },
+    { id: "m2", name: "James Whitford", role: "Program Director, Summit" },
+  ],
   sessions: [
     {
       id: "se1",
-      title: "Opening Keynote: The Future of Distributed Systems",
-      startTime: "09:00",
-      durationMin: 30,
-      description: "Vision keynote setting the tone for the day.",
+      title: "Opening Remarks",
+      startTime: "09:15",
+      durationMin: 10,
+      description:
+        "Conference Chair welcomes 350 senior delegates, frames the day's regulatory and digital health agenda, and acknowledges Platinum and Strategic Partners.",
       speakerIds: ["s1"],
       moderatorIds: [],
     },
     {
       id: "se2",
-      title: "Fireside: AI in Operations",
-      startTime: "09:45",
-      durationMin: 35,
-      description: "Two-chair fireside on operational AI deployments.",
-      speakerIds: ["s1", "s2"],
-      moderatorIds: ["m1"],
+      title: "Keynote: Digital Transformation in Regional Healthcare",
+      startTime: "09:25",
+      durationMin: 40,
+      description:
+        "Headline policy keynote on national digital health strategy, interoperability mandates, and the next phase of regional healthcare modernization.",
+      speakerIds: ["s2"],
+      moderatorIds: [],
     },
     {
       id: "se3",
-      title: "Panel: The Ethics of GenAI",
-      startTime: "10:45",
+      title: "Panel: Regulatory Reliance and Cross-Border Collaboration",
+      startTime: "10:05",
       durationMin: 45,
-      description: "Four-person panel with audience Q&A.",
-      speakerIds: ["s2", "s3"],
+      description:
+        "Three-person panel exploring GCC regulatory reliance pathways, joint reviews, and cross-border data and clinical trial collaboration. Includes 10 minutes audience Q&A.",
+      speakerIds: ["s3", "s4", "s5"],
       moderatorIds: ["m1"],
+    },
+    {
+      id: "se4",
+      title: "Sponsor Spotlight: Platinum Sponsor",
+      startTime: "11:20",
+      durationMin: 10,
+      description:
+        "Branded 10-minute spotlight from the Platinum Sponsor on AI-enabled diagnostics deployments across the region.",
+      speakerIds: [],
+      moderatorIds: [],
+    },
+    {
+      id: "se5",
+      title: "Fireside Chat: AI in Clinical Research",
+      startTime: "11:30",
+      durationMin: 40,
+      description:
+        "Two-chair fireside on operationalizing AI in regional clinical research — protocol design, regulatory acceptance, and patient safety guardrails.",
+      speakerIds: ["s6"],
+      moderatorIds: ["m2"],
+    },
+    {
+      id: "se6",
+      title: "Workshop: Building Patient-Centric Digital Health Pathways",
+      startTime: "13:10",
+      durationMin: 70,
+      description:
+        "Facilitated working session with break-out tables. Delegates map a patient journey across primary care, specialist referral, and remote monitoring touchpoints.",
+      speakerIds: ["s7"],
+      moderatorIds: [],
+    },
+    {
+      id: "se7",
+      title: "Closing Remarks",
+      startTime: "14:20",
+      durationMin: 10,
+      description:
+        "Conference Chair closes the program with key takeaways, partner thank-yous, and next-year save-the-date.",
+      speakerIds: ["s1"],
+      moderatorIds: [],
     },
   ],
   breaks: [
-    { id: "b1", label: "Networking Break", startTime: "10:20", durationMin: 20 },
-    { id: "b2", label: "Lunch", startTime: "11:30", durationMin: 60 },
+    { id: "b0", label: "Registration & Welcome Coffee", startTime: "08:30", durationMin: 45 },
+    { id: "b1", label: "Networking Coffee Break", startTime: "10:50", durationMin: 30 },
+    { id: "b2", label: "Networking Lunch", startTime: "12:10", durationMin: 60 },
   ],
+  sponsors: [
+    { id: "sp1", name: "Meditrace Diagnostics (Platinum)", placement: "Opening remarks acknowledgement + dedicated 11:20 sponsor spotlight + lunch branding" },
+    { id: "sp2", name: "Cedar Health Systems (Strategic Partner)", placement: "Pre-keynote thank-you + lower-third during panel transitions" },
+    { id: "sp3", name: "NovaPharma Gulf (Coffee Break Sponsor)", placement: "Branded signage and lower-third during 10:50 networking coffee break" },
+  ],
+  avRequirements:
+    "Main stage with dual 16:9 projection screens and center IMAG. Four lavalier mics (panel) + two handhelds for audience Q&A + one lectern mic (gooseneck) for keynote. Confidence monitor downstage center showing speaker timer and next-cue prompt. FOH desk at rear-of-house with comms to stage manager, lighting, and video. Walk-on music presets loaded for keynote, panel, fireside, and workshop. Lower-thirds package preloaded in order of run. Sponsor video loops queued for breaks. Live captioning feed for keynote and panel. Registration desk with 4 check-in stations, badge printers, and overflow queue managers. Sponsor area with 6 pods adjacent to coffee service. Backup wireless mic kit and spare lav packs in green room.",
+};
+
   sponsors: [
     { id: "sp1", name: "CloudStream Systems", placement: "Opening keynote intro" },
     { id: "sp2", name: "Northwind Capital", placement: "Pre-lunch thank-you" },
