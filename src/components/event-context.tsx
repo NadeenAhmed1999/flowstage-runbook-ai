@@ -29,9 +29,6 @@ export type EventData = {
 const uid = () => Math.random().toString(36).slice(2, 9);
 
 export const seedEvent: EventData = {
-  name: "Global Tech Summit 2025",
-  type: "Conference",
-export const seedEvent: EventData = {
   name: "GCC Healthcare Innovation Summit 2026",
   type: "Healthcare Conference",
   date: "2026-03-12",
