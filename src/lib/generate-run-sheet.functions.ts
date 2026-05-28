@@ -22,8 +22,6 @@ const NoteSchema = z.object({
 
 const RunSheetSchema = z.object({
   documentTitle: z.string(),
-const RunSheetSchema = z.object({
-  documentTitle: z.string(),
   productionSummary: z.string().describe("2-3 sentence executive summary of the show"),
   timeline: z.array(TimelineBlockSchema),
   avReminders: z.array(NoteSchema),
