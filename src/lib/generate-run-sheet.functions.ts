@@ -195,11 +195,41 @@ function deriveNotesFromTimeline(
     const title =
       pickString(record.title) ??
       pickString(record.session) ??
+      pickString(record.segment) ??
       pickString(record.segment_title) ??
       fallbackTitle;
 
     return [{ title, detail }];
   });
+}
+
+function looksLikeTimelineEntry(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+  const record = value as Record<string, unknown>;
+
+  const hasTime = typeof record.time === "string" || typeof record.time_start === "string";
+  const hasTitle = [record.title, record.session, record.segment, record.segment_title].some(
+    (item) => typeof item === "string",
+  );
+
+  return hasTime && hasTitle;
+}
+
+function findTimelineSource(record: Record<string, unknown>): unknown[] {
+  const explicitSources = [record.timeline, record.run_of_show, record.production_schedule, record.schedule];
+  for (const source of explicitSources) {
+    if (Array.isArray(source) && source.some(looksLikeTimelineEntry)) {
+      return source;
+    }
+  }
+
+  for (const value of Object.values(record)) {
+    if (Array.isArray(value) && value.some(looksLikeTimelineEntry)) {
+      return value;
+    }
+  }
+
+  return [];
 }
 
 function normalizeNoteArray(value: unknown): z.infer<typeof NoteSchema>[] {
@@ -303,13 +333,7 @@ function normalizeRunSheetPayload(raw: unknown, data: RunSheetInput): RunSheet {
 
   const record = envelope as Record<string, unknown>;
   const fallbackNotes = buildFallbackNotes(data);
-  const timelineSource = Array.isArray(record.timeline)
-    ? record.timeline
-    : Array.isArray(record.run_of_show)
-      ? record.run_of_show
-      : Array.isArray(record.production_schedule)
-        ? record.production_schedule
-      : [];
+  const timelineSource = findTimelineSource(record);
 
   const timeline = timelineSource
     .map((entry) => normalizeTimelineEntry(entry))
@@ -323,11 +347,38 @@ function normalizeRunSheetPayload(raw: unknown, data: RunSheetInput): RunSheet {
     record.event_details && typeof record.event_details === "object"
       ? (record.event_details as Record<string, unknown>)
       : undefined;
-  const derivedAvReminders = deriveNotesFromTimeline(timelineSource, ["av_cues"], "AV cue");
-  const derivedBackstage = deriveNotesFromTimeline(timelineSource, ["backstage"], "Backstage");
+  const eventInfo =
+    record.event_info && typeof record.event_info === "object"
+      ? (record.event_info as Record<string, unknown>)
+      : undefined;
+  const derivedAvReminders = deriveNotesFromTimeline(
+    timelineSource,
+    ["av_cues", "technical_notes", "av_backstage"],
+    "AV cue",
+  );
+  const derivedBackstage = deriveNotesFromTimeline(
+    timelineSource,
+    ["backstage", "backstage_cues", "backstage_production", "av_backstage"],
+    "Backstage",
+  );
+  const derivedModerator = deriveNotesFromTimeline(
+    timelineSource,
+    ["moderator_cue", "moderator_cues"],
+    "Moderator cue",
+  );
+  const derivedSponsor = deriveNotesFromTimeline(
+    timelineSource,
+    ["sponsor_visibility"],
+    "Sponsor visibility",
+  );
+  const derivedNetworking = deriveNotesFromTimeline(
+    timelineSource,
+    ["networking_instructions"],
+    "Networking",
+  );
   const derivedProduction = deriveNotesFromTimeline(
     timelineSource,
-    ["production_notes", "notes"],
+    ["production_notes", "notes", "technical_notes"],
     "Production note",
   );
   const derivedContingencies = deriveNotesFromTimeline(
@@ -340,6 +391,9 @@ function normalizeRunSheetPayload(raw: unknown, data: RunSheetInput): RunSheet {
     documentTitle:
       pickString(record.documentTitle) ??
       pickString(eventDetails?.event_name) ??
+      pickString(eventDetails?.title) ??
+      pickString(eventInfo?.event_name) ??
+      pickString(eventInfo?.title) ??
       `Run-of-Show: ${data.eventName}`,
     productionSummary: pickString(record.productionSummary) ?? createFallbackSummary(data),
     timeline,
@@ -355,12 +409,18 @@ function normalizeRunSheetPayload(raw: unknown, data: RunSheetInput): RunSheet {
       : fallbackNotes.backstageCoordination,
     moderatorCues: normalizeNoteArray(record.moderatorCues).length
       ? normalizeNoteArray(record.moderatorCues)
+      : derivedModerator.length
+        ? derivedModerator
       : fallbackNotes.moderatorCues,
     sponsorVisibility: normalizeNoteArray(record.sponsorVisibility).length
       ? normalizeNoteArray(record.sponsorVisibility)
+      : derivedSponsor.length
+        ? derivedSponsor
       : fallbackNotes.sponsorVisibility,
     networkingBreaks: normalizeNoteArray(record.networkingBreaks).length
       ? normalizeNoteArray(record.networkingBreaks)
+      : derivedNetworking.length
+        ? derivedNetworking
       : fallbackNotes.networkingBreaks,
     productionNotes: normalizeNoteArray(record.productionNotes).length
       ? normalizeNoteArray(record.productionNotes)
