@@ -73,6 +73,15 @@ function RunOfShowPage() {
     }
   };
 
+  const autoTriggered = useRef(false);
+  useEffect(() => {
+    if (!runSheet && !loading && !autoTriggered.current) {
+      autoTriggered.current = true;
+      void handleGenerate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const moderationNotes = rows
     .filter((r) => r.moderationNote)
