@@ -29,6 +29,8 @@ export type EventData = {
   templateGuidance?: string;
 };
 
+const uid = () => Math.random().toString(36).slice(2, 9);
+
 
 export const seedEvent: EventData = {
   name: "GCC Healthcare Innovation Summit 2026",
