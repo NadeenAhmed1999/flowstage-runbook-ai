@@ -63,7 +63,9 @@ function RunOfShowPage() {
           })),
           sponsors: event.sponsors.map((s) => ({ name: s.name, placement: s.placement })),
           avRequirements: event.avRequirements,
+          templateGuidance: event.templateGuidance,
         },
+
       });
       setRunSheet(sheet);
     } catch (e) {
