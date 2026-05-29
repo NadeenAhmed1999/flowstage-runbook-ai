@@ -53,7 +53,9 @@ const InputSchema = z.object({
   ),
   sponsors: z.array(z.object({ name: z.string(), placement: z.string() })),
   avRequirements: z.string().max(2000),
+  templateGuidance: z.string().max(2000).optional(),
 });
+
 
 type RunSheetInput = z.infer<typeof InputSchema>;
 
@@ -477,8 +479,9 @@ ${data.sponsors.map((s) => `- ${s.name} — ${s.placement}`).join("\n") || "None
 
 AV REQUIREMENTS:
 ${data.avRequirements || "Standard conference AV"}
-
+${data.templateGuidance ? `\nEVENT-TYPE GUIDANCE (apply throughout the document):\n${data.templateGuidance}\n` : ""}
 Produce the complete document. Make sure the timeline starts 30 minutes before the first session with house open, includes explicit transition blocks between every session, and ends with a closeout block.`;
+
 
     try {
       const { object } = await generateObject({

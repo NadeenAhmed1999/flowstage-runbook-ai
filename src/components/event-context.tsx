@@ -15,6 +15,7 @@ export type Break = { id: string; label: string; startTime: string; durationMin:
 export type Sponsor = { id: string; name: string; placement: string };
 
 export type EventData = {
+
   name: string;
   type: string;
   date: string; // YYYY-MM-DD
@@ -24,9 +25,12 @@ export type EventData = {
   breaks: Break[];
   sponsors: Sponsor[];
   avRequirements: string;
+  /** Optional event-type-specific guidance injected into the AI prompt. */
+  templateGuidance?: string;
 };
 
 const uid = () => Math.random().toString(36).slice(2, 9);
+
 
 export const seedEvent: EventData = {
   name: "GCC Healthcare Innovation Summit 2026",
