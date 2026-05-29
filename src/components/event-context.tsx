@@ -15,7 +15,7 @@ export type Break = { id: string; label: string; startTime: string; durationMin:
 export type Sponsor = { id: string; name: string; placement: string };
 
 export type EventData = {
-export type EventData = {
+
   name: string;
   type: string;
   date: string; // YYYY-MM-DD
