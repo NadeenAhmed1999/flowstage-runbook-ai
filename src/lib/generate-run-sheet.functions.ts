@@ -53,7 +53,9 @@ const InputSchema = z.object({
   ),
   sponsors: z.array(z.object({ name: z.string(), placement: z.string() })),
   avRequirements: z.string().max(2000),
+  templateGuidance: z.string().max(2000).optional(),
 });
+
 
 type RunSheetInput = z.infer<typeof InputSchema>;
 
