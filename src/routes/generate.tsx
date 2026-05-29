@@ -44,13 +44,49 @@ function GeneratePage() {
           </p>
         </div>
       </div>
-
       <form
         className="space-y-10"
         onSubmit={(e) => {
           e.preventDefault();
           navigate({ to: "/run-of-show" });
         }}
+      >
+        {/* Templates */}
+        <Section title="Start from a Template" step="00">
+          <p className="mb-4 text-sm text-muted-foreground">
+            Choose an event type to pre-fill sessions, breaks, sponsor moments, and AV requirements. Templates also give the
+            AI run-sheet generator deeper, event-specific operational context.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {EVENT_TEMPLATES.map((tpl) => {
+              const active = event.templateGuidance === tpl.aiGuidance;
+              return (
+                <button
+                  key={tpl.id}
+                  type="button"
+                  onClick={() => setEvent(applyTemplate(tpl, event.date, newId))}
+                  className={`group text-left rounded-lg border p-4 transition-colors ${
+                    active
+                      ? "border-accent bg-accent/5"
+                      : "border-border bg-surface hover:border-foreground/30"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-navy">{tpl.label}</p>
+                    {active && (
+                      <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-accent">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{tpl.description}</p>
+                </button>
+              );
+            })}
+          </div>
+        </Section>
+
+
       >
         {/* Event basics */}
         <Section title="Event Details" step="01">
