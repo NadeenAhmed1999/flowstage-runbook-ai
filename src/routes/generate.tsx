@@ -87,7 +87,6 @@ function GeneratePage() {
         </Section>
 
 
-      >
         {/* Event basics */}
         <Section title="Event Details" step="01">
           <div className="grid gap-4 md:grid-cols-[2fr_1fr_1fr]">
