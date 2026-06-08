@@ -227,6 +227,17 @@ function RunOfShowPage() {
         </div>
       )}
 
+      {(runSheet || review || reviewLoading || reviewError) && (
+        <div className="mb-6">
+          <SmartReviewPanel
+            review={review}
+            loading={reviewLoading}
+            error={reviewError}
+            onRun={handleReview}
+          />
+        </div>
+      )}
+
       {/* Document */}
       <article className="rounded-sm border border-border bg-background p-8 shadow-sm sm:p-12">
         {/* Header */}
