@@ -132,6 +132,15 @@ function RunOfShowPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const reviewAutoTriggered = useRef(false);
+  useEffect(() => {
+    if (runSheet && !review && !reviewLoading && !reviewAutoTriggered.current) {
+      reviewAutoTriggered.current = true;
+      void handleReview();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runSheet]);
+
 
   const moderationNotes = rows
     .filter((r) => r.moderationNote)
