@@ -5,7 +5,9 @@ import { useEvent } from "@/components/event-context";
 import { buildTimeline } from "@/lib/run-of-show";
 import { TimelineTable } from "@/components/document/timeline-table";
 import { AiRunSheet } from "@/components/document/ai-run-sheet";
+import { SmartReviewPanel } from "@/components/document/smart-review";
 import { generateRunSheet } from "@/lib/generate-run-sheet.functions";
+import { reviewRunSheet, type SmartReview } from "@/lib/smart-review.functions";
 
 export const Route = createFileRoute("/run-of-show")({
   head: () => ({
@@ -29,9 +31,55 @@ export const Route = createFileRoute("/run-of-show")({
 function RunOfShowPage() {
   const { event, runSheet, setRunSheet } = useEvent();
   const generateFn = useServerFn(generateRunSheet);
+  const reviewFn = useServerFn(reviewRunSheet);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [review, setReview] = useState<SmartReview | null>(null);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
   const rows = buildTimeline(event);
+
+  const buildReviewInput = () => ({
+    eventName: event.name,
+    eventType: event.type,
+    eventDate: event.date,
+    sessions: event.sessions.map((s) => ({
+      title: s.title,
+      startTime: s.startTime,
+      durationMin: s.durationMin,
+      description: s.description,
+      speakers: s.speakerIds
+        .map((id) => event.speakers.find((p) => p.id === id))
+        .filter(Boolean)
+        .map((p) => `${p!.name} (${p!.role})`),
+      moderators: s.moderatorIds
+        .map((id) => event.moderators.find((p) => p.id === id))
+        .filter(Boolean)
+        .map((p) => `${p!.name} (${p!.role})`),
+    })),
+    breaks: event.breaks.map((b) => ({
+      label: b.label,
+      startTime: b.startTime,
+      durationMin: b.durationMin,
+    })),
+    sponsors: event.sponsors.map((s) => ({ name: s.name, placement: s.placement })),
+    avRequirements: event.avRequirements,
+    templateGuidance: event.templateGuidance,
+  });
+
+  const handleReview = async () => {
+    setReviewLoading(true);
+    setReviewError(null);
+    try {
+      const result = await reviewFn({ data: buildReviewInput() });
+      setReview(result);
+    } catch (e) {
+      setReviewError(e instanceof Error ? e.message : "Smart Review failed");
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -83,6 +131,15 @@ function RunOfShowPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const reviewAutoTriggered = useRef(false);
+  useEffect(() => {
+    if (runSheet && !review && !reviewLoading && !reviewAutoTriggered.current) {
+      reviewAutoTriggered.current = true;
+      void handleReview();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runSheet]);
 
 
   const moderationNotes = rows
@@ -167,6 +224,17 @@ function RunOfShowPage() {
             <div className="h-2 w-2/3 animate-pulse rounded bg-border" />
             <div className="h-2 w-5/6 animate-pulse rounded bg-border" />
           </div>
+        </div>
+      )}
+
+      {(runSheet || review || reviewLoading || reviewError) && (
+        <div className="mb-6">
+          <SmartReviewPanel
+            review={review}
+            loading={reviewLoading}
+            error={reviewError}
+            onRun={handleReview}
+          />
         </div>
       )}
 
