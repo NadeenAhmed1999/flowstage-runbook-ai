@@ -5,7 +5,9 @@ import { useEvent } from "@/components/event-context";
 import { buildTimeline } from "@/lib/run-of-show";
 import { TimelineTable } from "@/components/document/timeline-table";
 import { AiRunSheet } from "@/components/document/ai-run-sheet";
+import { SmartReviewPanel } from "@/components/document/smart-review";
 import { generateRunSheet } from "@/lib/generate-run-sheet.functions";
+import { reviewRunSheet, type SmartReview } from "@/lib/smart-review.functions";
 
 export const Route = createFileRoute("/run-of-show")({
   head: () => ({
