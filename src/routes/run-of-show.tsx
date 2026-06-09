@@ -35,11 +35,15 @@ function RunOfShowPage() {
   const { event, runSheet, setRunSheet } = useEvent();
   const generateFn = useServerFn(generateRunSheet);
   const reviewFn = useServerFn(reviewRunSheet);
+  const scoreFn = useServerFn(scoreReadiness);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [review, setReview] = useState<SmartReview | null>(null);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
+  const [readiness, setReadiness] = useState<ReadinessReport | null>(null);
+  const [readinessLoading, setReadinessLoading] = useState(false);
+  const [readinessError, setReadinessError] = useState<string | null>(null);
   const rows = buildTimeline(event);
 
   const buildReviewInput = () => ({
