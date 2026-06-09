@@ -6,6 +6,7 @@ import { buildTimeline } from "@/lib/run-of-show";
 import { TimelineTable } from "@/components/document/timeline-table";
 import { AiRunSheet } from "@/components/document/ai-run-sheet";
 import { SmartReviewPanel } from "@/components/document/smart-review";
+import { BriefingCenter } from "@/components/document/briefing-center";
 import { generateRunSheet } from "@/lib/generate-run-sheet.functions";
 import { reviewRunSheet, type SmartReview } from "@/lib/smart-review.functions";
 
@@ -235,6 +236,12 @@ function RunOfShowPage() {
             error={reviewError}
             onRun={handleReview}
           />
+        </div>
+      )}
+
+      {runSheet && (
+        <div className="no-print mb-8">
+          <BriefingCenter event={event} runSheet={runSheet} />
         </div>
       )}
 
