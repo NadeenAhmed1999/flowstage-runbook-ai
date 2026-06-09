@@ -162,6 +162,15 @@ function RunOfShowPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runSheet]);
 
+  const lastScoredSheet = useRef<unknown>(null);
+  useEffect(() => {
+    if (runSheet && lastScoredSheet.current !== runSheet && !readinessLoading) {
+      lastScoredSheet.current = runSheet;
+      void handleScore();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runSheet]);
+
 
   const moderationNotes = rows
     .filter((r) => r.moderationNote)
