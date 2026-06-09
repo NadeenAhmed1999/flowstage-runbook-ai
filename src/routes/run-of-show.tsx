@@ -7,8 +7,10 @@ import { TimelineTable } from "@/components/document/timeline-table";
 import { AiRunSheet } from "@/components/document/ai-run-sheet";
 import { SmartReviewPanel } from "@/components/document/smart-review";
 import { BriefingCenter } from "@/components/document/briefing-center";
+import { ReadinessScorePanel } from "@/components/document/readiness-score";
 import { generateRunSheet } from "@/lib/generate-run-sheet.functions";
 import { reviewRunSheet, type SmartReview } from "@/lib/smart-review.functions";
+import { scoreReadiness, type ReadinessReport } from "@/lib/readiness-score.functions";
 
 export const Route = createFileRoute("/run-of-show")({
   head: () => ({
@@ -33,11 +35,15 @@ function RunOfShowPage() {
   const { event, runSheet, setRunSheet } = useEvent();
   const generateFn = useServerFn(generateRunSheet);
   const reviewFn = useServerFn(reviewRunSheet);
+  const scoreFn = useServerFn(scoreReadiness);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [review, setReview] = useState<SmartReview | null>(null);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
+  const [readiness, setReadiness] = useState<ReadinessReport | null>(null);
+  const [readinessLoading, setReadinessLoading] = useState(false);
+  const [readinessError, setReadinessError] = useState<string | null>(null);
   const rows = buildTimeline(event);
 
   const buildReviewInput = () => ({
@@ -81,6 +87,20 @@ function RunOfShowPage() {
     }
   };
 
+  const handleScore = async () => {
+    setReadinessLoading(true);
+    setReadinessError(null);
+    try {
+      const result = await scoreFn({
+        data: { ...buildReviewInput(), hasRunSheet: Boolean(runSheet) },
+      });
+      setReadiness(result);
+    } catch (e) {
+      setReadinessError(e instanceof Error ? e.message : "Readiness scoring failed");
+    } finally {
+      setReadinessLoading(false);
+    }
+  };
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -138,6 +158,15 @@ function RunOfShowPage() {
     if (runSheet && !review && !reviewLoading && !reviewAutoTriggered.current) {
       reviewAutoTriggered.current = true;
       void handleReview();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runSheet]);
+
+  const lastScoredSheet = useRef<unknown>(null);
+  useEffect(() => {
+    if (runSheet && lastScoredSheet.current !== runSheet && !readinessLoading) {
+      lastScoredSheet.current = runSheet;
+      void handleScore();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runSheet]);
@@ -225,6 +254,17 @@ function RunOfShowPage() {
             <div className="h-2 w-2/3 animate-pulse rounded bg-border" />
             <div className="h-2 w-5/6 animate-pulse rounded bg-border" />
           </div>
+        </div>
+      )}
+
+      {(runSheet || readiness || readinessLoading || readinessError) && (
+        <div className="mb-6">
+          <ReadinessScorePanel
+            report={readiness}
+            loading={readinessLoading}
+            error={readinessError}
+            onRun={handleScore}
+          />
         </div>
       )}
 
