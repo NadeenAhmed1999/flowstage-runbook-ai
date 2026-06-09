@@ -257,6 +257,17 @@ function RunOfShowPage() {
         </div>
       )}
 
+      {(runSheet || readiness || readinessLoading || readinessError) && (
+        <div className="mb-6">
+          <ReadinessScorePanel
+            report={readiness}
+            loading={readinessLoading}
+            error={readinessError}
+            onRun={handleScore}
+          />
+        </div>
+      )}
+
       {(runSheet || review || reviewLoading || reviewError) && (
         <div className="mb-6">
           <SmartReviewPanel
