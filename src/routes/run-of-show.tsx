@@ -239,6 +239,12 @@ function RunOfShowPage() {
         </div>
       )}
 
+      {runSheet && (
+        <div className="no-print mb-8">
+          <BriefingCenter event={event} runSheet={runSheet} />
+        </div>
+      )}
+
       {/* Document */}
       <article className="rounded-sm border border-border bg-background p-8 shadow-sm sm:p-12">
         {/* Header */}
