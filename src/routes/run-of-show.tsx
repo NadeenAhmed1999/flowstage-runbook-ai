@@ -87,6 +87,20 @@ function RunOfShowPage() {
     }
   };
 
+  const handleScore = async () => {
+    setReadinessLoading(true);
+    setReadinessError(null);
+    try {
+      const result = await scoreFn({
+        data: { ...buildReviewInput(), hasRunSheet: Boolean(runSheet) },
+      });
+      setReadiness(result);
+    } catch (e) {
+      setReadinessError(e instanceof Error ? e.message : "Readiness scoring failed");
+    } finally {
+      setReadinessLoading(false);
+    }
+  };
 
   const handleGenerate = async () => {
     setLoading(true);
