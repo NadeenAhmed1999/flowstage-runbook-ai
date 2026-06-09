@@ -7,8 +7,10 @@ import { TimelineTable } from "@/components/document/timeline-table";
 import { AiRunSheet } from "@/components/document/ai-run-sheet";
 import { SmartReviewPanel } from "@/components/document/smart-review";
 import { BriefingCenter } from "@/components/document/briefing-center";
+import { ReadinessScorePanel } from "@/components/document/readiness-score";
 import { generateRunSheet } from "@/lib/generate-run-sheet.functions";
 import { reviewRunSheet, type SmartReview } from "@/lib/smart-review.functions";
+import { scoreReadiness, type ReadinessReport } from "@/lib/readiness-score.functions";
 
 export const Route = createFileRoute("/run-of-show")({
   head: () => ({
