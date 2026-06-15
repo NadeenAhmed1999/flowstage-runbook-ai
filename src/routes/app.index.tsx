@@ -70,17 +70,21 @@ function Overview() {
 
           {/* KPI strip */}
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {stats.map((s) => {
+            {stats.map((s, i) => {
               const Icon = s.icon;
               return (
-                <div key={s.label} className="rounded-lg border border-border bg-background p-4">
+                <div
+                  key={s.label}
+                  className="lift rounded-lg border border-border bg-background p-4 animate-fade-in"
+                  style={{ animationDelay: `${i * 60}ms` }}
+                >
                   <div className="flex items-center justify-between">
                     <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                       {s.label}
                     </p>
                     <Icon className="h-3.5 w-3.5 text-muted-foreground" />
                   </div>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-navy">{s.value}</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight tabular text-navy">{s.value}</p>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">{s.delta}</p>
                 </div>
               );
