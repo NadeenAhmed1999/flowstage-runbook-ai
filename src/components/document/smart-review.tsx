@@ -150,7 +150,7 @@ function FindingRow({ finding }: { finding: SmartReviewFinding }) {
   const Icon = meta.icon;
 
   return (
-    <li className="overflow-hidden rounded-md border border-border bg-surface">
+    <li className="lift overflow-hidden rounded-md border border-border bg-surface">
       <div className="flex">
         <div className={cn("w-1 shrink-0", meta.bar)} />
         <div className="flex-1">
