@@ -17,17 +17,21 @@ export function Hero() {
       <div className="mt-10 flex items-center justify-center gap-4">
         <Link
           to="/generate"
-          className="rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground shadow-sm hover:bg-accent/90 transition-colors"
+          className="group inline-flex items-center gap-1.5 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground shadow-sm transition-all duration-200 hover:bg-accent/90 hover:shadow-md hover:-translate-y-px active:translate-y-0"
         >
           Start Building
+          <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
         </Link>
         <Link
           to="/run-of-show"
-          className="rounded-md bg-background px-5 py-2.5 text-sm font-semibold text-navy ring-1 ring-inset ring-border hover:bg-surface transition-colors"
+          className="rounded-md bg-background px-5 py-2.5 text-sm font-semibold text-navy ring-1 ring-inset ring-border transition-all duration-200 hover:bg-surface hover:ring-accent/30"
         >
           View Sample Document
         </Link>
       </div>
+      <p className="mt-12 font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+        Trusted by conference organizers · event agencies · healthcare congress teams
+      </p>
     </header>
   );
 }
