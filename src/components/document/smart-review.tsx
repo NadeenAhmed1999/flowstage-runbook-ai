@@ -49,7 +49,7 @@ export function SmartReviewPanel({ review, loading, error, onRun }: Props) {
     : { high: 0, medium: 0, low: 0 };
 
   return (
-    <section className="rounded-sm border border-border bg-background">
+    <section className="rounded-sm border border-border bg-background animate-fade-in">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-md bg-accent/10 text-accent">
@@ -99,9 +99,9 @@ export function SmartReviewPanel({ review, loading, error, onRun }: Props) {
 
         {loading && !review && (
           <div className="space-y-2">
-            <div className="h-3 w-2/3 animate-pulse rounded bg-border" />
-            <div className="h-3 w-1/2 animate-pulse rounded bg-border" />
-            <div className="h-3 w-3/4 animate-pulse rounded bg-border" />
+            <div className="shimmer h-3 w-2/3" />
+            <div className="shimmer h-3 w-1/2" />
+            <div className="shimmer h-3 w-3/4" />
           </div>
         )}
 
@@ -150,7 +150,7 @@ function FindingRow({ finding }: { finding: SmartReviewFinding }) {
   const Icon = meta.icon;
 
   return (
-    <li className="overflow-hidden rounded-md border border-border bg-surface">
+    <li className="lift overflow-hidden rounded-md border border-border bg-surface">
       <div className="flex">
         <div className={cn("w-1 shrink-0", meta.bar)} />
         <div className="flex-1">

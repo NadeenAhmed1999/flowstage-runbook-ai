@@ -203,7 +203,7 @@ function RunOfShowPage() {
         <div className="flex items-center gap-3">
           <Link
             to="/generate"
-            className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-surface"
+            className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-accent/30 hover:bg-surface"
           >
             ← Back to edit
           </Link>
@@ -211,7 +211,7 @@ function RunOfShowPage() {
             type="button"
             onClick={handleGenerate}
             disabled={loading}
-            className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition-colors hover:bg-accent/90 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm transition-all hover:bg-accent/90 hover:shadow-md hover:-translate-y-px active:translate-y-0 disabled:opacity-60 disabled:hover:translate-y-0"
           >
             {loading ? (
               <>
@@ -225,21 +225,21 @@ function RunOfShowPage() {
           <button
             type="button"
             onClick={() => window.print()}
-            className="rounded-md bg-navy px-4 py-2 text-sm font-medium text-navy-foreground hover:bg-navy/90"
+            className="inline-flex items-center gap-1.5 rounded-md bg-navy px-4 py-2 text-sm font-medium text-navy-foreground transition-all hover:bg-navy/90 hover:shadow-md"
           >
-            Print / Export PDF
+            <span>Export PDF</span>
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="no-print mb-6 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+        <div className="no-print mb-6 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive animate-fade-in">
           {error}
         </div>
       )}
 
       {loading && !runSheet && (
-        <div className="no-print mb-6 space-y-3 rounded-sm border border-border bg-surface p-6">
+        <div className="no-print mb-6 space-y-3 rounded-sm border border-border bg-surface p-6 animate-fade-in">
           <div className="flex items-center gap-3">
             <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
             <p className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-accent">
@@ -250,9 +250,9 @@ function RunOfShowPage() {
             Calling cues, sequencing transitions, drafting backstage notes…
           </p>
           <div className="space-y-2">
-            <div className="h-2 w-3/4 animate-pulse rounded bg-border" />
-            <div className="h-2 w-2/3 animate-pulse rounded bg-border" />
-            <div className="h-2 w-5/6 animate-pulse rounded bg-border" />
+            <div className="shimmer h-2 w-3/4" />
+            <div className="shimmer h-2 w-2/3" />
+            <div className="shimmer h-2 w-5/6" />
           </div>
         </div>
       )}

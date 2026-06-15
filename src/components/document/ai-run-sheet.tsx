@@ -30,7 +30,7 @@ export function AiRunSheet({ sheet }: { sheet: RunSheet }) {
             return (
               <li
                 key={i}
-                className="grid grid-cols-[88px_120px_1fr] gap-4 border-b border-border bg-background px-4 py-4 first:border-t hover:bg-surface/50"
+                className="grid grid-cols-[88px_120px_1fr] gap-4 border-b border-border bg-background px-4 py-4 first:border-t transition-colors hover:bg-accent/[0.03]"
               >
                 <div>
                   <p className="font-mono text-sm font-semibold text-navy">{b.time}</p>
@@ -160,7 +160,7 @@ function NotesPanel({
   if (items.length === 0) return null;
   const dotCls = tone === "accent" ? "bg-accent" : "bg-navy";
   return (
-    <section className="rounded-sm border border-border bg-background">
+    <section className="lift rounded-sm border border-border bg-background">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}

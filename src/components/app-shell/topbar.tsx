@@ -14,17 +14,18 @@ export function AppTopbar({ title, subtitle, breadcrumb }: { title: string; subt
         {subtitle && <p className="hidden text-xs text-muted-foreground md:block">{subtitle}</p>}
       </div>
       <div className="flex items-center gap-2">
-        <div className="hidden items-center gap-2 rounded-md border border-border bg-surface px-2.5 py-1.5 text-xs text-muted-foreground md:flex">
+        <div className="hidden items-center gap-2 rounded-md border border-border bg-surface px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:border-accent/30 hover:text-foreground md:flex">
           <Search className="h-3.5 w-3.5" />
           <span>Search events, talent, cues…</span>
           <kbd className="ml-2 rounded border border-border bg-background px-1.5 py-0.5 font-mono text-[10px]">⌘K</kbd>
         </div>
-        <button className="rounded-md border border-border bg-background p-2 text-muted-foreground hover:text-foreground">
+        <button className="relative rounded-md border border-border bg-background p-2 text-muted-foreground transition-colors hover:border-accent/30 hover:text-foreground">
           <Bell className="h-4 w-4" />
+          <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-accent" />
         </button>
         <Link
           to="/generate"
-          className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground shadow-sm hover:bg-accent/90"
+          className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground shadow-sm transition-all hover:bg-accent/90 hover:shadow-md hover:-translate-y-px active:translate-y-0"
         >
           <Plus className="h-3.5 w-3.5" /> New event
         </Link>

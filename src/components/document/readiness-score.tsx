@@ -53,7 +53,7 @@ export function ReadinessScorePanel({
   onRun: () => void;
 }) {
   return (
-    <section className="rounded-sm border border-border bg-background">
+    <section className="rounded-sm border border-border bg-background animate-fade-in">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
         <div className="flex items-center gap-2">
           <Gauge className="h-4 w-4 text-accent" />
@@ -210,7 +210,7 @@ function CategoryCard({ category }: { category: ReadinessCategory }) {
   const meta = STATUS_META[category.status];
   const pct = Math.round(category.score);
   return (
-    <div className="rounded-md border border-border bg-background p-3">
+    <div className="lift rounded-md border border-border bg-background p-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-semibold text-foreground">{category.label}</p>
         <span className={`font-mono text-xs font-bold ${meta.tone}`}>{pct}%</span>
@@ -259,10 +259,10 @@ function CategoryCard({ category }: { category: ReadinessCategory }) {
 function ScoreSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="h-32 animate-pulse rounded-md bg-surface" />
+      <div className="shimmer h-32 rounded-md" />
       <div className="grid gap-3 sm:grid-cols-2">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="h-24 animate-pulse rounded-md bg-surface" />
+          <div key={i} className="shimmer h-24 rounded-md" />
         ))}
       </div>
     </div>

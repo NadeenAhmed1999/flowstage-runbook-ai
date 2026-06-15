@@ -70,17 +70,21 @@ function Overview() {
 
           {/* KPI strip */}
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {stats.map((s) => {
+            {stats.map((s, i) => {
               const Icon = s.icon;
               return (
-                <div key={s.label} className="rounded-lg border border-border bg-background p-4">
+                <div
+                  key={s.label}
+                  className="lift rounded-lg border border-border bg-background p-4 animate-fade-in"
+                  style={{ animationDelay: `${i * 60}ms` }}
+                >
                   <div className="flex items-center justify-between">
                     <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                       {s.label}
                     </p>
                     <Icon className="h-3.5 w-3.5 text-muted-foreground" />
                   </div>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-navy">{s.value}</p>
+                  <p className="mt-2 text-2xl font-semibold tracking-tight tabular text-navy">{s.value}</p>
                   <p className="mt-0.5 text-[11px] text-muted-foreground">{s.delta}</p>
                 </div>
               );
@@ -316,8 +320,8 @@ function Overview() {
 
 function ExportButton({ icon: Icon, label }: { icon: typeof Download; label: string }) {
   return (
-    <button className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-surface">
-      <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+    <button className="group inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition-all hover:border-accent/40 hover:bg-surface hover:shadow-sm active:scale-[0.98]">
+      <Icon className="h-3.5 w-3.5 text-muted-foreground transition-colors group-hover:text-accent" />
       {label}
     </button>
   );
@@ -394,7 +398,7 @@ function EventCard({ event }: { event: (typeof events)[number] }) {
   return (
     <Link
       to="/app/events"
-      className="group flex flex-col rounded-lg border border-border bg-background p-4 transition-colors hover:border-accent/40"
+      className="lift group flex flex-col rounded-lg border border-border bg-background p-4"
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
@@ -503,12 +507,17 @@ function SystemTile({
   const dot =
     status === "ok" ? "bg-emerald-500" : status === "warn" ? "bg-amber-500" : "bg-destructive";
   return (
-    <div className="flex items-center gap-3 rounded-md border border-border bg-surface px-3 py-2.5">
+    <div className="lift flex items-center gap-3 rounded-md border border-border bg-surface px-3 py-2.5">
       <Icon className="h-4 w-4 text-muted-foreground" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className="text-xs font-semibold text-foreground">{label}</p>
-          <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
+          <span className="relative flex h-1.5 w-1.5">
+            {status !== "ok" && (
+              <span className={`absolute inline-flex h-full w-full rounded-full opacity-60 ${dot} animate-ping`} />
+            )}
+            <span className={`relative inline-flex h-1.5 w-1.5 rounded-full ${dot}`} />
+          </span>
         </div>
         <p className="truncate text-[10px] text-muted-foreground">{detail}</p>
       </div>
