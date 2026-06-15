@@ -270,7 +270,7 @@ function LoadingShimmer() {
 
 function BriefingView({ brief }: { brief: Briefing }) {
   return (
-    <article className="space-y-8">
+    <article className="space-y-8 animate-fade-in">
       <header className="border-b border-border pb-5">
         <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-accent">
           {brief.recipient}
