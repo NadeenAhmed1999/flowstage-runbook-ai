@@ -53,7 +53,7 @@ export function ReadinessScorePanel({
   onRun: () => void;
 }) {
   return (
-    <section className="rounded-sm border border-border bg-background">
+    <section className="rounded-sm border border-border bg-background animate-fade-in">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
         <div className="flex items-center gap-2">
           <Gauge className="h-4 w-4 text-accent" />
