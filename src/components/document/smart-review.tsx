@@ -49,7 +49,7 @@ export function SmartReviewPanel({ review, loading, error, onRun }: Props) {
     : { high: 0, medium: 0, low: 0 };
 
   return (
-    <section className="rounded-sm border border-border bg-background">
+    <section className="rounded-sm border border-border bg-background animate-fade-in">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-md bg-accent/10 text-accent">
