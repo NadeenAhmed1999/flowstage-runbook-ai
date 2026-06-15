@@ -259,11 +259,11 @@ function EmptyState({ channel, onRun }: { channel: Channel; onRun: () => void })
 function LoadingShimmer() {
   return (
     <div className="space-y-3">
-      <div className="h-3 w-1/2 animate-pulse rounded bg-border" />
-      <div className="h-2 w-3/4 animate-pulse rounded bg-border" />
-      <div className="h-2 w-2/3 animate-pulse rounded bg-border" />
-      <div className="mt-6 h-2 w-5/6 animate-pulse rounded bg-border" />
-      <div className="h-2 w-4/6 animate-pulse rounded bg-border" />
+      <div className="shimmer h-3 w-1/2" />
+      <div className="shimmer h-2 w-3/4" />
+      <div className="shimmer h-2 w-2/3" />
+      <div className="mt-6 shimmer h-2 w-5/6" />
+      <div className="shimmer h-2 w-4/6" />
     </div>
   );
 }
