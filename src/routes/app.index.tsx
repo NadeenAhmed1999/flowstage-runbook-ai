@@ -320,8 +320,8 @@ function Overview() {
 
 function ExportButton({ icon: Icon, label }: { icon: typeof Download; label: string }) {
   return (
-    <button className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-surface">
-      <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+    <button className="group inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition-all hover:border-accent/40 hover:bg-surface hover:shadow-sm active:scale-[0.98]">
+      <Icon className="h-3.5 w-3.5 text-muted-foreground transition-colors group-hover:text-accent" />
       {label}
     </button>
   );
