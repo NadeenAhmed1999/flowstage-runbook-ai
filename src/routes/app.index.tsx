@@ -507,12 +507,17 @@ function SystemTile({
   const dot =
     status === "ok" ? "bg-emerald-500" : status === "warn" ? "bg-amber-500" : "bg-destructive";
   return (
-    <div className="flex items-center gap-3 rounded-md border border-border bg-surface px-3 py-2.5">
+    <div className="lift flex items-center gap-3 rounded-md border border-border bg-surface px-3 py-2.5">
       <Icon className="h-4 w-4 text-muted-foreground" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className="text-xs font-semibold text-foreground">{label}</p>
-          <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
+          <span className="relative flex h-1.5 w-1.5">
+            {status !== "ok" && (
+              <span className={`absolute inline-flex h-full w-full rounded-full opacity-60 ${dot} animate-ping`} />
+            )}
+            <span className={`relative inline-flex h-1.5 w-1.5 rounded-full ${dot}`} />
+          </span>
         </div>
         <p className="truncate text-[10px] text-muted-foreground">{detail}</p>
       </div>
