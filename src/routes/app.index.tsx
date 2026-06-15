@@ -398,7 +398,7 @@ function EventCard({ event }: { event: (typeof events)[number] }) {
   return (
     <Link
       to="/app/events"
-      className="group flex flex-col rounded-lg border border-border bg-background p-4 transition-colors hover:border-accent/40"
+      className="lift group flex flex-col rounded-lg border border-border bg-background p-4"
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
