@@ -99,9 +99,9 @@ export function SmartReviewPanel({ review, loading, error, onRun }: Props) {
 
         {loading && !review && (
           <div className="space-y-2">
-            <div className="h-3 w-2/3 animate-pulse rounded bg-border" />
-            <div className="h-3 w-1/2 animate-pulse rounded bg-border" />
-            <div className="h-3 w-3/4 animate-pulse rounded bg-border" />
+            <div className="shimmer h-3 w-2/3" />
+            <div className="shimmer h-3 w-1/2" />
+            <div className="shimmer h-3 w-3/4" />
           </div>
         )}
 
