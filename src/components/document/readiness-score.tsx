@@ -210,7 +210,7 @@ function CategoryCard({ category }: { category: ReadinessCategory }) {
   const meta = STATUS_META[category.status];
   const pct = Math.round(category.score);
   return (
-    <div className="rounded-md border border-border bg-background p-3">
+    <div className="lift rounded-md border border-border bg-background p-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-semibold text-foreground">{category.label}</p>
         <span className={`font-mono text-xs font-bold ${meta.tone}`}>{pct}%</span>
