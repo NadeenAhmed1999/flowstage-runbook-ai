@@ -259,10 +259,10 @@ function CategoryCard({ category }: { category: ReadinessCategory }) {
 function ScoreSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="h-32 animate-pulse rounded-md bg-surface" />
+      <div className="shimmer h-32 rounded-md" />
       <div className="grid gap-3 sm:grid-cols-2">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="h-24 animate-pulse rounded-md bg-surface" />
+          <div key={i} className="shimmer h-24 rounded-md" />
         ))}
       </div>
     </div>
