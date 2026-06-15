@@ -41,13 +41,16 @@ export function AppSidebar() {
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors ${
+                className={`group relative flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-all duration-150 ${
                   active
                     ? "bg-background text-navy shadow-sm ring-1 ring-border"
-                    : "text-muted-foreground hover:bg-background/60 hover:text-foreground"
+                    : "text-muted-foreground hover:translate-x-0.5 hover:bg-background/60 hover:text-foreground"
                 }`}
               >
-                <Icon className="h-4 w-4" />
+                {active && (
+                  <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-r-full bg-accent" />
+                )}
+                <Icon className={`h-4 w-4 transition-colors ${active ? "text-accent" : "group-hover:text-foreground"}`} />
                 <span className="font-medium">{item.label}</span>
               </Link>
             );
