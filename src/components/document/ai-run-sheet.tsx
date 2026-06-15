@@ -160,7 +160,7 @@ function NotesPanel({
   if (items.length === 0) return null;
   const dotCls = tone === "accent" ? "bg-accent" : "bg-navy";
   return (
-    <section className="rounded-sm border border-border bg-background">
+    <section className="lift rounded-sm border border-border bg-background">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
