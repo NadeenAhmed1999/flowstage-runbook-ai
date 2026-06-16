@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RunOfShowRouteImport } from './routes/run-of-show'
 import { Route as GenerateRouteImport } from './routes/generate'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
@@ -28,6 +29,11 @@ const RunOfShowRoute = RunOfShowRouteImport.update({
 const GenerateRoute = GenerateRouteImport.update({
   id: '/generate',
   path: '/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -74,6 +80,7 @@ const AppActivityRoute = AppActivityRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/demo': typeof DemoRoute
   '/generate': typeof GenerateRoute
   '/run-of-show': typeof RunOfShowRoute
   '/app/activity': typeof AppActivityRoute
@@ -85,6 +92,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/demo': typeof DemoRoute
   '/generate': typeof GenerateRoute
   '/run-of-show': typeof RunOfShowRoute
   '/app/activity': typeof AppActivityRoute
@@ -98,6 +106,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/demo': typeof DemoRoute
   '/generate': typeof GenerateRoute
   '/run-of-show': typeof RunOfShowRoute
   '/app/activity': typeof AppActivityRoute
@@ -112,6 +121,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
+    | '/demo'
     | '/generate'
     | '/run-of-show'
     | '/app/activity'
@@ -123,6 +133,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/demo'
     | '/generate'
     | '/run-of-show'
     | '/app/activity'
@@ -135,6 +146,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/app'
+    | '/demo'
     | '/generate'
     | '/run-of-show'
     | '/app/activity'
@@ -148,6 +160,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  DemoRoute: typeof DemoRoute
   GenerateRoute: typeof GenerateRoute
   RunOfShowRoute: typeof RunOfShowRoute
 }
@@ -166,6 +179,13 @@ declare module '@tanstack/react-router' {
       path: '/generate'
       fullPath: '/generate'
       preLoaderRoute: typeof GenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app': {
@@ -250,6 +270,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  DemoRoute: DemoRoute,
   GenerateRoute: GenerateRoute,
   RunOfShowRoute: RunOfShowRoute,
 }
