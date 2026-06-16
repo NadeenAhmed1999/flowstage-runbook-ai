@@ -14,13 +14,20 @@ export function Hero() {
         FlowStage is the AI engine for generating professional, timecoded run-of-show documents.
         Built for stage managers, broadcast producers, and event leads.
       </p>
-      <div className="mt-10 flex items-center justify-center gap-4">
+      <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
         <Link
           to="/generate"
           className="group inline-flex items-center gap-1.5 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground shadow-sm transition-all duration-200 hover:bg-accent/90 hover:shadow-md hover:-translate-y-px active:translate-y-0"
         >
           Start Building
           <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+        </Link>
+        <Link
+          to="/demo"
+          className="group inline-flex items-center gap-2 rounded-md bg-navy px-5 py-2.5 text-sm font-semibold text-navy-foreground shadow-sm transition-all duration-200 hover:bg-navy/90 hover:shadow-md hover:-translate-y-px"
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+          View Demo Event
         </Link>
         <Link
           to="/run-of-show"
