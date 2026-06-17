@@ -12,6 +12,7 @@ export function SiteNav() {
             <Link to="/" className="hover:text-foreground transition-colors">Platform</Link>
             <Link to="/app" className="hover:text-foreground transition-colors">Dashboard</Link>
             <Link to="/run-of-show" className="hover:text-foreground transition-colors">Showcase</Link>
+            <Link to="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
             <a href="#" className="hover:text-foreground transition-colors">Documentation</a>
           </div>
         </div>
