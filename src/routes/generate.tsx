@@ -358,7 +358,14 @@ function GeneratePage() {
         >
           <div className="space-y-3">
             {event.breaks.map((b, i) => (
-              <div key={b.id} className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_auto]">
+              <div
+                key={b.id}
+                className={`grid gap-3 ${
+                  multiDay
+                    ? "md:grid-cols-[2fr_1fr_1fr_1fr_auto]"
+                    : "md:grid-cols-[2fr_1fr_1fr_auto]"
+                }`}
+              >
                 <input
                   className={inputCls}
                   value={b.label}
@@ -385,6 +392,15 @@ function GeneratePage() {
                   onChange={(e) => {
                     const next = [...event.breaks];
                     next[i] = { ...b, durationMin: Number(e.target.value) };
+                    update("breaks", next);
+                  }}
+                />
+                <DayPicker
+                  value={b.day}
+                  dayCount={dayCount}
+                  onChange={(day) => {
+                    const next = [...event.breaks];
+                    next[i] = { ...b, day };
                     update("breaks", next);
                   }}
                 />
