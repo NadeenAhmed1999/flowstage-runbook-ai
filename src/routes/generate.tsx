@@ -65,6 +65,9 @@ function GeneratePage() {
   const update = <K extends keyof typeof event>(k: K, v: (typeof event)[K]) =>
     setEvent({ ...event, [k]: v });
 
+  const dayCount = computeDayCount(event.date, event.endDate);
+  const multiDay = dayCount > 1;
+
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
       <div className="mb-10 flex items-end justify-between gap-6">
