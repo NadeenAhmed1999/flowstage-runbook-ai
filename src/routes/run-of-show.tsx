@@ -111,11 +111,13 @@ function RunOfShowPage() {
           eventName: event.name,
           eventType: event.type,
           eventDate: event.date,
+          eventEndDate: event.endDate,
           sessions: event.sessions.map((s) => ({
             title: s.title,
             startTime: s.startTime,
             durationMin: s.durationMin,
             description: s.description,
+            day: s.day,
             speakers: s.speakerIds
               .map((id) => event.speakers.find((p) => p.id === id))
               .filter(Boolean)
@@ -129,6 +131,7 @@ function RunOfShowPage() {
             label: b.label,
             startTime: b.startTime,
             durationMin: b.durationMin,
+            day: b.day,
           })),
           sponsors: event.sponsors.map((s) => ({ name: s.name, placement: s.placement })),
           avRequirements: event.avRequirements,
