@@ -89,7 +89,7 @@ function GeneratePage() {
 
         {/* Event basics */}
         <Section title="Event Details" step="01">
-          <div className="grid gap-4 md:grid-cols-[2fr_1fr_1fr]">
+          <div className="grid gap-4 md:grid-cols-[2fr_1fr_1fr_1fr]">
             <Field label="Event Name">
               <input
                 className={inputCls}
@@ -110,16 +110,47 @@ function GeneratePage() {
                 ))}
               </select>
             </Field>
-            <Field label="Date">
+            <Field label="Start Date">
               <input
                 type="date"
                 className={inputCls}
                 value={event.date}
-                onChange={(e) => update("date", e.target.value)}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setEvent({
+                    ...event,
+                    date: next,
+                    // Keep endDate >= date
+                    endDate:
+                      event.endDate && event.endDate < next ? next : event.endDate,
+                  });
+                }}
+              />
+            </Field>
+            <Field label="End Date (optional)">
+              <input
+                type="date"
+                className={inputCls}
+                min={event.date || undefined}
+                value={event.endDate ?? ""}
+                onChange={(e) =>
+                  update("endDate", e.target.value ? e.target.value : undefined)
+                }
               />
             </Field>
           </div>
+          {(() => {
+            const dayCount = computeDayCount(event.date, event.endDate);
+            if (dayCount <= 1) return null;
+            return (
+              <p className="mt-3 text-xs text-muted-foreground">
+                Multi-day event detected ({dayCount} days). Assign each session and break to a
+                specific day below.
+              </p>
+            );
+          })()}
         </Section>
+
 
         {/* Sessions */}
         <Section
