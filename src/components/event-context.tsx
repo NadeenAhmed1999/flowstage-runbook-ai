@@ -8,17 +8,28 @@ export type Session = {
   description: string;
   speakerIds: string[];
   moderatorIds: string[];
+  /** 1-based day index within a multi-day event. Defaults to 1. */
+  day?: number;
 };
 
 export type Person = { id: string; name: string; role: string };
-export type Break = { id: string; label: string; startTime: string; durationMin: number };
+export type Break = {
+  id: string;
+  label: string;
+  startTime: string;
+  durationMin: number;
+  /** 1-based day index within a multi-day event. Defaults to 1. */
+  day?: number;
+};
 export type Sponsor = { id: string; name: string; placement: string };
 
 export type EventData = {
 
   name: string;
   type: string;
-  date: string; // YYYY-MM-DD
+  date: string; // YYYY-MM-DD — first/only day
+  /** Optional end date (YYYY-MM-DD) for multi-day events. */
+  endDate?: string;
   sessions: Session[];
   speakers: Person[];
   moderators: Person[];

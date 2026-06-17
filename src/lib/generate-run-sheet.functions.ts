@@ -38,6 +38,7 @@ const InputSchema = z.object({
   eventName: z.string().min(1).max(200),
   eventType: z.string().max(100),
   eventDate: z.string().max(50),
+  eventEndDate: z.string().max(50).optional(),
   sessions: z.array(
     z.object({
       title: z.string(),
@@ -46,10 +47,16 @@ const InputSchema = z.object({
       description: z.string().optional(),
       speakers: z.array(z.string()),
       moderators: z.array(z.string()),
+      day: z.number().int().min(1).optional(),
     }),
   ),
   breaks: z.array(
-    z.object({ label: z.string(), startTime: z.string(), durationMin: z.number() }),
+    z.object({
+      label: z.string(),
+      startTime: z.string(),
+      durationMin: z.number(),
+      day: z.number().int().min(1).optional(),
+    }),
   ),
   sponsors: z.array(z.object({ name: z.string(), placement: z.string() })),
   avRequirements: z.string().max(2000),
@@ -454,25 +461,54 @@ Build a detailed minute-by-minute timeline that includes house opens, walk-in, o
 
 Cues should be short, uppercase, operational. Notes should sound like a working professional wrote them - not marketing copy.`;
 
+    const isMultiDay = Boolean(data.eventEndDate && data.eventEndDate !== data.eventDate);
+    const dayCount = isMultiDay
+      ? Math.max(
+          1,
+          ...data.sessions.map((s) => s.day ?? 1),
+          ...data.breaks.map((b) => b.day ?? 1),
+        )
+      : 1;
+
+    const sessionsByDay = Array.from({ length: dayCount }, (_, i) => i + 1)
+      .map((d) => {
+        const lines =
+          data.sessions
+            .filter((s) => (s.day ?? 1) === d)
+            .map(
+              (s) =>
+                `- ${s.startTime} (${s.durationMin}min) ${s.title}
+  Speakers: ${s.speakers.join(", ") || "—"}
+  Moderators: ${s.moderators.join(", ") || "—"}
+  ${s.description ?? ""}`,
+            )
+            .join("\n") || "- (no sessions)";
+        return isMultiDay ? `\n=== DAY ${d} ===\n${lines}` : lines;
+      })
+      .join("\n");
+
+    const breaksByDay = Array.from({ length: dayCount }, (_, i) => i + 1)
+      .map((d) => {
+        const lines =
+          data.breaks
+            .filter((b) => (b.day ?? 1) === d)
+            .map((b) => `- ${b.startTime} (${b.durationMin}min) ${b.label}`)
+            .join("\n") || "- None";
+        return isMultiDay ? `\n=== DAY ${d} ===\n${lines}` : lines;
+      })
+      .join("\n");
+
     const prompt = `Generate a production-ready run-of-show document for the following event:
 
 EVENT: ${data.eventName}
 TYPE: ${data.eventType}
-DATE: ${data.eventDate}
+DATE: ${data.eventDate}${isMultiDay ? ` → ${data.eventEndDate} (${dayCount}-day program)` : ""}
 
 SESSIONS:
-${data.sessions
-  .map(
-    (s) =>
-      `- ${s.startTime} (${s.durationMin}min) ${s.title}
-  Speakers: ${s.speakers.join(", ") || "—"}
-  Moderators: ${s.moderators.join(", ") || "—"}
-  ${s.description ?? ""}`,
-  )
-  .join("\n")}
+${sessionsByDay}
 
 BREAKS:
-${data.breaks.map((b) => `- ${b.startTime} (${b.durationMin}min) ${b.label}`).join("\n") || "None"}
+${breaksByDay}
 
 SPONSORS:
 ${data.sponsors.map((s) => `- ${s.name} — ${s.placement}`).join("\n") || "None"}
@@ -480,7 +516,11 @@ ${data.sponsors.map((s) => `- ${s.name} — ${s.placement}`).join("\n") || "None
 AV REQUIREMENTS:
 ${data.avRequirements || "Standard conference AV"}
 ${data.templateGuidance ? `\nEVENT-TYPE GUIDANCE (apply throughout the document):\n${data.templateGuidance}\n` : ""}
-Produce the complete document. Make sure the timeline starts 30 minutes before the first session with house open, includes explicit transition blocks between every session, and ends with a closeout block.`;
+Produce the complete document. ${
+      isMultiDay
+        ? `This is a ${dayCount}-day program. Build the timeline day-by-day with a clear "DAY 1", "DAY 2"… header before each day's blocks. Each day starts 30 minutes before its first session with house open, includes explicit transition blocks between every session, and ends with a wrap/closeout for that day. Add an end-of-day reset / overnight handoff note where appropriate.`
+        : `Make sure the timeline starts 30 minutes before the first session with house open, includes explicit transition blocks between every session, and ends with a closeout block.`
+    }`;
 
 
     try {
