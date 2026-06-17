@@ -23,6 +23,41 @@ const labelCls = "text-[11px] font-semibold uppercase tracking-wider text-muted-
 const inputCls =
   "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
 
+function computeDayCount(start: string, end?: string): number {
+  if (!start || !end) return 1;
+  const s = new Date(start);
+  const e = new Date(end);
+  if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) return 1;
+  const diff = Math.round((e.getTime() - s.getTime()) / 86_400_000);
+  return Math.max(1, diff + 1);
+}
+
+function DayPicker({
+  value,
+  dayCount,
+  onChange,
+}: {
+  value: number | undefined;
+  dayCount: number;
+  onChange: (day: number) => void;
+}) {
+  if (dayCount <= 1) return null;
+  return (
+    <select
+      className={inputCls}
+      value={value ?? 1}
+      onChange={(e) => onChange(Number(e.target.value))}
+      aria-label="Day"
+    >
+      {Array.from({ length: dayCount }, (_, i) => i + 1).map((d) => (
+        <option key={d} value={d}>
+          Day {d}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 function GeneratePage() {
   const { event, setEvent, newId } = useEvent();
   const navigate = useNavigate();
