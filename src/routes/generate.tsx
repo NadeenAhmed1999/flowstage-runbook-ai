@@ -23,12 +23,50 @@ const labelCls = "text-[11px] font-semibold uppercase tracking-wider text-muted-
 const inputCls =
   "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
 
+function computeDayCount(start: string, end?: string): number {
+  if (!start || !end) return 1;
+  const s = new Date(start);
+  const e = new Date(end);
+  if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) return 1;
+  const diff = Math.round((e.getTime() - s.getTime()) / 86_400_000);
+  return Math.max(1, diff + 1);
+}
+
+function DayPicker({
+  value,
+  dayCount,
+  onChange,
+}: {
+  value: number | undefined;
+  dayCount: number;
+  onChange: (day: number) => void;
+}) {
+  if (dayCount <= 1) return null;
+  return (
+    <select
+      className={inputCls}
+      value={value ?? 1}
+      onChange={(e) => onChange(Number(e.target.value))}
+      aria-label="Day"
+    >
+      {Array.from({ length: dayCount }, (_, i) => i + 1).map((d) => (
+        <option key={d} value={d}>
+          Day {d}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 function GeneratePage() {
   const { event, setEvent, newId } = useEvent();
   const navigate = useNavigate();
 
   const update = <K extends keyof typeof event>(k: K, v: (typeof event)[K]) =>
     setEvent({ ...event, [k]: v });
+
+  const dayCount = computeDayCount(event.date, event.endDate);
+  const multiDay = dayCount > 1;
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
@@ -89,7 +127,7 @@ function GeneratePage() {
 
         {/* Event basics */}
         <Section title="Event Details" step="01">
-          <div className="grid gap-4 md:grid-cols-[2fr_1fr_1fr]">
+          <div className="grid gap-4 md:grid-cols-[2fr_1fr_1fr_1fr]">
             <Field label="Event Name">
               <input
                 className={inputCls}
@@ -110,16 +148,47 @@ function GeneratePage() {
                 ))}
               </select>
             </Field>
-            <Field label="Date">
+            <Field label="Start Date">
               <input
                 type="date"
                 className={inputCls}
                 value={event.date}
-                onChange={(e) => update("date", e.target.value)}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setEvent({
+                    ...event,
+                    date: next,
+                    // Keep endDate >= date
+                    endDate:
+                      event.endDate && event.endDate < next ? next : event.endDate,
+                  });
+                }}
+              />
+            </Field>
+            <Field label="End Date (optional)">
+              <input
+                type="date"
+                className={inputCls}
+                min={event.date || undefined}
+                value={event.endDate ?? ""}
+                onChange={(e) =>
+                  update("endDate", e.target.value ? e.target.value : undefined)
+                }
               />
             </Field>
           </div>
+          {(() => {
+            const dayCount = computeDayCount(event.date, event.endDate);
+            if (dayCount <= 1) return null;
+            return (
+              <p className="mt-3 text-xs text-muted-foreground">
+                Multi-day event detected ({dayCount} days). Assign each session and break to a
+                specific day below.
+              </p>
+            );
+          })()}
         </Section>
+
 
         {/* Sessions */}
         <Section
@@ -150,7 +219,13 @@ function GeneratePage() {
           <div className="space-y-4">
             {event.sessions.map((s, i) => (
               <div key={s.id} className="rounded-lg border border-border bg-surface p-4">
-                <div className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_auto]">
+                <div
+                  className={`grid gap-3 ${
+                    multiDay
+                      ? "md:grid-cols-[2fr_1fr_1fr_1fr_auto]"
+                      : "md:grid-cols-[2fr_1fr_1fr_auto]"
+                  }`}
+                >
                   <input
                     className={inputCls}
                     value={s.title}
@@ -180,6 +255,15 @@ function GeneratePage() {
                     onChange={(e) => {
                       const next = [...event.sessions];
                       next[i] = { ...s, durationMin: Number(e.target.value) };
+                      update("sessions", next);
+                    }}
+                  />
+                  <DayPicker
+                    value={s.day}
+                    dayCount={dayCount}
+                    onChange={(day) => {
+                      const next = [...event.sessions];
+                      next[i] = { ...s, day };
                       update("sessions", next);
                     }}
                   />
@@ -274,7 +358,14 @@ function GeneratePage() {
         >
           <div className="space-y-3">
             {event.breaks.map((b, i) => (
-              <div key={b.id} className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_auto]">
+              <div
+                key={b.id}
+                className={`grid gap-3 ${
+                  multiDay
+                    ? "md:grid-cols-[2fr_1fr_1fr_1fr_auto]"
+                    : "md:grid-cols-[2fr_1fr_1fr_auto]"
+                }`}
+              >
                 <input
                   className={inputCls}
                   value={b.label}
@@ -301,6 +392,15 @@ function GeneratePage() {
                   onChange={(e) => {
                     const next = [...event.breaks];
                     next[i] = { ...b, durationMin: Number(e.target.value) };
+                    update("breaks", next);
+                  }}
+                />
+                <DayPicker
+                  value={b.day}
+                  dayCount={dayCount}
+                  onChange={(day) => {
+                    const next = [...event.breaks];
+                    next[i] = { ...b, day };
                     update("breaks", next);
                   }}
                 />
