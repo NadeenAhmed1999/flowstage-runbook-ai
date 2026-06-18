@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Mic, Users, Headphones, Megaphone, Printer, RefreshCw } from "lucide-react";
+import { Mic, Users, Headphones, Megaphone, Printer, RefreshCw, ClipboardList, Crown } from "lucide-react";
 import {
   generateBriefing,
   type Briefing,
