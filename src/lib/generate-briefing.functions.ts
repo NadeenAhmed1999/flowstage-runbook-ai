@@ -81,6 +81,16 @@ const AUDIENCE_BRIEFS: Record<BriefingAudience, { recipient: string; focus: stri
     focus:
       "Include only sponsor-relevant content: branded moments, on-stage acknowledgements, signage and lower-third placements, sponsor area activation windows, networking touchpoints, and the speakers/decision-makers in the room. EXCLUDE internal cue calls and unrelated session detail.",
   },
+  registration: {
+    recipient: "Registration & Front-of-House Team",
+    focus:
+      "Include only what registration / FOH staff need: door times, badge collection windows, VIP and speaker check-in handling, accessibility support, late-arrival policy during keynotes, signage placement, and escalation paths. EXCLUDE on-stage cues, sponsor commercials, and AV cue stack detail.",
+  },
+  executive: {
+    recipient: "Executive Stakeholders & Leadership",
+    focus:
+      "Produce a one-page executive summary: event objective, headline programme moments, audience profile, key sponsor and partner outcomes, top operational risks with mitigation, and the moments leadership should personally attend. EXCLUDE granular cue calls, mic plots, and minute-by-minute timing.",
+  },
 };
 
 export const generateBriefing = createServerFn({ method: "POST" })
