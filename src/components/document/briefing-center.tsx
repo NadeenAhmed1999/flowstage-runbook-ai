@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Mic, Users, Headphones, Megaphone, Printer, RefreshCw } from "lucide-react";
+import { Mic, Users, Headphones, Megaphone, Printer, RefreshCw, ClipboardList, Crown } from "lucide-react";
 import {
   generateBriefing,
   type Briefing,
@@ -40,11 +40,25 @@ const CHANNELS: Channel[] = [
     icon: Headphones,
   },
   {
+    id: "registration",
+    label: "Registration Brief",
+    recipient: "Registration & FOH team",
+    description: "Door times, badge desk, VIP check-in, escalations.",
+    icon: ClipboardList,
+  },
+  {
     id: "sponsor",
     label: "Sponsor Brief",
     recipient: "Sponsor & partner activations",
     description: "Branded moments, signage, networking windows.",
     icon: Megaphone,
+  },
+  {
+    id: "executive",
+    label: "Executive Summary",
+    recipient: "Leadership & stakeholders",
+    description: "One-page view: objectives, risks, key moments.",
+    icon: Crown,
   },
 ];
 
@@ -69,7 +83,9 @@ export function BriefingCenter({
     speaker: EMPTY_STATE,
     moderator: EMPTY_STATE,
     production: EMPTY_STATE,
+    registration: EMPTY_STATE,
     sponsor: EMPTY_STATE,
+    executive: EMPTY_STATE,
   });
 
   const update = (id: BriefingAudience, patch: Partial<ChannelState>) =>
