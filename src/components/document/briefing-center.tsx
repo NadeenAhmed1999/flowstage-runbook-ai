@@ -40,11 +40,25 @@ const CHANNELS: Channel[] = [
     icon: Headphones,
   },
   {
+    id: "registration",
+    label: "Registration Brief",
+    recipient: "Registration & FOH team",
+    description: "Door times, badge desk, VIP check-in, escalations.",
+    icon: ClipboardList,
+  },
+  {
     id: "sponsor",
     label: "Sponsor Brief",
     recipient: "Sponsor & partner activations",
     description: "Branded moments, signage, networking windows.",
     icon: Megaphone,
+  },
+  {
+    id: "executive",
+    label: "Executive Summary",
+    recipient: "Leadership & stakeholders",
+    description: "One-page view: objectives, risks, key moments.",
+    icon: Crown,
   },
 ];
 
