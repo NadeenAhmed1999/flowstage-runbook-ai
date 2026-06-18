@@ -83,7 +83,9 @@ export function BriefingCenter({
     speaker: EMPTY_STATE,
     moderator: EMPTY_STATE,
     production: EMPTY_STATE,
+    registration: EMPTY_STATE,
     sponsor: EMPTY_STATE,
+    executive: EMPTY_STATE,
   });
 
   const update = (id: BriefingAudience, patch: Partial<ChannelState>) =>
