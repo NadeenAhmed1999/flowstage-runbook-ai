@@ -7,7 +7,9 @@ export const BRIEFING_AUDIENCES = [
   "speaker",
   "moderator",
   "production",
+  "registration",
   "sponsor",
+  "executive",
 ] as const;
 export type BriefingAudience = (typeof BRIEFING_AUDIENCES)[number];
 
