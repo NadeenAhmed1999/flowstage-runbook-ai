@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
-import { NoObjectGeneratedError, generateObject } from "ai";
+import { generateText } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
+import { extractJSON } from "./ai-json.server";
 
 const TimelineBlockSchema = z.object({
   time: z.string().describe("HH:MM 24-hour format"),
@@ -23,7 +24,7 @@ const NoteSchema = z.object({
 const RunSheetSchema = z.object({
   documentTitle: z.string(),
   productionSummary: z.string().describe("2-3 sentence executive summary of the show"),
-  timeline: z.array(TimelineBlockSchema),
+  timeline: z.array(TimelineBlockSchema).min(1),
   avReminders: z.array(NoteSchema),
   backstageCoordination: z.array(NoteSchema),
   moderatorCues: z.array(NoteSchema),
@@ -33,6 +34,7 @@ const RunSheetSchema = z.object({
   contingencyReminders: z.array(NoteSchema),
 });
 export type RunSheet = z.infer<typeof RunSheetSchema>;
+type TimelineBlock = z.infer<typeof TimelineBlockSchema>;
 
 const InputSchema = z.object({
   eventName: z.string().min(1).max(200),
@@ -72,21 +74,6 @@ function pickString(value: unknown): string | undefined {
   return trimmed.length > 0 ? trimmed : undefined;
 }
 
-function parseJsonText(text: string): unknown | undefined {
-  const trimmed = text.trim();
-  const lines = trimmed.split("\n");
-  const withoutFences =
-    lines[0]?.startsWith("```") && lines.at(-1)?.trim() === "```"
-      ? lines.slice(1, -1).join("\n").trim()
-      : trimmed;
-
-  try {
-    return JSON.parse(withoutFences);
-  } catch {
-    return undefined;
-  }
-}
-
 function normalizeTime(value: unknown): string {
   if (typeof value !== "string") return "00:00";
   const match = value.match(/\b\d{2}:\d{2}\b/);
@@ -104,6 +91,18 @@ function normalizeDuration(value: unknown): number {
   }
 
   return 5;
+}
+
+function timeToMinutes(value: string): number {
+  const [hours = "0", minutes = "0"] = normalizeTime(value).split(":");
+  return Number.parseInt(hours, 10) * 60 + Number.parseInt(minutes, 10);
+}
+
+function minutesToTime(value: number): string {
+  const wrapped = ((value % 1440) + 1440) % 1440;
+  const hours = Math.floor(wrapped / 60).toString().padStart(2, "0");
+  const minutes = (wrapped % 60).toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
 }
 
 function normalizeCueList(value: unknown): string[] {
@@ -155,7 +154,15 @@ function normalizeTimelineEntry(entry: unknown) {
   if (!entry || typeof entry !== "object") return null;
   const record = entry as Record<string, unknown>;
   const title =
-    pickString(record.title) ?? pickString(record.session) ?? pickString(record.segment_title);
+    pickString(record.title) ??
+    pickString(record.session) ??
+    pickString(record.session_title) ??
+    pickString(record.segment) ??
+    pickString(record.segment_title) ??
+    pickString(record.activity) ??
+    pickString(record.event) ??
+    pickString(record.label) ??
+    pickString(record.name);
   if (!title) return null;
 
   const cueSource = [
@@ -164,11 +171,15 @@ function normalizeTimelineEntry(entry: unknown) {
     ...normalizeCueList(record.video),
     ...normalizeCueList(record.lighting),
     ...normalizeCueList(record.av_cues),
+    ...normalizeCueList(record.avCues),
+    ...normalizeCueList(record.cue),
   ];
 
   const timelineBlock = {
-    time: normalizeTime(record.time ?? record.time_start),
-    durationMin: normalizeDuration(record.durationMin ?? record.duration),
+    time: normalizeTime(record.time ?? record.time_start ?? record.start_time ?? record.startTime),
+    durationMin: normalizeDuration(
+      record.durationMin ?? record.duration_min ?? record.durationMinutes ?? record.duration,
+    ),
     kind:
       typeof record.kind === "string" &&
       ["session", "transition", "break", "sponsor", "ops"].includes(record.kind)
@@ -178,9 +189,10 @@ function normalizeTimelineEntry(entry: unknown) {
     subtitle: pickString(record.subtitle) ?? pickString(record.stage_status),
     talent: pickString(record.talent),
     cues: cueSource,
-    moderatorCue: pickString(record.moderatorCue),
+    moderatorCue: pickString(record.moderatorCue) ?? pickString(record.moderator_cue),
     backstageNote:
       pickString(record.backstageNote) ??
+      pickString(record.backstage_note) ??
       pickString(record.backstage) ??
       pickString(record.notes),
   };
@@ -216,10 +228,20 @@ function looksLikeTimelineEntry(value: unknown): boolean {
   if (!value || typeof value !== "object") return false;
   const record = value as Record<string, unknown>;
 
-  const hasTime = typeof record.time === "string" || typeof record.time_start === "string";
-  const hasTitle = [record.title, record.session, record.segment, record.segment_title].some(
+  const hasTime = [record.time, record.time_start, record.start_time, record.startTime].some(
     (item) => typeof item === "string",
   );
+  const hasTitle = [
+    record.title,
+    record.session,
+    record.session_title,
+    record.segment,
+    record.segment_title,
+    record.activity,
+    record.event,
+    record.label,
+    record.name,
+  ].some((item) => typeof item === "string");
 
   return hasTime && hasTitle;
 }
@@ -236,6 +258,27 @@ function findTimelineSource(record: Record<string, unknown>): unknown[] {
     if (Array.isArray(value) && value.some(looksLikeTimelineEntry)) {
       return value;
     }
+  }
+
+  return [];
+}
+
+function collectTimelineEntries(value: unknown, depth = 0): unknown[] {
+  if (depth > 4 || value == null) return [];
+
+  if (Array.isArray(value)) {
+    if (value.some(looksLikeTimelineEntry)) return value;
+    for (const item of value) {
+      const nested = collectTimelineEntries(item, depth + 1);
+      if (nested.length > 0) return nested;
+    }
+    return [];
+  }
+
+  if (typeof value !== "object") return [];
+  for (const nestedValue of Object.values(value as Record<string, unknown>)) {
+    const nested = collectTimelineEntries(nestedValue, depth + 1);
+    if (nested.length > 0) return nested;
   }
 
   return [];
@@ -331,6 +374,108 @@ function createFallbackSummary(data: RunSheetInput): string {
   return `${data.eventName} is a professional ${data.eventType.toLowerCase()} run with ${data.sessions.length} programmed sessions, ${data.breaks.length} operational break windows, and ${data.sponsors.length} sponsor activations. Prioritize precise handoffs between registration, FOH, stage management, backstage holding, and sponsor-facing staff so the day stays calm, on-time, and presentation-ready.`;
 }
 
+function buildDeterministicTimeline(data: RunSheetInput): TimelineBlock[] {
+  const dayCount = Math.max(
+    1,
+    ...data.sessions.map((session) => session.day ?? 1),
+    ...data.breaks.map((item) => item.day ?? 1),
+  );
+
+  const timeline = Array.from({ length: dayCount }, (_, index) => index + 1).flatMap((day) => {
+    const beats: TimelineBlock[] = [
+      ...data.breaks
+        .filter((item) => (item.day ?? 1) === day)
+        .map((item) => ({
+          time: normalizeTime(item.startTime),
+          durationMin: normalizeDuration(item.durationMin),
+          kind: "break" as const,
+          title: dayCount > 1 ? `Day ${day}: ${item.label}` : item.label,
+          cues: ["SIGNAGE LIVE", "FOH HOLDING MUSIC"],
+          backstageNote: "Keep registration, sponsor area, and room reset leads on comms.",
+        })),
+      ...data.sessions
+        .filter((session) => (session.day ?? 1) === day)
+        .map((session) => ({
+          time: normalizeTime(session.startTime),
+          durationMin: normalizeDuration(session.durationMin),
+          kind: inferTimelineKind(session.title),
+          title: dayCount > 1 ? `Day ${day}: ${session.title}` : session.title,
+          subtitle: session.description,
+          talent: [...session.speakers, ...session.moderators].join(", ") || undefined,
+          cues: ["LOWER THIRD READY", "MIC CHECK COMPLETE", "TIMER LIVE"],
+          moderatorCue: session.moderators.length
+            ? "Confirm opening question, Q&A rules, two-minute wrap, and hard-out cue."
+            : undefined,
+          backstageNote: "Talent to holding 10 minutes before walk-on; confirm mic assignment before stage entry.",
+        })),
+    ].sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+
+    if (beats.length === 0) return [];
+
+    const timeline: TimelineBlock[] = [
+      {
+        time: minutesToTime(timeToMinutes(beats[0].time) - 30),
+        durationMin: 30,
+        kind: "ops",
+        title: dayCount > 1 ? `Day ${day}: House open / room preset` : "House open / room preset",
+        cues: ["HOUSE OPEN", "WALK-IN MUSIC", "SCREENS TO HOLDING SLIDE"],
+        backstageNote: "FOH, stage manager, registration lead, and talent liaison confirm green status on comms.",
+      },
+    ];
+
+    beats.forEach((beat, beatIndex) => {
+      if (beatIndex > 0) {
+        const previous = beats[beatIndex - 1];
+        const previousEnd = timeToMinutes(previous.time) + previous.durationMin;
+        const transitionDuration = Math.max(5, timeToMinutes(beat.time) - previousEnd);
+        timeline.push({
+          time: minutesToTime(previousEnd),
+          durationMin: transitionDuration,
+          kind: "transition",
+          title: `Transition to ${beat.title.replace(/^Day \d+: /, "")}`,
+          cues: ["RESET STAGE", "MIC SWAP", "NEXT TALENT TO HOLDING"],
+          backstageNote: "Stage-left and stage-right confirm clear before next walk-on.",
+        });
+      }
+      timeline.push(beat);
+    });
+
+    const last = beats.at(-1)!;
+    timeline.push({
+      time: minutesToTime(timeToMinutes(last.time) + last.durationMin),
+      durationMin: 15,
+      kind: "ops",
+      title: dayCount > 1 ? `Day ${day}: Closeout / production reset` : "Closeout / production reset",
+      cues: ["HOUSE LIGHTS UP", "WALK-OUT MUSIC", "RESET RECORDINGS"],
+      backstageNote: "Collect packs, save show files, confirm sponsor and speaker follow-ups.",
+    });
+
+    return timeline;
+  });
+
+  return timeline.length > 0
+    ? timeline
+    : [
+        {
+          time: "09:00",
+          durationMin: 30,
+          kind: "ops",
+          title: "Production readiness block",
+          cues: ["FOH CHECK", "COMMS CHECK", "ROOM PRESET"],
+          backstageNote: "Confirm final agenda, talent calls, sponsor assets, and AV presets before doors.",
+        },
+      ];
+}
+
+function buildFallbackRunSheet(data: RunSheetInput): RunSheet {
+  return RunSheetSchema.parse({
+    documentTitle: `Run-of-Show: ${data.eventName}`,
+    productionSummary: createFallbackSummary(data),
+    timeline: buildDeterministicTimeline(data),
+    ...buildFallbackNotes(data),
+  });
+}
+
 function normalizeRunSheetPayload(raw: unknown, data: RunSheetInput): RunSheet {
   const direct = RunSheetSchema.safeParse(raw);
   if (direct.success) return direct.data;
@@ -342,15 +487,16 @@ function normalizeRunSheetPayload(raw: unknown, data: RunSheetInput): RunSheet {
 
   const record = envelope as Record<string, unknown>;
   const fallbackNotes = buildFallbackNotes(data);
-  const timelineSource = findTimelineSource(record);
+  const primaryTimelineSource = findTimelineSource(record);
+  const timelineSource = primaryTimelineSource.length
+    ? primaryTimelineSource
+    : collectTimelineEntries(record);
 
   const timeline = timelineSource
     .map((entry) => normalizeTimelineEntry(entry))
     .filter((entry): entry is z.infer<typeof TimelineBlockSchema> => entry !== null);
 
-  if (timeline.length === 0) {
-    throw new Error("AI returned JSON, but no usable timeline entries were found.");
-  }
+  const safeTimeline = timeline.length > 0 ? timeline : buildDeterministicTimeline(data);
 
   const eventDetails =
     record.event_details && typeof record.event_details === "object"
@@ -405,7 +551,7 @@ function normalizeRunSheetPayload(raw: unknown, data: RunSheetInput): RunSheet {
       pickString(eventInfo?.title) ??
       `Run-of-Show: ${data.eventName}`,
     productionSummary: pickString(record.productionSummary) ?? createFallbackSummary(data),
-    timeline,
+    timeline: safeTimeline,
     avReminders: normalizeNoteArray(record.avReminders).length
       ? normalizeNoteArray(record.avReminders)
       : derivedAvReminders.length
@@ -523,6 +669,22 @@ Produce the complete document. ${
     }`;
 
 
+    const outputInstructions = `
+Return ONE valid JSON object with this exact top-level shape:
+{
+  "documentTitle": "string",
+  "productionSummary": "string",
+  "timeline": [{ "time": "HH:MM", "durationMin": 5, "kind": "session|transition|break|sponsor|ops", "title": "string", "subtitle": "string", "talent": "string", "cues": ["UPPERCASE CUE"], "moderatorCue": "string", "backstageNote": "string" }],
+  "avReminders": [{ "title": "string", "detail": "string" }],
+  "backstageCoordination": [{ "title": "string", "detail": "string" }],
+  "moderatorCues": [{ "title": "string", "detail": "string" }],
+  "sponsorVisibility": [{ "title": "string", "detail": "string" }],
+  "networkingBreaks": [{ "title": "string", "detail": "string" }],
+  "productionNotes": [{ "title": "string", "detail": "string" }],
+  "contingencyReminders": [{ "title": "string", "detail": "string" }]
+}
+The timeline array must be top-level and must contain at least ${Math.max(3, data.sessions.length + data.breaks.length)} usable entries. Return JSON only; no markdown fences or commentary.`;
+
     const MAX_ATTEMPTS = 3;
     let lastError: unknown = null;
     let lastRawText: string | undefined;
@@ -541,32 +703,21 @@ Repair instructions:
 - Return ONLY the JSON object. No markdown fences, no commentary.`;
 
       try {
-        const { object } = await generateObject({
+        const { text } = await generateText({
           model,
-          schema: RunSheetSchema,
-          system,
-          prompt: prompt + repairNote,
+          system: `${system}\n\nOUTPUT FORMAT: Respond with a single JSON object only. The first character must be "{" and the last character must be "}".`,
+          prompt: `${prompt}\n\n${outputInstructions}${repairNote}`,
         });
-        return RunSheetSchema.parse(object);
+        lastRawText = text;
+        return normalizeRunSheetPayload(extractJSON(text), data);
       } catch (error) {
         lastError = error;
-        if (NoObjectGeneratedError.isInstance(error) && error.text) {
-          lastRawText = error.text;
-          const parsed = parseJsonText(error.text);
-          if (parsed !== undefined) {
-            try {
-              return normalizeRunSheetPayload(parsed, data);
-            } catch (normErr) {
-              lastError = normErr;
-            }
-          }
-        }
         if (attempt === MAX_ATTEMPTS) {
-          throw new Error(
-            `Run sheet generation failed after ${MAX_ATTEMPTS} attempts: ${
-              lastError instanceof Error ? lastError.message : String(lastError)
-            }`,
+          console.error(
+            `Run sheet AI generation failed after ${MAX_ATTEMPTS} attempts; using deterministic fallback.`,
+            lastError,
           );
+          return buildFallbackRunSheet(data);
         }
       }
     }
