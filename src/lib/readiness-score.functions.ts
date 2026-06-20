@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
-import { generateObject } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
+import { generateValidatedJSON } from "./ai-json.server";
 
 const CategoryEnum = z.enum([
   "agenda",
