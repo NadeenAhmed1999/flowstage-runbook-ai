@@ -523,23 +523,53 @@ Produce the complete document. ${
     }`;
 
 
-    try {
-      const { object } = await generateObject({
-        model,
-        schema: RunSheetSchema,
-        system,
-        prompt,
-      });
+    const MAX_ATTEMPTS = 3;
+    let lastError: unknown = null;
+    let lastRawText: string | undefined;
 
-      return RunSheetSchema.parse(object);
-    } catch (error) {
-      if (NoObjectGeneratedError.isInstance(error) && error.text) {
-        const parsed = parseJsonText(error.text);
-        if (parsed !== undefined) {
-          return normalizeRunSheetPayload(parsed, data);
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const repairNote =
+        attempt === 1
+          ? ""
+          : `\n\nPREVIOUS ATTEMPT FAILED.
+Reason: ${lastError instanceof Error ? lastError.message : String(lastError)}
+${lastRawText ? `Previous output (truncated):\n${lastRawText.slice(0, 1500)}\n` : ""}
+Repair instructions:
+- The "timeline" array MUST contain at least ${Math.max(3, data.sessions.length + data.breaks.length)} entries, one per show beat (house open, each session, each transition, each break, closeout).
+- Each timeline entry MUST be an object with these EXACT keys: time (HH:MM string), durationMin (number), kind ("session" | "transition" | "break" | "sponsor" | "ops"), title (string), cues (array of short uppercase strings). Optional: subtitle, talent, moderatorCue, backstageNote.
+- Do NOT nest the timeline inside "event_details", "event_info", or any other wrapper. It must be at the top level.
+- Return ONLY the JSON object. No markdown fences, no commentary.`;
+
+      try {
+        const { object } = await generateObject({
+          model,
+          schema: RunSheetSchema,
+          system,
+          prompt: prompt + repairNote,
+        });
+        return RunSheetSchema.parse(object);
+      } catch (error) {
+        lastError = error;
+        if (NoObjectGeneratedError.isInstance(error) && error.text) {
+          lastRawText = error.text;
+          const parsed = parseJsonText(error.text);
+          if (parsed !== undefined) {
+            try {
+              return normalizeRunSheetPayload(parsed, data);
+            } catch (normErr) {
+              lastError = normErr;
+            }
+          }
+        }
+        if (attempt === MAX_ATTEMPTS) {
+          throw new Error(
+            `Run sheet generation failed after ${MAX_ATTEMPTS} attempts: ${
+              lastError instanceof Error ? lastError.message : String(lastError)
+            }`,
+          );
         }
       }
-
-      throw error;
     }
+
+    throw lastError instanceof Error ? lastError : new Error("Run sheet generation failed");
   });
