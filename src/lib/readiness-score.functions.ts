@@ -19,11 +19,11 @@ const CategoryEnum = z.enum([
 const CategoryScoreSchema = z.object({
   category: CategoryEnum,
   label: z.string().describe("Human readable category name"),
-  score: z.number().min(0).max(100),
+  score: z.number(),
   status: z.enum(["ready", "nearly-ready", "needs-attention", "high-risk"]),
   summary: z.string().describe("1-2 sentence assessment"),
-  missingItems: z.array(z.string()).max(8),
-  recommendedActions: z.array(z.string()).max(8),
+  missingItems: z.array(z.string()),
+  recommendedActions: z.array(z.string()),
 });
 
 const RiskSchema = z.object({
@@ -38,8 +38,8 @@ const ReadinessSchema = z.object({
   headline: z.string().describe("Short executive summary, 1-2 sentences"),
   confidence: z.enum(["low", "medium", "high"]),
   confidenceRationale: z.string().describe("Why this confidence level"),
-  categories: z.array(CategoryScoreSchema).min(8).max(10),
-  topRisks: z.array(RiskSchema).max(6),
+  categories: z.array(CategoryScoreSchema),
+  topRisks: z.array(RiskSchema),
 });
 
 export type ReadinessReport = z.infer<typeof ReadinessSchema>;
