@@ -24,7 +24,7 @@ const NoteSchema = z.object({
 const RunSheetSchema = z.object({
   documentTitle: z.string(),
   productionSummary: z.string().describe("2-3 sentence executive summary of the show"),
-  timeline: z.array(TimelineBlockSchema),
+  timeline: z.array(TimelineBlockSchema).min(1),
   avReminders: z.array(NoteSchema),
   backstageCoordination: z.array(NoteSchema),
   moderatorCues: z.array(NoteSchema),
@@ -381,7 +381,7 @@ function buildDeterministicTimeline(data: RunSheetInput): TimelineBlock[] {
     ...data.breaks.map((item) => item.day ?? 1),
   );
 
-  return Array.from({ length: dayCount }, (_, index) => index + 1).flatMap((day) => {
+  const timeline = Array.from({ length: dayCount }, (_, index) => index + 1).flatMap((day) => {
     const beats: TimelineBlock[] = [
       ...data.breaks
         .filter((item) => (item.day ?? 1) === day)
@@ -452,6 +452,19 @@ function buildDeterministicTimeline(data: RunSheetInput): TimelineBlock[] {
 
     return timeline;
   });
+
+  return timeline.length > 0
+    ? timeline
+    : [
+        {
+          time: "09:00",
+          durationMin: 30,
+          kind: "ops",
+          title: "Production readiness block",
+          cues: ["FOH CHECK", "COMMS CHECK", "ROOM PRESET"],
+          backstageNote: "Confirm final agenda, talent calls, sponsor assets, and AV presets before doors.",
+        },
+      ];
 }
 
 function buildFallbackRunSheet(data: RunSheetInput): RunSheet {
@@ -474,8 +487,9 @@ function normalizeRunSheetPayload(raw: unknown, data: RunSheetInput): RunSheet {
 
   const record = envelope as Record<string, unknown>;
   const fallbackNotes = buildFallbackNotes(data);
-  const timelineSource = findTimelineSource(record).length
-    ? findTimelineSource(record)
+  const primaryTimelineSource = findTimelineSource(record);
+  const timelineSource = primaryTimelineSource.length
+    ? primaryTimelineSource
     : collectTimelineEntries(record);
 
   const timeline = timelineSource
