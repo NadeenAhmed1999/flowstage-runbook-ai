@@ -129,12 +129,49 @@ ${data.avRequirements || "Standard conference AV"}
 ${data.templateGuidance ? `\nEVENT-TYPE GUIDANCE:\n${data.templateGuidance}\n` : ""}
 Return the structured Readiness Report.`;
 
-    const { object } = await generateObject({
-      model,
-      schema: ReadinessSchema,
-      system,
-      prompt,
-    });
+    const MAX_ATTEMPTS = 3;
+    let lastError: unknown = null;
+    let lastRawText: string | undefined;
 
-    return ReadinessSchema.parse(object);
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const repairNote =
+        attempt === 1
+          ? ""
+          : `\n\nPREVIOUS ATTEMPT FAILED SCHEMA VALIDATION.
+Reason: ${lastError instanceof Error ? lastError.message : String(lastError)}
+${lastRawText ? `Previous output (truncated):\n${lastRawText.slice(0, 1500)}\n` : ""}
+Repair instructions:
+- Return ONLY valid JSON matching the schema exactly.
+- Include all 10 readiness categories.
+- Use ONLY these status values: "ready", "nearly-ready", "needs-attention", "high-risk".
+- Use ONLY these category keys: agenda, speakers, moderators, av, sponsors, registration, networking, operational-risk, contingency, timeline.
+- Use ONLY these severity values: "low", "medium", "high".
+- Scores must be integers between 0 and 100.
+- Do NOT wrap the JSON in markdown fences or commentary.`;
+
+      try {
+        const { object } = await generateObject({
+          model,
+          schema: ReadinessSchema,
+          system,
+          prompt: prompt + repairNote,
+        });
+        return ReadinessSchema.parse(object);
+      } catch (err) {
+        lastError = err;
+        // AI SDK attaches the raw model text on NoObjectGeneratedError
+        const maybeText = (err as { text?: string } | null)?.text;
+        if (typeof maybeText === "string") lastRawText = maybeText;
+        if (attempt === MAX_ATTEMPTS) {
+          throw new Error(
+            `Readiness scoring failed after ${MAX_ATTEMPTS} attempts: ${
+              err instanceof Error ? err.message : String(err)
+            }`,
+          );
+        }
+      }
+    }
+
+    // Unreachable — loop either returns or throws.
+    throw lastError instanceof Error ? lastError : new Error("Readiness scoring failed");
   });
