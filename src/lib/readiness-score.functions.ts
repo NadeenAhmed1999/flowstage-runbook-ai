@@ -38,8 +38,8 @@ const ReadinessSchema = z.object({
   headline: z.string().describe("Short executive summary, 1-2 sentences"),
   confidence: z.enum(["low", "medium", "high"]),
   confidenceRationale: z.string().describe("Why this confidence level"),
-  categories: z.array(CategoryScoreSchema).min(8).max(10),
-  topRisks: z.array(RiskSchema).max(6),
+  categories: z.array(CategoryScoreSchema),
+  topRisks: z.array(RiskSchema),
 });
 
 export type ReadinessReport = z.infer<typeof ReadinessSchema>;
