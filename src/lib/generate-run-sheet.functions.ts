@@ -655,6 +655,22 @@ Produce the complete document. ${
     }`;
 
 
+    const outputInstructions = `
+Return ONE valid JSON object with this exact top-level shape:
+{
+  "documentTitle": "string",
+  "productionSummary": "string",
+  "timeline": [{ "time": "HH:MM", "durationMin": 5, "kind": "session|transition|break|sponsor|ops", "title": "string", "subtitle": "string", "talent": "string", "cues": ["UPPERCASE CUE"], "moderatorCue": "string", "backstageNote": "string" }],
+  "avReminders": [{ "title": "string", "detail": "string" }],
+  "backstageCoordination": [{ "title": "string", "detail": "string" }],
+  "moderatorCues": [{ "title": "string", "detail": "string" }],
+  "sponsorVisibility": [{ "title": "string", "detail": "string" }],
+  "networkingBreaks": [{ "title": "string", "detail": "string" }],
+  "productionNotes": [{ "title": "string", "detail": "string" }],
+  "contingencyReminders": [{ "title": "string", "detail": "string" }]
+}
+The timeline array must be top-level and must contain at least ${Math.max(3, data.sessions.length + data.breaks.length)} usable entries. Return JSON only; no markdown fences or commentary.`;
+
     const MAX_ATTEMPTS = 3;
     let lastError: unknown = null;
     let lastRawText: string | undefined;
@@ -673,32 +689,21 @@ Repair instructions:
 - Return ONLY the JSON object. No markdown fences, no commentary.`;
 
       try {
-        const { object } = await generateObject({
+        const { text } = await generateText({
           model,
-          schema: RunSheetSchema,
-          system,
-          prompt: prompt + repairNote,
+          system: `${system}\n\nOUTPUT FORMAT: Respond with a single JSON object only. The first character must be "{" and the last character must be "}".`,
+          prompt: `${prompt}\n\n${outputInstructions}${repairNote}`,
         });
-        return RunSheetSchema.parse(object);
+        lastRawText = text;
+        return normalizeRunSheetPayload(extractJSON(text), data);
       } catch (error) {
         lastError = error;
-        if (NoObjectGeneratedError.isInstance(error) && error.text) {
-          lastRawText = error.text;
-          const parsed = parseJsonText(error.text);
-          if (parsed !== undefined) {
-            try {
-              return normalizeRunSheetPayload(parsed, data);
-            } catch (normErr) {
-              lastError = normErr;
-            }
-          }
-        }
         if (attempt === MAX_ATTEMPTS) {
-          throw new Error(
-            `Run sheet generation failed after ${MAX_ATTEMPTS} attempts: ${
-              lastError instanceof Error ? lastError.message : String(lastError)
-            }`,
+          console.error(
+            `Run sheet AI generation failed after ${MAX_ATTEMPTS} attempts; using deterministic fallback.`,
+            lastError,
           );
+          return buildFallbackRunSheet(data);
         }
       }
     }
