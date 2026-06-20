@@ -474,15 +474,15 @@ function normalizeRunSheetPayload(raw: unknown, data: RunSheetInput): RunSheet {
 
   const record = envelope as Record<string, unknown>;
   const fallbackNotes = buildFallbackNotes(data);
-  const timelineSource = findTimelineSource(record);
+  const timelineSource = findTimelineSource(record).length
+    ? findTimelineSource(record)
+    : collectTimelineEntries(record);
 
   const timeline = timelineSource
     .map((entry) => normalizeTimelineEntry(entry))
     .filter((entry): entry is z.infer<typeof TimelineBlockSchema> => entry !== null);
 
-  if (timeline.length === 0) {
-    throw new Error("AI returned JSON, but no usable timeline entries were found.");
-  }
+  const safeTimeline = timeline.length > 0 ? timeline : buildDeterministicTimeline(data);
 
   const eventDetails =
     record.event_details && typeof record.event_details === "object"
@@ -537,7 +537,7 @@ function normalizeRunSheetPayload(raw: unknown, data: RunSheetInput): RunSheet {
       pickString(eventInfo?.title) ??
       `Run-of-Show: ${data.eventName}`,
     productionSummary: pickString(record.productionSummary) ?? createFallbackSummary(data),
-    timeline,
+    timeline: safeTimeline,
     avReminders: normalizeNoteArray(record.avReminders).length
       ? normalizeNoteArray(record.avReminders)
       : derivedAvReminders.length
