@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
-import { NoObjectGeneratedError, generateObject } from "ai";
+import { generateText } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
+import { extractJSON } from "./ai-json.server";
 
 const TimelineBlockSchema = z.object({
   time: z.string().describe("HH:MM 24-hour format"),
@@ -33,6 +34,7 @@ const RunSheetSchema = z.object({
   contingencyReminders: z.array(NoteSchema),
 });
 export type RunSheet = z.infer<typeof RunSheetSchema>;
+type TimelineBlock = z.infer<typeof TimelineBlockSchema>;
 
 const InputSchema = z.object({
   eventName: z.string().min(1).max(200),
