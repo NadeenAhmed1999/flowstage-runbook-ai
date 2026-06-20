@@ -263,6 +263,27 @@ function findTimelineSource(record: Record<string, unknown>): unknown[] {
   return [];
 }
 
+function collectTimelineEntries(value: unknown, depth = 0): unknown[] {
+  if (depth > 4 || value == null) return [];
+
+  if (Array.isArray(value)) {
+    if (value.some(looksLikeTimelineEntry)) return value;
+    for (const item of value) {
+      const nested = collectTimelineEntries(item, depth + 1);
+      if (nested.length > 0) return nested;
+    }
+    return [];
+  }
+
+  if (typeof value !== "object") return [];
+  for (const nestedValue of Object.values(value as Record<string, unknown>)) {
+    const nested = collectTimelineEntries(nestedValue, depth + 1);
+    if (nested.length > 0) return nested;
+  }
+
+  return [];
+}
+
 function normalizeNoteArray(value: unknown): z.infer<typeof NoteSchema>[] {
   if (!Array.isArray(value)) return [];
 
