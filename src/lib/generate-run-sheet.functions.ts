@@ -108,6 +108,18 @@ function normalizeDuration(value: unknown): number {
   return 5;
 }
 
+function timeToMinutes(value: string): number {
+  const [hours = "0", minutes = "0"] = normalizeTime(value).split(":");
+  return Number.parseInt(hours, 10) * 60 + Number.parseInt(minutes, 10);
+}
+
+function minutesToTime(value: number): string {
+  const wrapped = ((value % 1440) + 1440) % 1440;
+  const hours = Math.floor(wrapped / 60).toString().padStart(2, "0");
+  const minutes = (wrapped % 60).toString().padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
 function normalizeCueList(value: unknown): string[] {
   if (Array.isArray(value)) {
     return value
@@ -157,7 +169,15 @@ function normalizeTimelineEntry(entry: unknown) {
   if (!entry || typeof entry !== "object") return null;
   const record = entry as Record<string, unknown>;
   const title =
-    pickString(record.title) ?? pickString(record.session) ?? pickString(record.segment_title);
+    pickString(record.title) ??
+    pickString(record.session) ??
+    pickString(record.session_title) ??
+    pickString(record.segment) ??
+    pickString(record.segment_title) ??
+    pickString(record.activity) ??
+    pickString(record.event) ??
+    pickString(record.label) ??
+    pickString(record.name);
   if (!title) return null;
 
   const cueSource = [
@@ -166,11 +186,15 @@ function normalizeTimelineEntry(entry: unknown) {
     ...normalizeCueList(record.video),
     ...normalizeCueList(record.lighting),
     ...normalizeCueList(record.av_cues),
+    ...normalizeCueList(record.avCues),
+    ...normalizeCueList(record.cue),
   ];
 
   const timelineBlock = {
-    time: normalizeTime(record.time ?? record.time_start),
-    durationMin: normalizeDuration(record.durationMin ?? record.duration),
+    time: normalizeTime(record.time ?? record.time_start ?? record.start_time ?? record.startTime),
+    durationMin: normalizeDuration(
+      record.durationMin ?? record.duration_min ?? record.durationMinutes ?? record.duration,
+    ),
     kind:
       typeof record.kind === "string" &&
       ["session", "transition", "break", "sponsor", "ops"].includes(record.kind)
@@ -180,9 +204,10 @@ function normalizeTimelineEntry(entry: unknown) {
     subtitle: pickString(record.subtitle) ?? pickString(record.stage_status),
     talent: pickString(record.talent),
     cues: cueSource,
-    moderatorCue: pickString(record.moderatorCue),
+    moderatorCue: pickString(record.moderatorCue) ?? pickString(record.moderator_cue),
     backstageNote:
       pickString(record.backstageNote) ??
+      pickString(record.backstage_note) ??
       pickString(record.backstage) ??
       pickString(record.notes),
   };
