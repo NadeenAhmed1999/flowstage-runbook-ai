@@ -374,6 +374,95 @@ function createFallbackSummary(data: RunSheetInput): string {
   return `${data.eventName} is a professional ${data.eventType.toLowerCase()} run with ${data.sessions.length} programmed sessions, ${data.breaks.length} operational break windows, and ${data.sponsors.length} sponsor activations. Prioritize precise handoffs between registration, FOH, stage management, backstage holding, and sponsor-facing staff so the day stays calm, on-time, and presentation-ready.`;
 }
 
+function buildDeterministicTimeline(data: RunSheetInput): TimelineBlock[] {
+  const dayCount = Math.max(
+    1,
+    ...data.sessions.map((session) => session.day ?? 1),
+    ...data.breaks.map((item) => item.day ?? 1),
+  );
+
+  return Array.from({ length: dayCount }, (_, index) => index + 1).flatMap((day) => {
+    const beats: TimelineBlock[] = [
+      ...data.breaks
+        .filter((item) => (item.day ?? 1) === day)
+        .map((item) => ({
+          time: normalizeTime(item.startTime),
+          durationMin: normalizeDuration(item.durationMin),
+          kind: "break" as const,
+          title: dayCount > 1 ? `Day ${day}: ${item.label}` : item.label,
+          cues: ["SIGNAGE LIVE", "FOH HOLDING MUSIC"],
+          backstageNote: "Keep registration, sponsor area, and room reset leads on comms.",
+        })),
+      ...data.sessions
+        .filter((session) => (session.day ?? 1) === day)
+        .map((session) => ({
+          time: normalizeTime(session.startTime),
+          durationMin: normalizeDuration(session.durationMin),
+          kind: inferTimelineKind(session.title),
+          title: dayCount > 1 ? `Day ${day}: ${session.title}` : session.title,
+          subtitle: session.description,
+          talent: [...session.speakers, ...session.moderators].join(", ") || undefined,
+          cues: ["LOWER THIRD READY", "MIC CHECK COMPLETE", "TIMER LIVE"],
+          moderatorCue: session.moderators.length
+            ? "Confirm opening question, Q&A rules, two-minute wrap, and hard-out cue."
+            : undefined,
+          backstageNote: "Talent to holding 10 minutes before walk-on; confirm mic assignment before stage entry.",
+        })),
+    ].sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+
+    if (beats.length === 0) return [];
+
+    const timeline: TimelineBlock[] = [
+      {
+        time: minutesToTime(timeToMinutes(beats[0].time) - 30),
+        durationMin: 30,
+        kind: "ops",
+        title: dayCount > 1 ? `Day ${day}: House open / room preset` : "House open / room preset",
+        cues: ["HOUSE OPEN", "WALK-IN MUSIC", "SCREENS TO HOLDING SLIDE"],
+        backstageNote: "FOH, stage manager, registration lead, and talent liaison confirm green status on comms.",
+      },
+    ];
+
+    beats.forEach((beat, beatIndex) => {
+      if (beatIndex > 0) {
+        const previous = beats[beatIndex - 1];
+        const previousEnd = timeToMinutes(previous.time) + previous.durationMin;
+        const transitionDuration = Math.max(5, timeToMinutes(beat.time) - previousEnd);
+        timeline.push({
+          time: minutesToTime(previousEnd),
+          durationMin: transitionDuration,
+          kind: "transition",
+          title: `Transition to ${beat.title.replace(/^Day \d+: /, "")}`,
+          cues: ["RESET STAGE", "MIC SWAP", "NEXT TALENT TO HOLDING"],
+          backstageNote: "Stage-left and stage-right confirm clear before next walk-on.",
+        });
+      }
+      timeline.push(beat);
+    });
+
+    const last = beats.at(-1)!;
+    timeline.push({
+      time: minutesToTime(timeToMinutes(last.time) + last.durationMin),
+      durationMin: 15,
+      kind: "ops",
+      title: dayCount > 1 ? `Day ${day}: Closeout / production reset` : "Closeout / production reset",
+      cues: ["HOUSE LIGHTS UP", "WALK-OUT MUSIC", "RESET RECORDINGS"],
+      backstageNote: "Collect packs, save show files, confirm sponsor and speaker follow-ups.",
+    });
+
+    return timeline;
+  });
+}
+
+function buildFallbackRunSheet(data: RunSheetInput): RunSheet {
+  return RunSheetSchema.parse({
+    documentTitle: `Run-of-Show: ${data.eventName}`,
+    productionSummary: createFallbackSummary(data),
+    timeline: buildDeterministicTimeline(data),
+    ...buildFallbackNotes(data),
+  });
+}
+
 function normalizeRunSheetPayload(raw: unknown, data: RunSheetInput): RunSheet {
   const direct = RunSheetSchema.safeParse(raw);
   if (direct.success) return direct.data;
