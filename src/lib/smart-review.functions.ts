@@ -104,12 +104,45 @@ ${data.avRequirements || "Standard conference AV"}
 ${data.templateGuidance ? `\nEVENT-TYPE GUIDANCE:\n${data.templateGuidance}\n` : ""}
 Return the structured Smart Review.`;
 
-    const { object } = await generateObject({
-      model,
-      schema: SmartReviewSchema,
-      system,
-      prompt,
-    });
+    const MAX_ATTEMPTS = 3;
+    let lastError: unknown = null;
+    let lastRawText: string | undefined;
 
-    return SmartReviewSchema.parse(object);
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const repairNote =
+        attempt === 1
+          ? ""
+          : `\n\nPREVIOUS ATTEMPT FAILED SCHEMA VALIDATION.
+Reason: ${lastError instanceof Error ? lastError.message : String(lastError)}
+${lastRawText ? `Previous output (truncated):\n${lastRawText.slice(0, 1500)}\n` : ""}
+Repair instructions:
+- Return ONLY valid JSON matching the schema exactly.
+- overallReadiness must be one of: "ready", "needs-attention", "at-risk".
+- Each finding.severity must be one of: "low", "medium", "high".
+- Every finding must include severity, category, title, detail, and recommendation.
+- Do NOT wrap the JSON in markdown fences or commentary.`;
+
+      try {
+        const { object } = await generateObject({
+          model,
+          schema: SmartReviewSchema,
+          system,
+          prompt: prompt + repairNote,
+        });
+        return SmartReviewSchema.parse(object);
+      } catch (err) {
+        lastError = err;
+        const maybeText = (err as { text?: string } | null)?.text;
+        if (typeof maybeText === "string") lastRawText = maybeText;
+        if (attempt === MAX_ATTEMPTS) {
+          throw new Error(
+            `Smart Review failed after ${MAX_ATTEMPTS} attempts: ${
+              err instanceof Error ? err.message : String(err)
+            }`,
+          );
+        }
+      }
+    }
+
+    throw lastError instanceof Error ? lastError : new Error("Smart Review failed");
   });
