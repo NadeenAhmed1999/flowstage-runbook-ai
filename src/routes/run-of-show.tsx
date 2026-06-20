@@ -8,6 +8,7 @@ import { AiRunSheet } from "@/components/document/ai-run-sheet";
 import { SmartReviewPanel } from "@/components/document/smart-review";
 import { BriefingCenter } from "@/components/document/briefing-center";
 import { ReadinessScorePanel } from "@/components/document/readiness-score";
+import { CopilotPanel } from "@/components/document/copilot-panel";
 import { generateRunSheet } from "@/lib/generate-run-sheet.functions";
 import { reviewRunSheet, type SmartReview } from "@/lib/smart-review.functions";
 import { scoreReadiness, type ReadinessReport } from "@/lib/readiness-score.functions";
@@ -278,6 +279,17 @@ function RunOfShowPage() {
             loading={reviewLoading}
             error={reviewError}
             onRun={handleReview}
+          />
+        </div>
+      )}
+
+      {runSheet && (
+        <div className="no-print mb-6">
+          <CopilotPanel
+            event={event}
+            runSheet={runSheet}
+            readiness={readiness}
+            smartReview={review}
           />
         </div>
       )}
