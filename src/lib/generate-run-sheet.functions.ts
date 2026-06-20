@@ -74,21 +74,6 @@ function pickString(value: unknown): string | undefined {
   return trimmed.length > 0 ? trimmed : undefined;
 }
 
-function parseJsonText(text: string): unknown | undefined {
-  const trimmed = text.trim();
-  const lines = trimmed.split("\n");
-  const withoutFences =
-    lines[0]?.startsWith("```") && lines.at(-1)?.trim() === "```"
-      ? lines.slice(1, -1).join("\n").trim()
-      : trimmed;
-
-  try {
-    return JSON.parse(withoutFences);
-  } catch {
-    return undefined;
-  }
-}
-
 function normalizeTime(value: unknown): string {
   if (typeof value !== "string") return "00:00";
   const match = value.match(/\b\d{2}:\d{2}\b/);
@@ -243,10 +228,20 @@ function looksLikeTimelineEntry(value: unknown): boolean {
   if (!value || typeof value !== "object") return false;
   const record = value as Record<string, unknown>;
 
-  const hasTime = typeof record.time === "string" || typeof record.time_start === "string";
-  const hasTitle = [record.title, record.session, record.segment, record.segment_title].some(
+  const hasTime = [record.time, record.time_start, record.start_time, record.startTime].some(
     (item) => typeof item === "string",
   );
+  const hasTitle = [
+    record.title,
+    record.session,
+    record.session_title,
+    record.segment,
+    record.segment_title,
+    record.activity,
+    record.event,
+    record.label,
+    record.name,
+  ].some((item) => typeof item === "string");
 
   return hasTime && hasTitle;
 }
