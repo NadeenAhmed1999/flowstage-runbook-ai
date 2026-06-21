@@ -482,7 +482,7 @@ function normalizeRunSheetPayload(raw: unknown, data: RunSheetInput): RunSheet {
 
   const envelope = Array.isArray(raw) ? raw[0] : raw;
   if (!envelope || typeof envelope !== "object") {
-    throw new Error("AI returned JSON, but it did not contain a usable run sheet document.");
+    return buildFallbackRunSheet(data);
   }
 
   const record = envelope as Record<string, unknown>;
