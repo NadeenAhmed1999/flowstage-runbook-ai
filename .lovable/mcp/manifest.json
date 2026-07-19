@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "sdk_version": "0.23.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://lijnwywpvjcttmhdxtfr.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "flowstage-mcp",
+      "version": "0.1.0",
+      "title": "FlowStage"
+    },
+    "tools": [
+      {
+        "name": "generate_run_sheet",
+        "title": "Generate run-of-show",
+        "description": "Generate a professional, minute-by-minute run-of-show document for a conference, summit, panel, or corporate event. Returns a timeline with AV cues, transitions, moderator cues, backstage notes, sponsor visibility, and contingency reminders.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "eventName": {
+              "type": "string",
+              "description": "Event name."
+            },
+            "eventType": {
+              "type": "string",
+              "description": "e.g. 'Healthcare Conference', 'Executive Summit'."
+            },
+            "eventDate": {
+              "type": "string",
+              "description": "Event date, e.g. '2026-05-14'."
+            },
+            "eventEndDate": {
+              "type": "string",
+              "description": "End date for multi-day events."
+            },
+            "sessions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Session title, e.g. 'Opening Keynote'."
+                  },
+                  "startTime": {
+                    "type": "string",
+                    "description": "24h start time, e.g. '09:00'."
+                  },
+                  "durationMin": {
+                    "type": "number",
+                    "description": "Session length in minutes."
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "speakers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Speaker names."
+                  },
+                  "moderators": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Moderator names."
+                  },
+                  "day": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Day number for multi-day events."
+                  }
+                },
+                "required": [
+                  "title",
+                  "startTime",
+                  "durationMin",
+                  "speakers",
+                  "moderators"
+                ],
+                "additionalProperties": false
+              },
+              "description": "Ordered list of sessions."
+            },
+            "breaks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "startTime": {
+                    "type": "string"
+                  },
+                  "durationMin": {
+                    "type": "number"
+                  },
+                  "day": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                },
+                "required": [
+                  "label",
+                  "startTime",
+                  "durationMin"
+                ],
+                "additionalProperties": false
+              },
+              "default": [],
+              "description": "Networking / meal breaks."
+            },
+            "sponsors": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "placement": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "placement"
+                ],
+                "additionalProperties": false
+              },
+              "default": [],
+              "description": "Sponsors and where they appear (e.g. 'title', 'lunch', 'lanyard')."
+            },
+            "avRequirements": {
+              "type": "string",
+              "default": "",
+              "description": "AV setup notes."
+            },
+            "templateGuidance": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "eventName",
+            "eventType",
+            "eventDate",
+            "sessions"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
