@@ -13,6 +13,7 @@ import { Route as RunOfShowRouteImport } from './routes/run-of-show'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as DemoRouteImport } from './routes/demo'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
@@ -21,6 +22,7 @@ import { Route as AppRunOfShowRouteImport } from './routes/app.run-of-show'
 import { Route as AppEventsRouteImport } from './routes/app.events'
 import { Route as AppAvRouteImport } from './routes/app.av'
 import { Route as AppActivityRouteImport } from './routes/app.activity'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const RunOfShowRoute = RunOfShowRouteImport.update({
   id: '/run-of-show',
@@ -40,6 +42,11 @@ const GenerateRoute = GenerateRouteImport.update({
 const DemoRoute = DemoRouteImport.update({
   id: '/demo',
   path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -82,10 +89,16 @@ const AppActivityRoute = AppActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => AppRoute,
 } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
   '/generate': typeof GenerateRoute
   '/pricing': typeof PricingRoute
@@ -96,9 +109,11 @@ export interface FileRoutesByFullPath {
   '/app/run-of-show': typeof AppRunOfShowRoute
   '/app/talent': typeof AppTalentRoute
   '/app/': typeof AppIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
   '/generate': typeof GenerateRoute
   '/pricing': typeof PricingRoute
@@ -109,11 +124,13 @@ export interface FileRoutesByTo {
   '/app/run-of-show': typeof AppRunOfShowRoute
   '/app/talent': typeof AppTalentRoute
   '/app': typeof AppIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
   '/generate': typeof GenerateRoute
   '/pricing': typeof PricingRoute
@@ -124,12 +141,14 @@ export interface FileRoutesById {
   '/app/run-of-show': typeof AppRunOfShowRoute
   '/app/talent': typeof AppTalentRoute
   '/app/': typeof AppIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/app'
+    | '/auth'
     | '/demo'
     | '/generate'
     | '/pricing'
@@ -140,9 +159,11 @@ export interface FileRouteTypes {
     | '/app/run-of-show'
     | '/app/talent'
     | '/app/'
+    | '/.lovable/oauth/consent'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/demo'
     | '/generate'
     | '/pricing'
@@ -153,10 +174,12 @@ export interface FileRouteTypes {
     | '/app/run-of-show'
     | '/app/talent'
     | '/app'
+    | '/.lovable/oauth/consent'
   id:
     | '__root__'
     | '/'
     | '/app'
+    | '/auth'
     | '/demo'
     | '/generate'
     | '/pricing'
@@ -167,15 +190,18 @@ export interface FileRouteTypes {
     | '/app/run-of-show'
     | '/app/talent'
     | '/app/'
+    | '/.lovable/oauth/consent'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRoute
   DemoRoute: typeof DemoRoute
   GenerateRoute: typeof GenerateRoute
   PricingRoute: typeof PricingRoute
   RunOfShowRoute: typeof RunOfShowRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -206,6 +232,13 @@ declare module '@tanstack/react-router' {
       path: '/demo'
       fullPath: '/demo'
       preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app': {
@@ -264,6 +297,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppActivityRouteImport
       parentRoute: typeof AppRoute
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -290,10 +330,12 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  AuthRoute: AuthRoute,
   DemoRoute: DemoRoute,
   GenerateRoute: GenerateRoute,
   PricingRoute: PricingRoute,
   RunOfShowRoute: RunOfShowRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
