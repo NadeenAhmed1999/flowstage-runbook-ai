@@ -111,7 +111,7 @@ function ConsentPage() {
               Requested access
             </p>
             <ul className="mt-2 space-y-1 text-xs text-foreground">
-              {scopes.map((s) => (
+              {scopes.map((s: string) => (
                 <li key={s} className="flex items-start gap-1.5">
                   <span className="text-accent">›</span>
                   <span>{s}</span>
