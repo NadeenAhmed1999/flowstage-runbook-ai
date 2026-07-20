@@ -1,0 +1,74 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/resources")({
+  head: () => ({
+    meta: [
+      { title: "Resources — FlowStage" },
+      { name: "description", content: "Guides, templates, and the interactive demo for FlowStage — the AI Operating System for Professional Events." },
+      { property: "og:title", content: "FlowStage Resources" },
+      { property: "og:description", content: "How teams operate professional events with an AI OS." },
+    ],
+  }),
+  component: () => (
+    <div className="mx-auto max-w-5xl px-6 py-20">
+      <p className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-accent">Resources</p>
+      <h1 className="mt-3 text-4xl font-semibold tracking-tight text-navy">
+        Learn how professional teams run events on FlowStage.
+      </h1>
+      <p className="mt-4 max-w-2xl text-lg leading-8 text-muted-foreground">
+        Explore the interactive demo, browse the built-in event templates, and read what an AI
+        Operating System means for event operations.
+      </p>
+
+      <div className="mt-12 grid gap-4 sm:grid-cols-2">
+        <ResourceCard
+          to="/demo"
+          eyebrow="Interactive"
+          title="Explore a live multi-component event"
+          body="Walk through the Helios Healthcare Innovation Summit with run sheet, readiness, review, and briefings pre-generated."
+        />
+        <ResourceCard
+          to="/generate"
+          eyebrow="Get started"
+          title="Generate your first event plan"
+          body="Pick a template, add components, and let FlowStage produce the run sheet, review, and briefings in one pass."
+        />
+        <ResourceCard
+          to="/pricing"
+          eyebrow="Plans"
+          title="Pricing for teams and enterprises"
+          body="Starter, Professional, and Enterprise plans for solo producers through to global event agencies."
+        />
+        <div className="rounded-xl border border-border bg-surface p-6">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Concept</p>
+          <p className="mt-2 text-sm font-semibold text-navy">What's an AI OS for events?</p>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            An AI Operating System replaces spreadsheets and disconnected documents with a single
+            plan that generates run sheets, detects risks, briefs stakeholders, scores readiness,
+            and answers operational questions — coordinated by AI.
+          </p>
+        </div>
+      </div>
+    </div>
+  ),
+});
+
+function ResourceCard({
+  to,
+  eyebrow,
+  title,
+  body,
+}: {
+  to: "/demo" | "/generate" | "/pricing";
+  eyebrow: string;
+  title: string;
+  body: string;
+}) {
+  return (
+    <Link to={to} className="lift rounded-xl border border-border bg-background p-6 block">
+      <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">{eyebrow}</p>
+      <p className="mt-2 text-sm font-semibold text-navy">{title}</p>
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
+    </Link>
+  );
+}

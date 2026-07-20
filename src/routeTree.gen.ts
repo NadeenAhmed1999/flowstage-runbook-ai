@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SolutionsRouteImport } from './routes/solutions'
 import { Route as RunOfShowRouteImport } from './routes/run-of-show'
+import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as GenerateRouteImport } from './routes/generate'
@@ -19,6 +20,10 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as SolutionsHealthcareConferencesRouteImport } from './routes/solutions.healthcare-conferences'
+import { Route as SolutionsExecutiveForumsRouteImport } from './routes/solutions.executive-forums'
+import { Route as SolutionsEventAgenciesRouteImport } from './routes/solutions.event-agencies'
+import { Route as SolutionsCorporateSummitsRouteImport } from './routes/solutions.corporate-summits'
 import { Route as AppTalentRouteImport } from './routes/app.talent'
 import { Route as AppRunOfShowRouteImport } from './routes/app.run-of-show'
 import { Route as AppEventsRouteImport } from './routes/app.events'
@@ -37,6 +42,11 @@ const SolutionsRoute = SolutionsRouteImport.update({
 const RunOfShowRoute = RunOfShowRouteImport.update({
   id: '/run-of-show',
   path: '/run-of-show',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesRoute = ResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -79,6 +89,29 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const SolutionsHealthcareConferencesRoute =
+  SolutionsHealthcareConferencesRouteImport.update({
+    id: '/healthcare-conferences',
+    path: '/healthcare-conferences',
+    getParentRoute: () => SolutionsRoute,
+  } as any)
+const SolutionsExecutiveForumsRoute =
+  SolutionsExecutiveForumsRouteImport.update({
+    id: '/executive-forums',
+    path: '/executive-forums',
+    getParentRoute: () => SolutionsRoute,
+  } as any)
+const SolutionsEventAgenciesRoute = SolutionsEventAgenciesRouteImport.update({
+  id: '/event-agencies',
+  path: '/event-agencies',
+  getParentRoute: () => SolutionsRoute,
+} as any)
+const SolutionsCorporateSummitsRoute =
+  SolutionsCorporateSummitsRouteImport.update({
+    id: '/corporate-summits',
+    path: '/corporate-summits',
+    getParentRoute: () => SolutionsRoute,
+  } as any)
 const AppTalentRoute = AppTalentRouteImport.update({
   id: '/talent',
   path: '/talent',
@@ -136,8 +169,9 @@ export interface FileRoutesByFullPath {
   '/generate': typeof GenerateRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
+  '/resources': typeof ResourcesRoute
   '/run-of-show': typeof RunOfShowRoute
-  '/solutions': typeof SolutionsRoute
+  '/solutions': typeof SolutionsRouteWithChildren
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/app/activity': typeof AppActivityRoute
@@ -145,6 +179,10 @@ export interface FileRoutesByFullPath {
   '/app/events': typeof AppEventsRoute
   '/app/run-of-show': typeof AppRunOfShowRoute
   '/app/talent': typeof AppTalentRoute
+  '/solutions/corporate-summits': typeof SolutionsCorporateSummitsRoute
+  '/solutions/event-agencies': typeof SolutionsEventAgenciesRoute
+  '/solutions/executive-forums': typeof SolutionsExecutiveForumsRoute
+  '/solutions/healthcare-conferences': typeof SolutionsHealthcareConferencesRoute
   '/app/': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -156,8 +194,9 @@ export interface FileRoutesByTo {
   '/generate': typeof GenerateRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
+  '/resources': typeof ResourcesRoute
   '/run-of-show': typeof RunOfShowRoute
-  '/solutions': typeof SolutionsRoute
+  '/solutions': typeof SolutionsRouteWithChildren
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/app/activity': typeof AppActivityRoute
@@ -165,6 +204,10 @@ export interface FileRoutesByTo {
   '/app/events': typeof AppEventsRoute
   '/app/run-of-show': typeof AppRunOfShowRoute
   '/app/talent': typeof AppTalentRoute
+  '/solutions/corporate-summits': typeof SolutionsCorporateSummitsRoute
+  '/solutions/event-agencies': typeof SolutionsEventAgenciesRoute
+  '/solutions/executive-forums': typeof SolutionsExecutiveForumsRoute
+  '/solutions/healthcare-conferences': typeof SolutionsHealthcareConferencesRoute
   '/app': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -178,8 +221,9 @@ export interface FileRoutesById {
   '/generate': typeof GenerateRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
+  '/resources': typeof ResourcesRoute
   '/run-of-show': typeof RunOfShowRoute
-  '/solutions': typeof SolutionsRoute
+  '/solutions': typeof SolutionsRouteWithChildren
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/app/activity': typeof AppActivityRoute
@@ -187,6 +231,10 @@ export interface FileRoutesById {
   '/app/events': typeof AppEventsRoute
   '/app/run-of-show': typeof AppRunOfShowRoute
   '/app/talent': typeof AppTalentRoute
+  '/solutions/corporate-summits': typeof SolutionsCorporateSummitsRoute
+  '/solutions/event-agencies': typeof SolutionsEventAgenciesRoute
+  '/solutions/executive-forums': typeof SolutionsExecutiveForumsRoute
+  '/solutions/healthcare-conferences': typeof SolutionsHealthcareConferencesRoute
   '/app/': typeof AppIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -201,6 +249,7 @@ export interface FileRouteTypes {
     | '/generate'
     | '/mcp'
     | '/pricing'
+    | '/resources'
     | '/run-of-show'
     | '/solutions'
     | '/.mcp/list-tools'
@@ -210,6 +259,10 @@ export interface FileRouteTypes {
     | '/app/events'
     | '/app/run-of-show'
     | '/app/talent'
+    | '/solutions/corporate-summits'
+    | '/solutions/event-agencies'
+    | '/solutions/executive-forums'
+    | '/solutions/healthcare-conferences'
     | '/app/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -221,6 +274,7 @@ export interface FileRouteTypes {
     | '/generate'
     | '/mcp'
     | '/pricing'
+    | '/resources'
     | '/run-of-show'
     | '/solutions'
     | '/.mcp/list-tools'
@@ -230,6 +284,10 @@ export interface FileRouteTypes {
     | '/app/events'
     | '/app/run-of-show'
     | '/app/talent'
+    | '/solutions/corporate-summits'
+    | '/solutions/event-agencies'
+    | '/solutions/executive-forums'
+    | '/solutions/healthcare-conferences'
     | '/app'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -242,6 +300,7 @@ export interface FileRouteTypes {
     | '/generate'
     | '/mcp'
     | '/pricing'
+    | '/resources'
     | '/run-of-show'
     | '/solutions'
     | '/.mcp/list-tools'
@@ -251,6 +310,10 @@ export interface FileRouteTypes {
     | '/app/events'
     | '/app/run-of-show'
     | '/app/talent'
+    | '/solutions/corporate-summits'
+    | '/solutions/event-agencies'
+    | '/solutions/executive-forums'
+    | '/solutions/healthcare-conferences'
     | '/app/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -264,8 +327,9 @@ export interface RootRouteChildren {
   GenerateRoute: typeof GenerateRoute
   McpRoute: typeof McpRoute
   PricingRoute: typeof PricingRoute
+  ResourcesRoute: typeof ResourcesRoute
   RunOfShowRoute: typeof RunOfShowRoute
-  SolutionsRoute: typeof SolutionsRoute
+  SolutionsRoute: typeof SolutionsRouteWithChildren
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
@@ -286,6 +350,13 @@ declare module '@tanstack/react-router' {
       path: '/run-of-show'
       fullPath: '/run-of-show'
       preLoaderRoute: typeof RunOfShowRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources': {
+      id: '/resources'
+      path: '/resources'
+      fullPath: '/resources'
+      preLoaderRoute: typeof ResourcesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -343,6 +414,34 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/solutions/healthcare-conferences': {
+      id: '/solutions/healthcare-conferences'
+      path: '/healthcare-conferences'
+      fullPath: '/solutions/healthcare-conferences'
+      preLoaderRoute: typeof SolutionsHealthcareConferencesRouteImport
+      parentRoute: typeof SolutionsRoute
+    }
+    '/solutions/executive-forums': {
+      id: '/solutions/executive-forums'
+      path: '/executive-forums'
+      fullPath: '/solutions/executive-forums'
+      preLoaderRoute: typeof SolutionsExecutiveForumsRouteImport
+      parentRoute: typeof SolutionsRoute
+    }
+    '/solutions/event-agencies': {
+      id: '/solutions/event-agencies'
+      path: '/event-agencies'
+      fullPath: '/solutions/event-agencies'
+      preLoaderRoute: typeof SolutionsEventAgenciesRouteImport
+      parentRoute: typeof SolutionsRoute
+    }
+    '/solutions/corporate-summits': {
+      id: '/solutions/corporate-summits'
+      path: '/corporate-summits'
+      fullPath: '/solutions/corporate-summits'
+      preLoaderRoute: typeof SolutionsCorporateSummitsRouteImport
+      parentRoute: typeof SolutionsRoute
     }
     '/app/talent': {
       id: '/app/talent'
@@ -430,6 +529,24 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface SolutionsRouteChildren {
+  SolutionsCorporateSummitsRoute: typeof SolutionsCorporateSummitsRoute
+  SolutionsEventAgenciesRoute: typeof SolutionsEventAgenciesRoute
+  SolutionsExecutiveForumsRoute: typeof SolutionsExecutiveForumsRoute
+  SolutionsHealthcareConferencesRoute: typeof SolutionsHealthcareConferencesRoute
+}
+
+const SolutionsRouteChildren: SolutionsRouteChildren = {
+  SolutionsCorporateSummitsRoute: SolutionsCorporateSummitsRoute,
+  SolutionsEventAgenciesRoute: SolutionsEventAgenciesRoute,
+  SolutionsExecutiveForumsRoute: SolutionsExecutiveForumsRoute,
+  SolutionsHealthcareConferencesRoute: SolutionsHealthcareConferencesRoute,
+}
+
+const SolutionsRouteWithChildren = SolutionsRoute._addFileChildren(
+  SolutionsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
@@ -438,8 +555,9 @@ const rootRouteChildren: RootRouteChildren = {
   GenerateRoute: GenerateRoute,
   McpRoute: McpRoute,
   PricingRoute: PricingRoute,
+  ResourcesRoute: ResourcesRoute,
   RunOfShowRoute: RunOfShowRoute,
-  SolutionsRoute: SolutionsRoute,
+  SolutionsRoute: SolutionsRouteWithChildren,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,

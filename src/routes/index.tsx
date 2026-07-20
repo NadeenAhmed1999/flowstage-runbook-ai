@@ -6,16 +6,16 @@ import { FeatureGrid } from "@/components/landing/feature-grid";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "FlowStage — AI Run-of-Show Generator for Events" },
+      { title: "FlowStage — AI Operating System for Professional Events" },
       {
         name: "description",
         content:
-          "Generate professional, timecoded run-of-show documents in seconds. Built for stage managers, broadcast producers, and event leads.",
+          "Plan, review, coordinate, and execute conferences, summits, forums, and corporate events with AI-powered operational intelligence.",
       },
-      { property: "og:title", content: "FlowStage — AI Run-of-Show Generator" },
+      { property: "og:title", content: "FlowStage — AI OS for Professional Events" },
       {
         property: "og:description",
-        content: "Operational clarity for high-stakes stage production.",
+        content: "Run sheets, readiness scoring, briefings, and copilot in a single platform.",
       },
     ],
   }),
