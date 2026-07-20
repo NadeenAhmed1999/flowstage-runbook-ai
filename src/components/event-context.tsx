@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
+import type { ComponentKind, PrimaryEventType } from "@/lib/event-components";
 
 export type Session = {
   id: string;
@@ -23,10 +24,41 @@ export type Break = {
 };
 export type Sponsor = { id: string; name: string; placement: string };
 
-export type EventData = {
+/**
+ * A modular event component (Opening Ceremony, Gala Dinner, Press Conference, etc.)
+ * that lives inside the primary event as a first-class programme block.
+ */
+export type EventComponent = {
+  id: string;
+  kind: ComponentKind;
+  name: string;
+  day?: number;
+  date?: string; // optional override YYYY-MM-DD
+  startTime: string; // HH:MM
+  endTime?: string; // HH:MM (optional)
+  durationMin: number;
+  venue?: string;
+  expectedAttendees?: number;
+  hosts?: string[];
+  speakers?: string[];
+  moderators?: string[];
+  operationalRequirements?: {
+    av?: string[];
+    staffing?: string[];
+    protocol?: string[];
+    catering?: string;
+    security?: string;
+  };
+  /** Free-form context appended to the AI prompt for this component. */
+  aiContext?: string;
+  notes?: string;
+};
 
+export type EventData = {
   name: string;
   type: string;
+  /** Primary event type (Conference, Summit, Forum, Workshop, Exhibition, Annual Meeting, Product Launch, …). */
+  primaryEventType?: PrimaryEventType;
   date: string; // YYYY-MM-DD — first/only day
   /** Optional end date (YYYY-MM-DD) for multi-day events. */
   endDate?: string;
@@ -35,6 +67,8 @@ export type EventData = {
   moderators: Person[];
   breaks: Break[];
   sponsors: Sponsor[];
+  /** Modular event components (Opening Ceremony, Gala Dinner, Press Conference, …). */
+  components?: EventComponent[];
   avRequirements: string;
   /** Optional event-type-specific guidance injected into the AI prompt. */
   templateGuidance?: string;
@@ -42,11 +76,70 @@ export type EventData = {
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 
-
 export const seedEvent: EventData = {
   name: "GCC Healthcare Innovation Summit 2026",
   type: "Healthcare Conference",
+  primaryEventType: "summit",
   date: "2026-03-12",
+  components: [
+    {
+      id: "cmp-open",
+      kind: "opening-ceremony",
+      name: "Summit Opening Ceremony",
+      day: 1,
+      startTime: "09:00",
+      durationMin: 30,
+      venue: "Main Auditorium",
+      expectedAttendees: 350,
+      hosts: ["Dr. Hana Al-Mansoori"],
+      operationalRequirements: {
+        av: ["Anthem playback", "Stage lighting hit on VIP arrival", "IMAG center + wings"],
+        staffing: ["Stage manager", "VIP escort x2", "Photographer"],
+        protocol: ["VIP arrival at 08:45", "Order of precedence for stage party", "Photo call after ceremony"],
+      },
+      aiContext:
+        "Regional healthcare summit opening — anthem, senior health authority representatives on stage, formal welcome from the Conference Chair, sponsor acknowledgement, photo call after remarks.",
+    },
+    {
+      id: "cmp-press",
+      kind: "press-conference",
+      name: "Post-Keynote Press Conference",
+      day: 1,
+      startTime: "11:00",
+      durationMin: 30,
+      venue: "Media Room, Level 2",
+      expectedAttendees: 25,
+      hosts: ["James Whitford"],
+      operationalRequirements: {
+        av: ["Podium mic + lavalier", "Mult-box for broadcast", "Sponsor-locked backdrop"],
+        staffing: ["Comms lead", "Press check-in", "Photographer"],
+        protocol: ["Accredited media only", "Embargo lifts on reveal", "1:1 slots for tier-1 outlets"],
+      },
+      aiContext: "Regional healthcare and trade media, embargoed announcements on regulatory reliance.",
+    },
+    {
+      id: "cmp-gala",
+      kind: "gala-dinner",
+      name: "Chair's Gala Dinner",
+      day: 1,
+      startTime: "19:30",
+      durationMin: 180,
+      venue: "Ballroom",
+      expectedAttendees: 220,
+      hosts: ["Dr. Hana Al-Mansoori"],
+      operationalRequirements: {
+        av: ["Two follow-spots", "Table uplighting", "Host lavalier + handheld", "Ambient music bed"],
+        staffing: ["Banquet captain", "F&B liaison", "MC"],
+        protocol: [
+          "VIP seating chart signed off",
+          "Allergen protocol at each table",
+          "Sponsor mention in host script",
+        ],
+      },
+      aiContext:
+        "Formal seated gala for 220 senior healthcare leaders. Course-service drives the clock; headline address between main and dessert.",
+    },
+  ],
   speakers: [
     { id: "s1", name: "Dr. Hana Al-Mansoori", role: "Conference Chair" },
     { id: "s2", name: "Dr. Khalid Al-Rashid", role: "Senior Representative, Regional Health Authority" },

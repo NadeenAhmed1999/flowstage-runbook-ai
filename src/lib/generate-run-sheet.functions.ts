@@ -66,10 +66,26 @@ Cues should be short, uppercase, operational. Notes should sound like a working 
       })
       .join("\n");
 
+    const componentsBlock =
+      data.components && data.components.length > 0
+        ? `\nEVENT COMPONENTS (modular programme blocks — treat each as a first-class part of the same multi-day event, not a separate event):\n${data.components
+            .map(
+              (c) =>
+                `- [${c.label}] "${c.name}" · Day ${c.day ?? 1} · ${c.startTime} · ${c.durationMin}min${c.venue ? ` · ${c.venue}` : ""}${c.expectedAttendees ? ` · ${c.expectedAttendees} pax` : ""}
+  Hosts: ${(c.hosts ?? []).join(", ") || "—"}
+  Speakers: ${(c.speakers ?? []).join(", ") || "—"}
+  AV: ${(c.av ?? []).join("; ") || "—"}
+  Staffing: ${(c.staffing ?? []).join("; ") || "—"}
+  Protocol: ${(c.protocol ?? []).join("; ") || "—"}
+  Guidance: ${c.aiPromptSnippet ?? ""}${c.aiContext ? ` // ${c.aiContext}` : ""}`,
+            )
+            .join("\n")}\n\nFor every component above, weave the correct operational workflow (AV cues, protocol notes, staffing calls, production cues, contingencies) into the master timeline in chronological order across the whole event. Label the relevant timeline rows with the component's name in the subtitle.`
+        : "";
+
     const prompt = `Generate a production-ready run-of-show document for the following event:
 
 EVENT: ${data.eventName}
-TYPE: ${data.eventType}
+TYPE: ${data.eventType}${data.primaryEventType ? ` (${data.primaryEventType})` : ""}
 DATE: ${data.eventDate}${isMultiDay ? ` → ${data.eventEndDate} (${dayCount}-day program)` : ""}
 
 SESSIONS:
@@ -77,7 +93,7 @@ ${sessionsByDay}
 
 BREAKS:
 ${breaksByDay}
-
+${componentsBlock}
 SPONSORS:
 ${data.sponsors.map((s) => `- ${s.name} — ${s.placement}`).join("\n") || "None"}
 
