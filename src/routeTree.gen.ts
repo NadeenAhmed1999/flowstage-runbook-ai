@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SolutionsRouteImport } from './routes/solutions'
 import { Route as RunOfShowRouteImport } from './routes/run-of-show'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -28,6 +29,11 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
+const SolutionsRoute = SolutionsRouteImport.update({
+  id: '/solutions',
+  path: '/solutions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RunOfShowRoute = RunOfShowRouteImport.update({
   id: '/run-of-show',
   path: '/run-of-show',
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/run-of-show': typeof RunOfShowRoute
+  '/solutions': typeof SolutionsRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/app/activity': typeof AppActivityRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/run-of-show': typeof RunOfShowRoute
+  '/solutions': typeof SolutionsRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/app/activity': typeof AppActivityRoute
@@ -171,6 +179,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/run-of-show': typeof RunOfShowRoute
+  '/solutions': typeof SolutionsRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/app/activity': typeof AppActivityRoute
@@ -193,6 +202,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/pricing'
     | '/run-of-show'
+    | '/solutions'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/app/activity'
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/pricing'
     | '/run-of-show'
+    | '/solutions'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/app/activity'
@@ -232,6 +243,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/pricing'
     | '/run-of-show'
+    | '/solutions'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/app/activity'
@@ -253,6 +265,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   PricingRoute: typeof PricingRoute
   RunOfShowRoute: typeof RunOfShowRoute
+  SolutionsRoute: typeof SolutionsRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
@@ -261,6 +274,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/solutions': {
+      id: '/solutions'
+      path: '/solutions'
+      fullPath: '/solutions'
+      preLoaderRoute: typeof SolutionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/run-of-show': {
       id: '/run-of-show'
       path: '/run-of-show'
@@ -419,6 +439,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   PricingRoute: PricingRoute,
   RunOfShowRoute: RunOfShowRoute,
+  SolutionsRoute: SolutionsRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
