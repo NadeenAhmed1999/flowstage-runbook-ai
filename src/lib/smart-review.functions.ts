@@ -53,6 +53,24 @@ const InputSchema = z.object({
   sponsors: z.array(z.object({ name: z.string(), placement: z.string() })),
   avRequirements: z.string().max(2000),
   templateGuidance: z.string().max(2000).optional(),
+  components: z
+    .array(
+      z.object({
+        label: z.string(),
+        name: z.string(),
+        day: z.number().optional(),
+        startTime: z.string(),
+        durationMin: z.number(),
+        venue: z.string().optional(),
+        expectedAttendees: z.number().optional(),
+        hosts: z.array(z.string()).optional(),
+        av: z.array(z.string()).optional(),
+        staffing: z.array(z.string()).optional(),
+        protocol: z.array(z.string()).optional(),
+        aiContext: z.string().optional(),
+      }),
+    )
+    .optional(),
 });
 
 export const reviewRunSheet = createServerFn({ method: "POST" })
@@ -101,6 +119,18 @@ ${data.sponsors.map((s) => `- ${s.name} — ${s.placement}`).join("\n") || "None
 
 AV REQUIREMENTS:
 ${data.avRequirements || "Standard conference AV"}
+${
+  data.components && data.components.length > 0
+    ? `\nEVENT COMPONENTS (modular programme blocks — treat as first-class parts of the same event):\n${data.components
+        .map(
+          (c) =>
+            `- [${c.label}] "${c.name}" · Day ${c.day ?? 1} · ${c.startTime} · ${c.durationMin}min${
+              c.venue ? ` · ${c.venue}` : ""
+            }${c.expectedAttendees ? ` · ${c.expectedAttendees} pax` : ""}\n  Hosts: ${(c.hosts ?? []).join(", ") || "—"}\n  AV: ${(c.av ?? []).join("; ") || "—"}\n  Staffing: ${(c.staffing ?? []).join("; ") || "—"}\n  Protocol: ${(c.protocol ?? []).join("; ") || "—"}${c.aiContext ? `\n  Context: ${c.aiContext}` : ""}`,
+        )
+        .join("\n")}\nReview each component for gaps in AV, staffing, protocol, VIP handling, sponsor visibility, transition buffers to/from the main programme, and contingency. Raise findings by component when relevant (reference the component name).\n`
+    : ""
+}
 ${data.templateGuidance ? `\nEVENT-TYPE GUIDANCE:\n${data.templateGuidance}\n` : ""}
 Return the structured Smart Review.`;
 

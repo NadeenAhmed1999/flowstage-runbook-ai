@@ -66,6 +66,24 @@ const InputSchema = z.object({
   sponsors: z.array(z.object({ name: z.string(), placement: z.string() })),
   avRequirements: z.string().max(2000),
   templateGuidance: z.string().max(2000).optional(),
+  components: z
+    .array(
+      z.object({
+        label: z.string(),
+        name: z.string(),
+        day: z.number().optional(),
+        startTime: z.string(),
+        durationMin: z.number(),
+        venue: z.string().optional(),
+        expectedAttendees: z.number().optional(),
+        hosts: z.array(z.string()).optional(),
+        av: z.array(z.string()).optional(),
+        staffing: z.array(z.string()).optional(),
+        protocol: z.array(z.string()).optional(),
+        aiContext: z.string().optional(),
+      }),
+    )
+    .optional(),
   hasRunSheet: z.boolean().optional(),
 });
 
