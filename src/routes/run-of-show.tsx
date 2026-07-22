@@ -73,6 +73,20 @@ function RunOfShowPage() {
     sponsors: event.sponsors.map((s) => ({ name: s.name, placement: s.placement })),
     avRequirements: event.avRequirements,
     templateGuidance: event.templateGuidance,
+    components: (event.components ?? []).map((c) => ({
+      label: c.kind,
+      name: c.name,
+      day: c.day,
+      startTime: c.startTime,
+      durationMin: c.durationMin,
+      venue: c.venue,
+      expectedAttendees: c.expectedAttendees,
+      hosts: c.hosts,
+      av: c.operationalRequirements?.av,
+      staffing: c.operationalRequirements?.staffing,
+      protocol: c.operationalRequirements?.protocol,
+      aiContext: c.aiContext,
+    })),
   });
 
   const handleReview = async () => {

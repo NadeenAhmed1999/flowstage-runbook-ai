@@ -35,6 +35,20 @@ const ContextSchema = z.object({
     }),
   ),
   sponsors: z.array(z.object({ name: z.string(), placement: z.string() })),
+  components: z
+    .array(
+      z.object({
+        label: z.string(),
+        name: z.string(),
+        day: z.number().optional(),
+        startTime: z.string(),
+        durationMin: z.number(),
+        venue: z.string().optional(),
+        hosts: z.array(z.string()).optional(),
+        aiContext: z.string().optional(),
+      }),
+    )
+    .optional(),
   runSheet: z.unknown().optional(),
   readiness: z.unknown().optional(),
   smartReview: z.unknown().optional(),
@@ -107,6 +121,22 @@ ${ctx.breaks.map((b) => `- ${b.startTime} (${b.durationMin}min)${b.day ? ` [Day 
 
 SPONSORS
 ${ctx.sponsors.map((s) => `- ${s.name} — ${s.placement}`).join("\n") || "None"}
+
+EVENT COMPONENTS (modular programme blocks — treat as first-class parts of the event)
+${
+  ctx.components && ctx.components.length > 0
+    ? ctx.components
+        .map(
+          (c) =>
+            `- [${c.label}] "${c.name}"${c.day ? ` [Day ${c.day}]` : ""} · ${c.startTime} · ${c.durationMin}min${
+              c.venue ? ` · ${c.venue}` : ""
+            }${c.hosts && c.hosts.length ? ` · Hosts: ${c.hosts.join(", ")}` : ""}${
+              c.aiContext ? `\n  Context: ${c.aiContext}` : ""
+            }`,
+        )
+        .join("\n")
+    : "None"
+}
 
 AV REQUIREMENTS
 ${ctx.avRequirements || "Standard conference AV"}
