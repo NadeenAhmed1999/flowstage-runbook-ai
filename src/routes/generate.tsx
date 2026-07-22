@@ -1,6 +1,19 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEvent, type Person, type Session, type Break, type Sponsor } from "@/components/event-context";
+import {
+  useEvent,
+  type Person,
+  type Session,
+  type Break,
+  type Sponsor,
+  type EventComponent,
+} from "@/components/event-context";
 import { EVENT_TEMPLATES, applyTemplate } from "@/lib/event-templates";
+import {
+  COMPONENT_BLUEPRINTS,
+  COMPONENT_KINDS,
+  componentBlueprint,
+  type ComponentKind,
+} from "@/lib/event-components";
 
 
 export const Route = createFileRoute("/generate")({
