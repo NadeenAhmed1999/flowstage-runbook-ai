@@ -872,3 +872,94 @@ function PeopleSelect({
     </div>
   );
 }
+
+function ComponentAddMenu({ onAdd }: { onAdd: (kind: ComponentKind) => void }) {
+  const grouped = COMPONENT_KINDS.reduce<Record<string, ComponentKind[]>>((acc, k) => {
+    const bp = COMPONENT_BLUEPRINTS[k];
+    (acc[bp.category] ??= []).push(k);
+    return acc;
+  }, {});
+  return (
+    <details className="relative">
+      <summary className="cursor-pointer list-none rounded-md border border-accent/40 bg-accent/5 px-3 py-1.5 text-xs font-semibold text-accent hover:bg-accent/10">
+        + Add component
+      </summary>
+      <div className="absolute right-0 z-20 mt-2 w-80 rounded-lg border border-border bg-background p-3 shadow-lg">
+        {Object.entries(grouped).map(([cat, kinds]) => (
+          <div key={cat} className="mb-3 last:mb-0">
+            <p className="mb-1.5 font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              {cat}
+            </p>
+            <div className="grid gap-1">
+              {kinds.map((k) => {
+                const bp = COMPONENT_BLUEPRINTS[k];
+                return (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={(e) => {
+                      onAdd(k);
+                      // close <details> after selection
+                      const details = (e.currentTarget.closest("details") as HTMLDetailsElement) ?? null;
+                      if (details) details.open = false;
+                    }}
+                    className="rounded-md border border-transparent px-2 py-1.5 text-left text-xs text-foreground hover:border-border hover:bg-surface"
+                  >
+                    <span className="font-semibold">{bp.label}</span>
+                    <span className="ml-2 text-muted-foreground">{bp.description}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </details>
+  );
+}
+
+function OpsList({
+  label,
+  items,
+  onChange,
+}: {
+  label: string;
+  items: string[];
+  onChange: (next: string[]) => void;
+}) {
+  return (
+    <div>
+      <p className={`${labelCls} mb-1.5`}>{label}</p>
+      <div className="space-y-1.5">
+        {items.map((item, i) => (
+          <div key={i} className="flex items-center gap-1.5">
+            <input
+              className={inputCls}
+              value={item}
+              onChange={(e) => {
+                const next = [...items];
+                next[i] = e.target.value;
+                onChange(next);
+              }}
+            />
+            <button
+              type="button"
+              className="text-xs text-muted-foreground hover:text-destructive"
+              onClick={() => onChange(items.filter((_, idx) => idx !== i))}
+              aria-label={`Remove ${label} item`}
+            >
+              ×
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          className="text-xs font-medium text-accent hover:underline"
+          onClick={() => onChange([...items, ""])}
+        >
+          + Add {label.toLowerCase()} item
+        </button>
+      </div>
+    </div>
+  );
+}
