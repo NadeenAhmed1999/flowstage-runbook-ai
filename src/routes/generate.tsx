@@ -74,9 +74,45 @@ function DayPicker({
 function GeneratePage() {
   const { event, setEvent, newId } = useEvent();
   const navigate = useNavigate();
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const update = <K extends keyof typeof event>(k: K, v: (typeof event)[K]) =>
     setEvent({ ...event, [k]: v });
+
+  const reorderComponents = (from: number, to: number) => {
+    const list = [...(event.components ?? [])];
+    if (from < 0 || from >= list.length || to < 0 || to >= list.length || from === to) return;
+    const [moved] = list.splice(from, 1);
+    list.splice(to, 0, moved);
+    update("components", list);
+  };
+
+  const duplicateComponent = (i: number) => {
+    const list = [...(event.components ?? [])];
+    const src = list[i];
+    if (!src) return;
+    const ops = src.operationalRequirements;
+    const copy: EventComponent = {
+      ...src,
+      id: newId(),
+      name: `${src.name} (copy)`,
+      hosts: src.hosts ? [...src.hosts] : undefined,
+      speakers: src.speakers ? [...src.speakers] : undefined,
+      moderators: src.moderators ? [...src.moderators] : undefined,
+      operationalRequirements: ops
+        ? {
+            av: ops.av ? [...ops.av] : undefined,
+            staffing: ops.staffing ? [...ops.staffing] : undefined,
+            protocol: ops.protocol ? [...ops.protocol] : undefined,
+            catering: ops.catering,
+            security: ops.security,
+          }
+        : undefined,
+    };
+    list.splice(i + 1, 0, copy);
+    update("components", list);
+  };
 
   const dayCount = computeDayCount(event.date, event.endDate);
   const multiDay = dayCount > 1;
