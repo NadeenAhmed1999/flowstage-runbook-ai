@@ -280,86 +280,134 @@ function GeneratePage() {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {(event.components ?? []).map((c, i) => {
                 const bp = componentBlueprint(c.kind);
                 const isDragging = dragIndex === i;
                 const isDragOver = dragOverIndex === i && dragIndex !== null && dragIndex !== i;
-                
+                const dropAbove = isDragOver && (dragIndex ?? 0) > i;
+                const dropBelow = isDragOver && (dragIndex ?? 0) < i;
+                const total = (event.components ?? []).length;
+
                 return (
-                  <div
-                    key={c.id}
-                    draggable
-                    onDragStart={(e) => {
-                      setDragIndex(i);
-                      e.dataTransfer.effectAllowed = "move";
-                      e.dataTransfer.setData("text/plain", String(i));
-                    }}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.dataTransfer.dropEffect = "move";
-                      if (dragOverIndex !== i) setDragOverIndex(i);
-                    }}
-                    onDragLeave={() => {
-                      if (dragOverIndex === i) setDragOverIndex(null);
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      const from = dragIndex ?? Number(e.dataTransfer.getData("text/plain"));
-                      reorderComponents(from, i);
-                      setDragIndex(null);
-                      setDragOverIndex(null);
-                    }}
-                    onDragEnd={() => {
-                      setDragIndex(null);
-                      setDragOverIndex(null);
-                    }}
-                    className={`rounded-lg border bg-surface p-4 transition-all ${
-                      isDragging ? "opacity-50" : ""
-                    } ${
-                      isDragOver ? "border-accent ring-2 ring-accent/30" : "border-border"
-                    }`}
-                  >
-                    <div className="mb-3 flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-2">
-                        <span
-                          className="mt-0.5 cursor-grab select-none text-muted-foreground/60 hover:text-foreground active:cursor-grabbing"
-                          aria-label="Drag to reorder"
-                          title="Drag to reorder"
-                        >
-                          ⋮⋮
-                        </span>
-                        <div>
-                          <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">
-                            {bp.category} · {bp.label}
-                          </p>
-                          <p className="mt-1 text-xs text-muted-foreground">{bp.description}</p>
+                  <div key={c.id} className="relative">
+                    {/* Drop indicators */}
+                    <div
+                      className={`pointer-events-none absolute inset-x-0 -top-1.5 h-1 rounded-full transition-all duration-150 ${
+                        dropAbove ? "bg-accent shadow-[0_0_0_3px_hsl(var(--accent)/0.2)]" : "bg-transparent"
+                      }`}
+                    />
+                    <div
+                      className={`pointer-events-none absolute inset-x-0 -bottom-1.5 h-1 rounded-full transition-all duration-150 ${
+                        dropBelow ? "bg-accent shadow-[0_0_0_3px_hsl(var(--accent)/0.2)]" : "bg-transparent"
+                      }`}
+                    />
+
+                    <div
+                      draggable={dragIndex === i || dragIndex === null}
+                      onDragStart={(e) => {
+                        setDragIndex(i);
+                        e.dataTransfer.effectAllowed = "move";
+                        e.dataTransfer.setData("text/plain", String(i));
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = "move";
+                        if (dragOverIndex !== i) setDragOverIndex(i);
+                      }}
+                      onDragLeave={(e) => {
+                        // only clear when leaving the card entirely
+                        const related = e.relatedTarget as Node | null;
+                        if (!related || !(e.currentTarget as HTMLElement).contains(related)) {
+                          if (dragOverIndex === i) setDragOverIndex(null);
+                        }
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const from = dragIndex ?? Number(e.dataTransfer.getData("text/plain"));
+                        reorderComponents(from, i);
+                        setDragIndex(null);
+                        setDragOverIndex(null);
+                      }}
+                      onDragEnd={() => {
+                        setDragIndex(null);
+                        setDragOverIndex(null);
+                      }}
+                      className={`group/comp rounded-lg border bg-surface p-4 transition-[transform,box-shadow,border-color,opacity] duration-200 ${
+                        isDragging
+                          ? "scale-[0.99] opacity-40 shadow-lg ring-1 ring-accent/40"
+                          : "hover:border-border/80 hover:shadow-sm"
+                      } ${isDragOver ? "border-accent/60" : "border-border"}`}
+                    >
+                      <div className="mb-3 flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          <span
+                            className="mt-0.5 flex h-7 w-6 shrink-0 cursor-grab select-none items-center justify-center rounded border border-transparent text-muted-foreground/70 transition-colors hover:border-border hover:bg-background hover:text-foreground active:cursor-grabbing active:bg-accent/10 active:text-accent"
+                            aria-label="Drag to reorder"
+                            title="Drag to reorder"
+                          >
+                            <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor" aria-hidden="true">
+                              <circle cx="2.5" cy="3" r="1.2" />
+                              <circle cx="7.5" cy="3" r="1.2" />
+                              <circle cx="2.5" cy="8" r="1.2" />
+                              <circle cx="7.5" cy="8" r="1.2" />
+                              <circle cx="2.5" cy="13" r="1.2" />
+                              <circle cx="7.5" cy="13" r="1.2" />
+                            </svg>
+                          </span>
+                          <div>
+                            <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">
+                              {bp.category} · {bp.label}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground">{bp.description}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            className="rounded px-1.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+                            onClick={() => reorderComponents(i, i - 1)}
+                            disabled={i === 0}
+                            aria-label="Move up"
+                            title="Move up"
+                          >
+                            ↑
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded px-1.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+                            onClick={() => reorderComponents(i, i + 1)}
+                            disabled={i === total - 1}
+                            aria-label="Move down"
+                            title="Move down"
+                          >
+                            ↓
+                          </button>
+                          <span className="mx-1 h-4 w-px bg-border" aria-hidden="true" />
+                          <button
+                            type="button"
+                            className="rounded px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+                            onClick={() => duplicateComponent(i)}
+                            title="Duplicate"
+                          >
+                            Duplicate
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                            onClick={() =>
+                              update(
+                                "components",
+                                (event.components ?? []).filter((x) => x.id !== c.id),
+                              )
+                            }
+                            title="Remove"
+                          >
+                            Remove
+                          </button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          className="rounded px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-background hover:text-foreground"
-                          onClick={() => duplicateComponent(i)}
-                          title="Duplicate"
-                        >
-                          Duplicate
-                        </button>
-                        <button
-                          type="button"
-                          className="rounded px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                          onClick={() =>
-                            update(
-                              "components",
-                              (event.components ?? []).filter((x) => x.id !== c.id),
-                            )
-                          }
-                          title="Remove"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </div>
+
 
                     <div
                       className={`grid gap-3 ${
@@ -505,8 +553,10 @@ function GeneratePage() {
                         />
                       </div>
                     </details>
+                    </div>
                   </div>
                 );
+
               })}
             </div>
           )}
