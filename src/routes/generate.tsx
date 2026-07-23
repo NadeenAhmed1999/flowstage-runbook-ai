@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   useEvent,
@@ -74,9 +75,45 @@ function DayPicker({
 function GeneratePage() {
   const { event, setEvent, newId } = useEvent();
   const navigate = useNavigate();
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const update = <K extends keyof typeof event>(k: K, v: (typeof event)[K]) =>
     setEvent({ ...event, [k]: v });
+
+  const reorderComponents = (from: number, to: number) => {
+    const list = [...(event.components ?? [])];
+    if (from < 0 || from >= list.length || to < 0 || to >= list.length || from === to) return;
+    const [moved] = list.splice(from, 1);
+    list.splice(to, 0, moved);
+    update("components", list);
+  };
+
+  const duplicateComponent = (i: number) => {
+    const list = [...(event.components ?? [])];
+    const src = list[i];
+    if (!src) return;
+    const ops = src.operationalRequirements;
+    const copy: EventComponent = {
+      ...src,
+      id: newId(),
+      name: `${src.name} (copy)`,
+      hosts: src.hosts ? [...src.hosts] : undefined,
+      speakers: src.speakers ? [...src.speakers] : undefined,
+      moderators: src.moderators ? [...src.moderators] : undefined,
+      operationalRequirements: ops
+        ? {
+            av: ops.av ? [...ops.av] : undefined,
+            staffing: ops.staffing ? [...ops.staffing] : undefined,
+            protocol: ops.protocol ? [...ops.protocol] : undefined,
+            catering: ops.catering,
+            security: ops.security,
+          }
+        : undefined,
+    };
+    list.splice(i + 1, 0, copy);
+    update("components", list);
+  };
 
   const dayCount = computeDayCount(event.date, event.endDate);
   const multiDay = dayCount > 1;
@@ -246,28 +283,104 @@ function GeneratePage() {
             <div className="space-y-4">
               {(event.components ?? []).map((c, i) => {
                 const bp = componentBlueprint(c.kind);
+                const isDragging = dragIndex === i;
+                const isDragOver = dragOverIndex === i && dragIndex !== null && dragIndex !== i;
+                const total = (event.components ?? []).length;
                 return (
-                  <div key={c.id} className="rounded-lg border border-border bg-surface p-4">
+                  <div
+                    key={c.id}
+                    draggable
+                    onDragStart={(e) => {
+                      setDragIndex(i);
+                      e.dataTransfer.effectAllowed = "move";
+                      e.dataTransfer.setData("text/plain", String(i));
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "move";
+                      if (dragOverIndex !== i) setDragOverIndex(i);
+                    }}
+                    onDragLeave={() => {
+                      if (dragOverIndex === i) setDragOverIndex(null);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const from = dragIndex ?? Number(e.dataTransfer.getData("text/plain"));
+                      reorderComponents(from, i);
+                      setDragIndex(null);
+                      setDragOverIndex(null);
+                    }}
+                    onDragEnd={() => {
+                      setDragIndex(null);
+                      setDragOverIndex(null);
+                    }}
+                    className={`rounded-lg border bg-surface p-4 transition-all ${
+                      isDragging ? "opacity-50" : ""
+                    } ${
+                      isDragOver ? "border-accent ring-2 ring-accent/30" : "border-border"
+                    }`}
+                  >
                     <div className="mb-3 flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">
-                          {bp.category} · {bp.label}
-                        </p>
-                        <p className="mt-1 text-xs text-muted-foreground">{bp.description}</p>
+                      <div className="flex items-start gap-2">
+                        <span
+                          className="mt-0.5 cursor-grab select-none text-muted-foreground/60 hover:text-foreground active:cursor-grabbing"
+                          aria-label="Drag to reorder"
+                          title="Drag to reorder"
+                        >
+                          ⋮⋮
+                        </span>
+                        <div>
+                          <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">
+                            {bp.category} · {bp.label}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">{bp.description}</p>
+                        </div>
                       </div>
-                      <button
-                        type="button"
-                        className="text-xs font-medium text-muted-foreground hover:text-destructive"
-                        onClick={() =>
-                          update(
-                            "components",
-                            (event.components ?? []).filter((x) => x.id !== c.id),
-                          )
-                        }
-                      >
-                        Remove
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          className="rounded px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-background hover:text-foreground disabled:opacity-30"
+                          onClick={() => reorderComponents(i, i - 1)}
+                          disabled={i === 0}
+                          aria-label="Move up"
+                          title="Move up"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          className="rounded px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-background hover:text-foreground disabled:opacity-30"
+                          onClick={() => reorderComponents(i, i + 1)}
+                          disabled={i === total - 1}
+                          aria-label="Move down"
+                          title="Move down"
+                        >
+                          ↓
+                        </button>
+                        <button
+                          type="button"
+                          className="rounded px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-background hover:text-foreground"
+                          onClick={() => duplicateComponent(i)}
+                          title="Duplicate"
+                        >
+                          Duplicate
+                        </button>
+                        <button
+                          type="button"
+                          className="rounded px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                          onClick={() =>
+                            update(
+                              "components",
+                              (event.components ?? []).filter((x) => x.id !== c.id),
+                            )
+                          }
+                          title="Remove"
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </div>
+
                     <div
                       className={`grid gap-3 ${
                         multiDay
