@@ -285,7 +285,7 @@ function GeneratePage() {
                 const bp = componentBlueprint(c.kind);
                 const isDragging = dragIndex === i;
                 const isDragOver = dragOverIndex === i && dragIndex !== null && dragIndex !== i;
-                const total = (event.components ?? []).length;
+                
                 return (
                   <div
                     key={c.id}
