@@ -339,26 +339,6 @@ function GeneratePage() {
                       <div className="flex items-center gap-1">
                         <button
                           type="button"
-                          className="rounded px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-background hover:text-foreground disabled:opacity-30"
-                          onClick={() => reorderComponents(i, i - 1)}
-                          disabled={i === 0}
-                          aria-label="Move up"
-                          title="Move up"
-                        >
-                          ↑
-                        </button>
-                        <button
-                          type="button"
-                          className="rounded px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-background hover:text-foreground disabled:opacity-30"
-                          onClick={() => reorderComponents(i, i + 1)}
-                          disabled={i === total - 1}
-                          aria-label="Move down"
-                          title="Move down"
-                        >
-                          ↓
-                        </button>
-                        <button
-                          type="button"
                           className="rounded px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-background hover:text-foreground"
                           onClick={() => duplicateComponent(i)}
                           title="Duplicate"
