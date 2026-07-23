@@ -553,8 +553,10 @@ function GeneratePage() {
                         />
                       </div>
                     </details>
+                    </div>
                   </div>
                 );
+
               })}
             </div>
           )}
