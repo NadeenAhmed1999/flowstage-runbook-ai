@@ -14,6 +14,7 @@ import { Route as RunOfShowRouteImport } from './routes/run-of-show'
 import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as ImportRouteImport } from './routes/import'
 import { Route as GenerateRouteImport } from './routes/generate'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -57,6 +58,11 @@ const PricingRoute = PricingRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImportRoute = ImportRouteImport.update({
+  id: '/import',
+  path: '/import',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GenerateRoute = GenerateRouteImport.update({
@@ -167,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
   '/generate': typeof GenerateRoute
+  '/import': typeof ImportRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/resources': typeof ResourcesRoute
@@ -192,6 +199,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
   '/generate': typeof GenerateRoute
+  '/import': typeof ImportRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/resources': typeof ResourcesRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/demo': typeof DemoRoute
   '/generate': typeof GenerateRoute
+  '/import': typeof ImportRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/resources': typeof ResourcesRoute
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/demo'
     | '/generate'
+    | '/import'
     | '/mcp'
     | '/pricing'
     | '/resources'
@@ -272,6 +282,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/demo'
     | '/generate'
+    | '/import'
     | '/mcp'
     | '/pricing'
     | '/resources'
@@ -298,6 +309,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/demo'
     | '/generate'
+    | '/import'
     | '/mcp'
     | '/pricing'
     | '/resources'
@@ -325,6 +337,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   DemoRoute: typeof DemoRoute
   GenerateRoute: typeof GenerateRoute
+  ImportRoute: typeof ImportRoute
   McpRoute: typeof McpRoute
   PricingRoute: typeof PricingRoute
   ResourcesRoute: typeof ResourcesRoute
@@ -371,6 +384,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/import': {
+      id: '/import'
+      path: '/import'
+      fullPath: '/import'
+      preLoaderRoute: typeof ImportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/generate': {
@@ -553,6 +573,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   DemoRoute: DemoRoute,
   GenerateRoute: GenerateRoute,
+  ImportRoute: ImportRoute,
   McpRoute: McpRoute,
   PricingRoute: PricingRoute,
   ResourcesRoute: ResourcesRoute,
