@@ -7,6 +7,7 @@ import {
   Cable,
   Activity,
   Sparkles,
+  FileSpreadsheet,
 } from "lucide-react";
 
 const nav = [
@@ -15,6 +16,7 @@ const nav = [
   { to: "/app/run-of-show", label: "Run-of-Show", icon: FileText },
   { to: "/app/talent", label: "Talent", icon: Users },
   { to: "/app/av", label: "AV Checklist", icon: Cable },
+  { to: "/import", label: "Import Excel", icon: FileSpreadsheet },
   { to: "/app/activity", label: "Activity", icon: Activity },
 ];
 
