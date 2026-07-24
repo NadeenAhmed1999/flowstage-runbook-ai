@@ -242,6 +242,13 @@ function RunOfShowPage() {
           </button>
           <button
             type="button"
+            onClick={() => exportEventToExcel(event)}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-accent/30 hover:bg-surface"
+          >
+            Export Excel
+          </button>
+          <button
+            type="button"
             onClick={() => window.print()}
             className="inline-flex items-center gap-1.5 rounded-md bg-navy px-4 py-2 text-sm font-medium text-navy-foreground transition-all hover:bg-navy/90 hover:shadow-md"
           >
@@ -249,6 +256,7 @@ function RunOfShowPage() {
           </button>
         </div>
       </div>
+
 
       {error && (
         <div className="no-print mb-6 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive animate-fade-in">
