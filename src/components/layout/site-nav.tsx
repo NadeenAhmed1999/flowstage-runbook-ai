@@ -52,7 +52,7 @@ export function SiteNav() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <Link to="/auth" className="text-sm font-medium text-muted-foreground hover:text-foreground">Sign in</Link>
+          <Link to="/auth" search={{ next: "" }} className="text-sm font-medium text-muted-foreground hover:text-foreground">Sign in</Link>
           <Link
             to="/generate"
             className="rounded-md bg-navy px-3.5 py-1.5 text-sm font-medium text-navy-foreground shadow-sm hover:bg-navy/90 transition-colors"
