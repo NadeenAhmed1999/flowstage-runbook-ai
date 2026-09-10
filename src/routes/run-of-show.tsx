@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { FileSpreadsheet } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useEvent } from "@/components/event-context";
 import { buildTimeline } from "@/lib/run-of-show";
@@ -219,7 +220,7 @@ function RunOfShowPage() {
           </p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-navy">{event.name}</h1>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Link
             to="/generate"
             className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-accent/30 hover:bg-surface"
@@ -241,6 +242,13 @@ function RunOfShowPage() {
               <>✶ {runSheet ? "Regenerate" : "Generate"} Run Sheet</>
             )}
           </button>
+          <Link
+            to="/import"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-accent/30 hover:bg-surface"
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            Import Excel
+          </Link>
           <button
             type="button"
             onClick={() => exportEventToExcel(event)}

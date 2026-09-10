@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { FileSpreadsheet } from "lucide-react";
 import {
   useEvent,
   type Person,
@@ -131,6 +132,13 @@ function GeneratePage() {
             from your inputs.
           </p>
         </div>
+        <Link
+          to="/import"
+          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-accent/30 hover:bg-surface"
+        >
+          <FileSpreadsheet className="h-4 w-4" />
+          Import existing event
+        </Link>
       </div>
       <form
         className="space-y-10"
