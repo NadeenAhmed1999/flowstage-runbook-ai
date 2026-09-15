@@ -12,6 +12,7 @@ import { ReadinessScorePanel } from "@/components/document/readiness-score";
 import { CopilotPanel } from "@/components/document/copilot-panel";
 import { generateRunSheet } from "@/lib/generate-run-sheet.functions";
 import { exportEventToExcel } from "@/lib/excel-io";
+import { exportEventToWord } from "@/lib/word-io";
 import { reviewRunSheet, type SmartReview } from "@/lib/smart-review.functions";
 import { scoreReadiness, type ReadinessReport } from "@/lib/readiness-score.functions";
 
