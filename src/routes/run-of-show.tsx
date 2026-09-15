@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { FileSpreadsheet } from "lucide-react";
+import { FileSpreadsheet, FileText } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useEvent } from "@/components/event-context";
 import { buildTimeline } from "@/lib/run-of-show";
@@ -12,6 +12,7 @@ import { ReadinessScorePanel } from "@/components/document/readiness-score";
 import { CopilotPanel } from "@/components/document/copilot-panel";
 import { generateRunSheet } from "@/lib/generate-run-sheet.functions";
 import { exportEventToExcel } from "@/lib/excel-io";
+import { exportEventToWord } from "@/lib/word-io";
 import { reviewRunSheet, type SmartReview } from "@/lib/smart-review.functions";
 import { scoreReadiness, type ReadinessReport } from "@/lib/readiness-score.functions";
 
@@ -255,6 +256,14 @@ function RunOfShowPage() {
             className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-accent/30 hover:bg-surface"
           >
             Export Excel
+          </button>
+          <button
+            type="button"
+            onClick={() => void exportEventToWord(event, runSheet)}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-accent/30 hover:bg-surface"
+          >
+            <FileText className="h-4 w-4" />
+            Export Word
           </button>
           <button
             type="button"
