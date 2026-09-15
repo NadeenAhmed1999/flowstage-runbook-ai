@@ -8,6 +8,7 @@ import {
   mappedEventToEventData,
   type ParsedWorkbook,
 } from "@/lib/excel-io";
+import { parseWordFile, isWordFile } from "@/lib/word-io";
 import {
   importEventFromExcel,
   type MappedEvent,
