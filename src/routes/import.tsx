@@ -64,7 +64,7 @@ function ImportPage() {
     setMapping(null);
     setWorkbook(null);
     try {
-      const parsed = await parseWorkbookFile(file);
+      const parsed = isWordFile(file) ? await parseWordFile(file) : await parseWorkbookFile(file);
       setWorkbook(parsed);
       setPreviewSheet(parsed.sheets[0]?.name ?? null);
       await runMapping(parsed);
@@ -104,7 +104,7 @@ function ImportPage() {
     <>
       <AppTopbar
         breadcrumb="Import"
-        title="Import from Excel"
+        title="Import from Excel or Word"
         subtitle="Migrate an existing event plan. AI maps sessions, speakers, breaks, sponsors & components."
       />
       <div className="flex-1 overflow-auto p-6">
@@ -266,15 +266,15 @@ function UploadPane({
     <div className="rounded-xl border border-border bg-background p-8">
       <div className="mb-6">
         <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-accent">
-          Migration · Excel
+          Migration · Excel &amp; Word
         </p>
         <h2 className="mt-1 text-xl font-semibold text-navy">
           Bring your event plan into FlowStage
         </h2>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-          Drop an existing .xlsx, .xls or .csv agenda. Our AI mapper will detect sessions, dates,
-          times, speakers, moderators, rooms, breaks, sponsors, and event components — even when
-          the sheet structure is non-standard.
+          Drop an existing .xlsx, .xls, .csv or .docx agenda. Our AI mapper will detect sessions,
+          dates, times, speakers, moderators, rooms, breaks, sponsors, and event components — even
+          when the document structure is non-standard.
         </p>
       </div>
 
@@ -302,17 +302,17 @@ function UploadPane({
         </div>
         <div>
           <p className="text-sm font-semibold text-foreground">
-            Drop your Excel file here, or click to browse
+            Drop your Excel or Word file here, or click to browse
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            .xlsx, .xls, .csv · up to 20 sheets · handled securely
+            .xlsx, .xls, .csv, .docx · up to 20 sheets · handled securely
           </p>
         </div>
         <input
           ref={inputRef}
           id="xlsx-upload"
           type="file"
-          accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+          accept=".xlsx,.xls,.csv,.docx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
           className="sr-only"
           onChange={(e) => {
             const f = e.target.files?.[0];
