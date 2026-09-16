@@ -74,7 +74,7 @@ Excel and Word import map into the new model, detecting identical time blocks an
 ## Technical notes
 
 - `src/components/event-context.tsx` gains venue, room, requirement, track, resource, economics, and dependency types plus a tri-state `Unspecified` helper; a migration maps existing seed/demo data forward.
-- New modules: `src/lib/venue.ts` (layouts, equipment presets), `src/lib/resources.ts`, `src/lib/economics.ts`, `src/lib/conflicts.ts` (pure, unit-tested).
+- New modules: `src/lib/venue.ts` (layouts, equipment presets), `src/lib/resources.ts`, `src/lib/economics.ts`, `src/lib/dependencies.ts` (graph builder + edge types), `src/lib/conflicts.ts` (pure, unit-tested rules over the graph, each returning what/affected/why/resolution/impact plus a proposed patch the user must approve).
 - `src/lib/run-of-show.ts` and `src/lib/run-sheet-parsing.ts` rewritten around programme items, tracks, and derived setup/reset blocks; existing Vitest suite extended.
 - `src/lib/smart-review.functions.ts` and `src/lib/readiness-score.functions.ts` consume conflict-engine output and missing-information flags.
 - `src/routes/generate.tsx` gains Venue Setup, a track grid editor, and requirement/resource assignment; `src/routes/run-of-show.tsx` becomes the view-switching operational document; new `src/routes/app.live.tsx`.
