@@ -13,9 +13,26 @@ Rebuild FlowStage around how an event is actually executed, not how the agenda r
 - **Economics layer** (data + minimal UI now, full UI later): revenue lines (registration, sponsorship, exhibition, partnerships, other) and cost lines (venue, AV/production, catering, staffing, speakers, travel, accommodation, interpretation, branding, photo/video, entertainment, marketing, transport, other), each with budget, forecast, actual, category, notes, and an optional link to a programme item.
 - **Dependencies** modelled explicitly — speaker→item, item→room, item→AV, item→interpreter, item→moderator, item→sponsor, room→setup, room→reset, resource→many items, item→cost — so future impact analysis reads structured data.
 
-## 2. Unknown vs not required
+## 2. Four-state information model
 
-Every optional field is tri-state: specified, **not specified**, or explicitly not required. Imports and AI never fill a gap silently — a missing room becomes "Room not specified", missing interpretation becomes "Interpretation requirement not specified", and the same for AV, speakers, and moderators. These surface as missing information in Smart Review and Readiness.
+Every operational field carries one of four states: **Confirmed**, **Required**, **Not required**, or **Unknown / not specified**. Imports and AI never fill a gap silently — a missing room becomes "Room not specified", missing interpretation becomes "Interpretation requirement not specified", and the same for AV, speakers, chairs, and moderators. Missing information is never read as "not required"; it surfaces as an open gap in Smart Review and Readiness.
+
+## 2b. Dependency graph and conflict engine
+
+A first-class dependency layer records the real relationships: item→room, item→track, item→speaker, item→moderator/chair, item→resource, item→equipment, item→requirement, item→sponsor, item→setup/reset block, room→equipment, resource→many items, person→many items. Every downstream feature reads this one graph, so Impact Analysis, Copilot, institutional memory, and Economics all work from the same structure.
+
+The conflict engine walks the graph and reports:
+
+- speaker, chair/moderator, shared resource, or interpreter booked into concurrent items
+- equipment needed in two rooms at the same time
+- insufficient room setup/reset time, or insufficient speaker transition time between rooms
+- room capacity below expected attendance
+- required equipment missing from the assigned room
+- a special requirement the assigned room cannot support
+- catering setup overlapping live programming
+- VIP/protocol activity overlapping another activity
+
+Each finding shows what conflicts, which programme items are affected, why it matters, the recommended resolution, and the operational impact — with an explicit Apply / Dismiss decision. Nothing is auto-fixed without the user confirming.
 
 ## 3. Concurrent tracks
 
@@ -57,7 +74,7 @@ Excel and Word import map into the new model, detecting identical time blocks an
 ## Technical notes
 
 - `src/components/event-context.tsx` gains venue, room, requirement, track, resource, economics, and dependency types plus a tri-state `Unspecified` helper; a migration maps existing seed/demo data forward.
-- New modules: `src/lib/venue.ts` (layouts, equipment presets), `src/lib/resources.ts`, `src/lib/economics.ts`, `src/lib/conflicts.ts` (pure, unit-tested).
+- New modules: `src/lib/venue.ts` (layouts, equipment presets), `src/lib/resources.ts`, `src/lib/economics.ts`, `src/lib/dependencies.ts` (graph builder + edge types), `src/lib/conflicts.ts` (pure, unit-tested rules over the graph, each returning what/affected/why/resolution/impact plus a proposed patch the user must approve).
 - `src/lib/run-of-show.ts` and `src/lib/run-sheet-parsing.ts` rewritten around programme items, tracks, and derived setup/reset blocks; existing Vitest suite extended.
 - `src/lib/smart-review.functions.ts` and `src/lib/readiness-score.functions.ts` consume conflict-engine output and missing-information flags.
 - `src/routes/generate.tsx` gains Venue Setup, a track grid editor, and requirement/resource assignment; `src/routes/run-of-show.tsx` becomes the view-switching operational document; new `src/routes/app.live.tsx`.
