@@ -99,6 +99,23 @@ Rooms, chairs, speakers (other than the three named), AV, and interpretation are
 | Excel/Word import & export | Extended mappings; same entry points |
 | Multi-day, pricing, demo, MCP tool | Kept; MCP schema accepts new fields, old input still works |
 
+## 10. Delivery order and acceptance gate
+
+**Phase 1 — model and run-of-show correctness (this implementation)**
+1. Event model, four-state fields, economics and resource structures, dependency graph, conflict engine, migration adapters.
+2. DIA seed and the operational run-of-show (table, parallel tracks, rooms, requirements, resources, setup/reset rows, Unknown styling), wired to existing AI, Smart Review, and Readiness.
+3. Existing features moved onto the model via adapters; no new visual features beyond what the run-of-show needs.
+
+**Acceptance gate (DIA Africa Access Summit)** — must pass before any further feature work:
+- All 3A/3B, 4A/4B, 7A/7B, 8A/8B pairs render as concurrent tracks
+- Venue/room structure shows, with unassigned rooms as "Room not specified"
+- Requirements, resources, and setup/reset blocks appear on the right rows
+- Unknown fields display as not specified and appear in Smart Review and Readiness
+- Conflict engine produces findings with Apply/Dismiss, nothing auto-applied
+- Regression pass: AI Run Sheet, templates, Smart Review, Readiness, Copilot, Briefings, dashboard, Excel/Word import and export, multi-day, pricing, demo, MCP — verified in the browser and by tests
+
+**Phase 2 (after the gate passes)** — Live Event view polish, additional role views, fuller builder grid, economics UI.
+
 ## Technical notes
 
 - New modules: `event-model.ts` (types + four-state helper), `event-migrate.ts` (forward/reverse adapters), `venue.ts`, `resources.ts`, `economics.ts`, `dependencies.ts`, `conflicts.ts`, `event-brief.server.ts`, `dia-summit-event.ts`.
