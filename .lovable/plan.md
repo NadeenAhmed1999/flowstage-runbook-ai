@@ -1,83 +1,109 @@
-# FlowStage Operations Redesign
+# FlowStage Operations Redesign — Full Implementation Plan
 
-Rebuild FlowStage around how an event is actually executed, not how the agenda reads. The event model, the generator, the AI reasoning, and the run-of-show document all move to a room-, track-, and resource-aware operational structure. Everything that works today keeps working.
+Rebuild FlowStage around how an event is executed, not how the agenda reads. One structured event model drives the builder, the AI, Smart Review, Readiness, and every run-of-show view. Nothing that works today is removed.
 
-## 1. New event model
+## 1. Event model
 
-- **Venue** — venue name, then rooms with capacity, layout (theatre, classroom, boardroom, U-shape, cabaret, banquet, reception), stage configuration, seat/table counts, and room purpose (plenary, breakout, registration, green room, VIP, media, catering, exhibition).
-- **Room equipment** — screens/LED, projector, confidence monitor, podium/lectern, stage, mic inventory (handheld, lapel, headset), clicker, recording, livestream, interpretation booth, lighting, free-text extras.
-- **Programme items** replace flat sessions: type (plenary, breakout, workshop, panel, keynote, opening/closing ceremony, gala dinner, awards, receptions, sponsor presentation, exhibition, product launch, press conference, cultural), room, track label, day, start/end, owner, chairs, speakers, moderators, status.
-- **Requirements** at event, room, item, and person level: interpretation (Arabic/French/simultaneous + equipment), accessibility (wheelchair, hearing assistance, sign language), remote speaker, livestream, recording, teleprompter, confidence monitor, extra mics, VIP protocol, security, dietary/catering, custom.
-- **Resources** — a shared pool (AV technicians, interpreters, photographers, videographers, registration and production staff, VIP escorts, mics, cameras, other kit) assignable to programme items, with quantities.
-- **Setup/reset blocks** derived per room between items: clear, furniture reset, AV reset, catering set, tech check, staff ready.
-- **Economics layer** (data + minimal UI now, full UI later): revenue lines (registration, sponsorship, exhibition, partnerships, other) and cost lines (venue, AV/production, catering, staffing, speakers, travel, accommodation, interpretation, branding, photo/video, entertainment, marketing, transport, other), each with budget, forecast, actual, category, notes, and an optional link to a programme item.
-- **Dependencies** modelled explicitly — speaker→item, item→room, item→AV, item→interpreter, item→moderator, item→sponsor, room→setup, room→reset, resource→many items, item→cost — so future impact analysis reads structured data.
+- **Event** — name, type, templates, dates (multi-day), venue, sponsors, economics, global requirements.
+- **Venue & rooms** — per room: capacity, layout (theatre, classroom, boardroom, U-shape, cabaret, banquet, reception), stage configuration, seats/tables, purpose (plenary, breakout, registration, green room, VIP, media, catering, exhibition).
+- **Equipment** — per room: screens/LED, projector, confidence monitor, podium/lectern, stage, handheld/lapel/headset mics, clicker, recording, livestream, interpretation booth, lighting, other.
+- **Programme items** (replace sessions, breaks, and components): type (plenary, breakout, workshop, panel, keynote, opening/closing ceremony, gala, awards, receptions, sponsor presentation, exhibition, product launch, press conference, cultural, break, meal), code (e.g. 3A), day, start/end, room, track, owner, chairs, speakers, moderators, expected attendance, status.
+- **Requirements** at event, room, item, and person level: interpretation (Arabic/French/simultaneous + equipment), accessibility (wheelchair, hearing assistance, sign language), remote speaker, livestream, recording, teleprompter, confidence monitor, extra mics, VIP protocol, security, dietary, custom.
+- **Resources** — shared pool with quantity: AV technicians, interpreters, photographers, videographers, registration/production staff, VIP escorts, mics, cameras, other.
+- **Setup/reset blocks** — per room, derived between consecutive items with tasks: clear, furniture reset, AV reset, catering set, tech check, staff ready. Editable duration.
 
-## 2. Four-state information model
+### Four-state information
 
-Every operational field carries one of four states: **Confirmed**, **Required**, **Not required**, or **Unknown / not specified**. Imports and AI never fill a gap silently — a missing room becomes "Room not specified", missing interpretation becomes "Interpretation requirement not specified", and the same for AV, speakers, chairs, and moderators. Missing information is never read as "not required"; it surfaces as an open gap in Smart Review and Readiness.
+Every operational field is **Confirmed**, **Required**, **Not required**, or **Unknown / not specified**. Missing data is always Unknown — never read as Not required. Unknowns surface as "Room not specified", "Interpretation requirement not specified", "AV requirements not specified", "Speaker not specified", "Moderator not specified".
 
-## 2b. Dependency graph and conflict engine
+## 2. Economics model (architecture now, full UI later)
 
-A first-class dependency layer records the real relationships: item→room, item→track, item→speaker, item→moderator/chair, item→resource, item→equipment, item→requirement, item→sponsor, item→setup/reset block, room→equipment, resource→many items, person→many items. Every downstream feature reads this one graph, so Impact Analysis, Copilot, institutional memory, and Economics all work from the same structure.
+- Revenue lines: registration, sponsorship, exhibition, partnerships, other.
+- Cost lines: venue, AV/production, catering, staffing, speakers, travel, accommodation, interpretation, branding, photo/video, entertainment, marketing, transport, other.
+- Each line: category, budget, forecast, actual, currency, notes, optional links to programme items, rooms, resources, or sponsors.
+- Derived: totals and variance (budget vs forecast vs actual) per category.
+- This phase: model, seed structure (empty values for DIA — nothing invented), and a compact summary panel. No accounting or ledger features.
 
-The conflict engine walks the graph and reports:
+## 3. Dependency graph and conflict engine
 
-- speaker, chair/moderator, shared resource, or interpreter booked into concurrent items
-- equipment needed in two rooms at the same time
-- insufficient room setup/reset time, or insufficient speaker transition time between rooms
-- room capacity below expected attendance
-- required equipment missing from the assigned room
-- a special requirement the assigned room cannot support
-- catering setup overlapping live programming
-- VIP/protocol activity overlapping another activity
+One graph built from the event model. Edges: item→room, item→track, item→speaker, item→chair/moderator, item→resource, item→equipment, item→requirement, item→sponsor, item→setup/reset, item→cost, room→equipment, room→setup/reset, resource→items, person→items.
 
-Each finding shows what conflicts, which programme items are affected, why it matters, the recommended resolution, and the operational impact — with an explicit Apply / Dismiss decision. Nothing is auto-fixed without the user confirming.
+Conflict rules (deterministic, run before AI):
 
-## 3. Concurrent tracks
+- Speaker or chair/moderator in concurrent items
+- Shared resource or interpreter in concurrent items
+- Equipment needed in two rooms at once
+- Setup/reset time too short for the room change
+- Speaker transition time between rooms too short
+- Room capacity below expected attendance
+- Required equipment missing from the room
+- Requirement the room cannot support (e.g. interpretation without a booth)
+- Catering setup overlapping live programming
+- VIP/protocol overlapping another activity
+- Missing information (Unknown fields on critical items)
 
-The builder places items on a day × room grid, so two items at 13:00 in different rooms are Track A / Track B rather than sequential rows. Track labels derive from room or session code (3A/3B) and stay editable.
+Each finding shows: what conflicts, affected items, why it matters, recommended resolution, operational impact, and **Apply / Dismiss**. Apply shows the exact proposed change first; nothing changes without confirmation. The same graph later powers Impact Analysis, Copilot, institutional memory, and Economics.
 
-## 4. Operational run-of-show
+## 4. Migration strategy
 
-Primary output is a dense, scannable table, not prose:
+- The new model becomes the single source of truth. A converter maps old data forward: sessions → programme items, breaks → break/meal items, components → typed items with their requirements, free-text AV → event-level notes, `venue` strings → rooms.
+- A reverse adapter produces the old shapes where existing features still read them, so nothing breaks mid-migration; features are then moved onto the new model one by one.
+- Default event and Demo switch to the DIA Africa Access Summit; the GCC and Helios datasets stay available as templates/samples.
+- Existing tests keep passing; new tests cover the converter, graph, and every conflict rule.
 
-`TIME · ACTIVITY · ROOM · OWNER · SPEAKER/VIP · PRODUCTION/AV · CUE · SPECIAL REQ · STATUS`
+## 5. DIA Africa Access Summit — test case
 
-- Sticky time and track headers; compact rows expanding to full operational detail.
-- Visual hierarchy separating plenary, Track A, Track B, break, meal, ceremony, sponsor, transition, setup/reset, ops task.
-- View switcher over one dataset: Full Operations, Production/AV, Room, Speaker, VIP, Catering, Registration, Executive Summary — plus all-tracks / single-track toggles.
-- Print-friendly stylesheet, PDF export, and Excel export of the operational grid; existing Word export is retained.
+Seeded from the uploaded agenda (Hilton Cairo Heliopolis, 01–03 Dec 2026):
 
-## 5. Live Event view
+- **02 Dec**: Opening Remarks (Mukanga, Fathallah, H.E. Dr. El-Ghamrawy) · Plenary 1 · Plenary 2 · Refreshment Break · **3A ∥ 3B** · Lunch · **4A ∥ 4B** · Refreshment Break · Session 5 Plenary & Closing Remarks
+- **03 Dec**: Opening Remarks + Session 6 Plenary · Break · **7A (workshop) ∥ 7B** · Break · **8A ∥ 8B** · Lunch · Session 9 Plenary · Closing Ceremony
 
-Event-day screen with CURRENT / NEXT / UPCOMING. The current item shows countdown, room, speakers, moderator, production and AV status, special requirements, and alerts. Teams mark Ready, In Progress, Complete, Delayed, At Risk; status flows into every view.
+Rooms, chairs, speakers (other than the three named), AV, and interpretation are stored as Unknown. Smart Review and Readiness should list these gaps. Acceptance check: concurrent pairs render side by side, not as a list.
 
-## 6. AI operational intelligence
+## 6. Import mapping (Excel + Word)
 
-The generator reasons over the whole structured event — venue, rooms, programme, tracks, people, requirements, resources, setup/reset, sponsors, economics — rather than item by item. Cues become room-appropriate (a plenary ballroom and a workshop room get different AV), and each requirement turns into concrete tasks (interpretation → booth check, interpreter call time, receiver distribution, channel test).
+- Parse to rows, then AI maps columns/blocks to the new model fields with confidence scores; the review screen now includes room, track, type, requirements, and resources.
+- Concurrency detection: same day + same time window, or shared session number with A/B suffix → concurrent items on separate tracks. Word tables with side-by-side cells (like the DIA agenda) map to parallel tracks.
+- Item type inferred from titles (plenary, workshop, lunch, break, ceremony).
+- Anything absent is set to Unknown and listed as a gap on the review screen — never invented.
 
-A deterministic conflict engine runs first and feeds the AI: speaker/moderator double-booking, a shared resource or interpreter needed in two rooms at once, insufficient speaker transit time, insufficient setup/reset, catering turnover clashing with a session, sponsor activation competing for space, VIP movement clashes, missing required information. Smart Review reports each as WHAT / WHY / WHAT'S AFFECTED / RECOMMENDED ACTION with severity.
+## 7. AI prompt and data architecture
 
-## 7. DIA Africa Access Summit as the live test case
+- A single **event context builder** serializes the full model plus graph and conflict findings into a compact structured brief: venue/rooms/equipment, programme grouped by day and time slot with parallel tracks, people with their item links, requirements, resources, setup/reset windows, sponsors, economics summary, and explicit Unknown lists.
+- Generator, Smart Review, Readiness, Copilot, and Briefing Center all consume this same brief, so they reason across the whole event.
+- Prompt rules: cues must match the room's actual layout/equipment; each requirement becomes concrete tasks and cues; never fill Unknowns — flag them; reference items by id so output maps back onto the table.
+- Output: structured per-item operational rows (room, owner, production/AV, cue, special requirements) plus setup/reset and transition rows. Deterministic fallback builds the same rows without AI if generation fails.
+- Smart Review merges deterministic conflicts with AI findings in the WHAT / WHY / AFFECTED / ACTION format; Readiness scores missing information and unresolved conflicts.
 
-The uploaded agenda becomes the seeded demo event: DIA Africa Access Summit 2026, 01–03 December, Hilton Cairo Heliopolis — 02 December (Opening Remarks; Plenary 1; Plenary 2; refreshment break; 3A + 3B concurrent; lunch; 4A + 4B concurrent; refreshment break; Session 5 Plenary & Closing Remarks) and 03 December (Opening Remarks + Session 6 Plenary; break; 7A workshop + 7B concurrent; break; 8A + 8B concurrent; lunch; Session 9 Plenary; Closing Ceremony). Named speakers from the agenda are captured; every unfilled chair, speaker, room, and AV field is stored as "not specified" so Smart Review and Readiness show the real gaps. No invented content.
+## 8. Run-of-show UX
 
-## 8. Preserved functionality
+- **Operational table**: TIME · ACTIVITY · ROOM · OWNER · SPEAKER/VIP · PRODUCTION/AV · CUE · SPECIAL REQ · STATUS. Compact rows, expandable details, sticky day/time headers.
+- **Parallel tracks**: concurrent items grouped under one time band with Track A / Track B lanes; single-track filter.
+- **Visual hierarchy**: distinct styles for plenary, tracks, break, meal, ceremony, sponsor, transition, setup/reset, ops task; Unknown fields shown in a muted "not specified" style.
+- **Views** (same data): Full Operations, Production/AV, Room, Speaker, VIP, Catering, Registration, Executive Summary.
+- **Live Event view**: CURRENT / NEXT / UPCOMING, countdown, room, talent, production/AV status, requirements, alerts; status buttons Ready, In Progress, Complete, Delayed, At Risk.
+- **Builder**: Venue Setup (rooms + equipment), day × room programme grid with drag-and-drop (existing drag/arrows kept), requirement and resource assignment per item, conflict badges inline.
+- **Exports**: print/PDF stylesheet, Excel (operational grid + tracks + gaps sheets), Word retained.
 
-AI Run Sheet, Event Templates, Smart Review, Readiness Score, Copilot, Briefing Center, dashboard, Excel and Word import, Excel/Word export, pricing, multi-day support, and the MCP tool all continue to work, migrated onto the new model.
+## 9. Preserving existing features
 
-## 9. Imports
-
-Excel and Word import map into the new model, detecting identical time blocks and A/B session codes as concurrent sessions and inferring rooms/tracks where columns allow. Gaps are flagged, never invented.
+| Feature | How it is preserved |
+| --- | --- |
+| AI Run Sheet | Reads the new context brief; fallback kept |
+| Event Templates | Templates now pre-fill rooms, item types, requirements |
+| Component builder + drag-and-drop | Becomes the programme grid; controls kept |
+| Smart Review | Adds conflict engine findings + Apply/Dismiss |
+| Readiness Score | Adds gap and conflict inputs; same categories |
+| Copilot, Briefing Center | Use the shared brief |
+| Dashboard / app pages | Read via adapter, then new model |
+| Excel/Word import & export | Extended mappings; same entry points |
+| Multi-day, pricing, demo, MCP tool | Kept; MCP schema accepts new fields, old input still works |
 
 ## Technical notes
 
-- `src/components/event-context.tsx` gains venue, room, requirement, track, resource, economics, and dependency types plus a tri-state `Unspecified` helper; a migration maps existing seed/demo data forward.
-- New modules: `src/lib/venue.ts` (layouts, equipment presets), `src/lib/resources.ts`, `src/lib/economics.ts`, `src/lib/dependencies.ts` (graph builder + edge types), `src/lib/conflicts.ts` (pure, unit-tested rules over the graph, each returning what/affected/why/resolution/impact plus a proposed patch the user must approve).
-- `src/lib/run-of-show.ts` and `src/lib/run-sheet-parsing.ts` rewritten around programme items, tracks, and derived setup/reset blocks; existing Vitest suite extended.
-- `src/lib/smart-review.functions.ts` and `src/lib/readiness-score.functions.ts` consume conflict-engine output and missing-information flags.
-- `src/routes/generate.tsx` gains Venue Setup, a track grid editor, and requirement/resource assignment; `src/routes/run-of-show.tsx` becomes the view-switching operational document; new `src/routes/app.live.tsx`.
-- New DIA seed in `src/lib/dia-summit-event.ts` used by the demo and default event.
-- PDF export via print stylesheet; Excel export extends `src/lib/excel-io.ts`; MCP `generate_run_sheet` schema updated.
-- Economics ships as model, seed structure, and a compact summary panel only — no financial dashboard this phase.
+- New modules: `event-model.ts` (types + four-state helper), `event-migrate.ts` (forward/reverse adapters), `venue.ts`, `resources.ts`, `economics.ts`, `dependencies.ts`, `conflicts.ts`, `event-brief.server.ts`, `dia-summit-event.ts`.
+- `event-context.tsx` stores the new model; exposes the adapter for legacy readers during transition.
+- `run-of-show.ts` / `run-sheet-parsing.ts` rewritten around items, tracks, setup/reset; Vitest suite extended (converter, graph, each conflict rule, DIA concurrency).
+- AI server functions updated to use the shared brief; any AI call edited in this work moves to the current default model with streamed output.
+- New `app.live.tsx` route; `run-of-show.tsx` becomes the view-switching document; `generate.tsx` gains Venue Setup and the grid.
+- State stays in the browser as today (no database change this phase).
