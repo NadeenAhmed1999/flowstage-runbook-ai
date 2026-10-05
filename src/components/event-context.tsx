@@ -1,5 +1,8 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import type { ComponentKind, PrimaryEventType } from "@/lib/event-components";
+import type { OpsModel } from "@/lib/event-model";
+import { diaOps, DIA_META } from "@/lib/dia-summit-event";
+import { legacySignature, opsToLegacy, resolveOps } from "@/lib/event-migrate";
 
 export type Session = {
   id: string;
@@ -72,11 +75,13 @@ export type EventData = {
   avRequirements: string;
   /** Optional event-type-specific guidance injected into the AI prompt. */
   templateGuidance?: string;
+  /** Operational model (venue, rooms, programme items, requirements, resources, economics). */
+  ops?: OpsModel;
 };
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 
-export const seedEvent: EventData = {
+export const gccSampleEvent: EventData = {
   name: "GCC Healthcare Innovation Summit 2026",
   type: "Healthcare Conference",
   primaryEventType: "summit",
@@ -241,11 +246,31 @@ export const seedEvent: EventData = {
 
 import type { RunSheet } from "@/lib/generate-run-sheet.functions";
 
+/** Build a full EventData from an operational model, keeping legacy fields in sync. */
+export function eventFromOps(base: Omit<EventData, "sessions" | "breaks" | "speakers" | "moderators" | "ops">, ops: OpsModel): EventData {
+  const legacy = opsToLegacy(ops);
+  const e: EventData = { ...base, ...legacy };
+  return { ...e, ops: { ...ops, legacySignature: legacySignature(e) } };
+}
+
+export const seedEvent: EventData = eventFromOps(
+  {
+    ...DIA_META,
+    primaryEventType: "summit",
+    sponsors: [],
+    components: [],
+    avRequirements: "",
+  },
+  diaOps,
+);
+
 type Ctx = {
   event: EventData;
   setEvent: (next: EventData) => void;
   reset: () => void;
   newId: () => string;
+  ops: OpsModel;
+  setOps: (next: OpsModel) => void;
   runSheet: RunSheet | null;
   setRunSheet: (s: RunSheet | null) => void;
 };
@@ -255,6 +280,7 @@ const EventCtx = createContext<Ctx | null>(null);
 export function EventProvider({ children }: { children: ReactNode }) {
   const [event, setEvent] = useState<EventData>(seedEvent);
   const [runSheet, setRunSheet] = useState<RunSheet | null>(null);
+  const ops = useMemo(() => resolveOps(event), [event]);
   return (
     <EventCtx.Provider
       value={{
@@ -262,6 +288,8 @@ export function EventProvider({ children }: { children: ReactNode }) {
         setEvent,
         reset: () => setEvent(seedEvent),
         newId: uid,
+        ops,
+        setOps: (next) => setEvent(eventFromOps(event, next)),
         runSheet,
         setRunSheet,
       }}
