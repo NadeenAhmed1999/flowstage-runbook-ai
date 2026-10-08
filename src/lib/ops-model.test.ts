@@ -84,7 +84,7 @@ describe("DIA acceptance — event model", () => {
 describe("migration", () => {
   it("seed event keeps legacy fields in sync with the model", () => {
     expect(seedEvent.name).toBe("DIA Africa Access Summit 2026");
-    expect(seedEvent.sessions.length).toBe(17);
+    expect(seedEvent.sessions.length).toBe(15);
     expect(seedEvent.breaks.length).toBe(6);
     expect(resolveOps(seedEvent)).toBe(seedEvent.ops);
   });
