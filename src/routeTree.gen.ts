@@ -9,75 +9,35 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SolutionsRouteImport } from './routes/solutions'
-import { Route as RunOfShowRouteImport } from './routes/run-of-show'
-import { Route as ResourcesRouteImport } from './routes/resources'
-import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as McpRouteImport } from './routes/mcp'
-import { Route as ImportRouteImport } from './routes/import'
-import { Route as GenerateRouteImport } from './routes/generate'
-import { Route as DemoRouteImport } from './routes/demo'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppIndexRouteImport } from './routes/app.index'
-import { Route as SolutionsHealthcareConferencesRouteImport } from './routes/solutions.healthcare-conferences'
-import { Route as SolutionsExecutiveForumsRouteImport } from './routes/solutions.executive-forums'
-import { Route as SolutionsEventAgenciesRouteImport } from './routes/solutions.event-agencies'
-import { Route as SolutionsCorporateSummitsRouteImport } from './routes/solutions.corporate-summits'
-import { Route as AppTalentRouteImport } from './routes/app.talent'
-import { Route as AppRunOfShowRouteImport } from './routes/app.run-of-show'
-import { Route as AppEventsRouteImport } from './routes/app.events'
-import { Route as AppAvRouteImport } from './routes/app.av'
-import { Route as AppActivityRouteImport } from './routes/app.activity'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AppRouteImport } from './routes/app'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DemoRouteImport } from './routes/demo'
+import { Route as GenerateRouteImport } from './routes/generate'
+import { Route as ImportRouteImport } from './routes/import'
+import { Route as McpRouteImport } from './routes/mcp'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as ResourcesRouteImport } from './routes/resources'
+import { Route as RunOfShowRouteImport } from './routes/run-of-show'
+import { Route as SolutionsRouteImport } from './routes/solutions'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
-import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppActivityRouteImport } from './routes/app.activity'
+import { Route as AppAvRouteImport } from './routes/app.av'
+import { Route as AppEventsRouteImport } from './routes/app.events'
+import { Route as AppRunOfShowRouteImport } from './routes/app.run-of-show'
+import { Route as AppTalentRouteImport } from './routes/app.talent'
+import { Route as SolutionsCorporateSummitsRouteImport } from './routes/solutions.corporate-summits'
+import { Route as SolutionsEventAgenciesRouteImport } from './routes/solutions.event-agencies'
+import { Route as SolutionsExecutiveForumsRouteImport } from './routes/solutions.executive-forums'
+import { Route as SolutionsHealthcareConferencesRouteImport } from './routes/solutions.healthcare-conferences'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
-const SolutionsRoute = SolutionsRouteImport.update({
-  id: '/solutions',
-  path: '/solutions',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RunOfShowRoute = RunOfShowRouteImport.update({
-  id: '/run-of-show',
-  path: '/run-of-show',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResourcesRoute = ResourcesRouteImport.update({
-  id: '/resources',
-  path: '/resources',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PricingRoute = PricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ImportRoute = ImportRouteImport.update({
-  id: '/import',
-  path: '/import',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GenerateRoute = GenerateRouteImport.update({
-  id: '/generate',
-  path: '/generate',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoRoute = DemoRouteImport.update({
-  id: '/demo',
-  path: '/demo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -85,57 +45,66 @@ const AppRoute = AppRouteImport.update({
   path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GenerateRoute = GenerateRouteImport.update({
+  id: '/generate',
+  path: '/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImportRoute = ImportRouteImport.update({
+  id: '/import',
+  path: '/import',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesRoute = ResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RunOfShowRoute = RunOfShowRouteImport.update({
+  id: '/run-of-show',
+  path: '/run-of-show',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SolutionsRoute = SolutionsRouteImport.update({
+  id: '/solutions',
+  path: '/solutions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppRoute,
-} as any)
-const SolutionsHealthcareConferencesRoute =
-  SolutionsHealthcareConferencesRouteImport.update({
-    id: '/healthcare-conferences',
-    path: '/healthcare-conferences',
-    getParentRoute: () => SolutionsRoute,
-  } as any)
-const SolutionsExecutiveForumsRoute =
-  SolutionsExecutiveForumsRouteImport.update({
-    id: '/executive-forums',
-    path: '/executive-forums',
-    getParentRoute: () => SolutionsRoute,
-  } as any)
-const SolutionsEventAgenciesRoute = SolutionsEventAgenciesRouteImport.update({
-  id: '/event-agencies',
-  path: '/event-agencies',
-  getParentRoute: () => SolutionsRoute,
-} as any)
-const SolutionsCorporateSummitsRoute =
-  SolutionsCorporateSummitsRouteImport.update({
-    id: '/corporate-summits',
-    path: '/corporate-summits',
-    getParentRoute: () => SolutionsRoute,
-  } as any)
-const AppTalentRoute = AppTalentRouteImport.update({
-  id: '/talent',
-  path: '/talent',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppRunOfShowRoute = AppRunOfShowRouteImport.update({
-  id: '/run-of-show',
-  path: '/run-of-show',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppEventsRoute = AppEventsRouteImport.update({
-  id: '/events',
-  path: '/events',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppAvRoute = AppAvRouteImport.update({
-  id: '/av',
-  path: '/av',
   getParentRoute: () => AppRoute,
 } as any)
 const AppActivityRoute = AppActivityRouteImport.update({
@@ -143,29 +112,60 @@ const AppActivityRoute = AppActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => AppRoute,
 } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
+const AppAvRoute = AppAvRouteImport.update({
+  id: '/av',
+  path: '/av',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEventsRoute = AppEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRunOfShowRoute = AppRunOfShowRouteImport.update({
+  id: '/run-of-show',
+  path: '/run-of-show',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTalentRoute = AppTalentRouteImport.update({
+  id: '/talent',
+  path: '/talent',
+  getParentRoute: () => AppRoute,
+} as any)
+const SolutionsCorporateSummitsRoute =
+  SolutionsCorporateSummitsRouteImport.update({
+    id: '/corporate-summits',
+    path: '/corporate-summits',
+    getParentRoute: () => SolutionsRoute,
   } as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
+const SolutionsEventAgenciesRoute = SolutionsEventAgenciesRouteImport.update({
+  id: '/event-agencies',
+  path: '/event-agencies',
+  getParentRoute: () => SolutionsRoute,
+} as any)
+const SolutionsExecutiveForumsRoute =
+  SolutionsExecutiveForumsRouteImport.update({
+    id: '/executive-forums',
+    path: '/executive-forums',
+    getParentRoute: () => SolutionsRoute,
   } as any)
-const Char91DotmcpChar93InvokeToolToolRoute =
-  Char91DotmcpChar93InvokeToolToolRouteImport.update({
-    id: '/.mcp/invoke-tool/$tool',
-    path: '/.mcp/invoke-tool/$tool',
-    getParentRoute: () => rootRouteImport,
+const SolutionsHealthcareConferencesRoute =
+  SolutionsHealthcareConferencesRouteImport.update({
+    id: '/healthcare-conferences',
+    path: '/healthcare-conferences',
+    getParentRoute: () => SolutionsRoute,
   } as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -351,67 +351,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/solutions': {
-      id: '/solutions'
-      path: '/solutions'
-      fullPath: '/solutions'
-      preLoaderRoute: typeof SolutionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/run-of-show': {
-      id: '/run-of-show'
-      path: '/run-of-show'
-      fullPath: '/run-of-show'
-      preLoaderRoute: typeof RunOfShowRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/resources': {
-      id: '/resources'
-      path: '/resources'
-      fullPath: '/resources'
-      preLoaderRoute: typeof ResourcesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pricing': {
-      id: '/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/import': {
-      id: '/import'
-      path: '/import'
-      fullPath: '/import'
-      preLoaderRoute: typeof ImportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/generate': {
-      id: '/generate'
-      path: '/generate'
-      fullPath: '/generate'
-      preLoaderRoute: typeof GenerateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo': {
-      id: '/demo'
-      path: '/demo'
-      fullPath: '/demo'
-      preLoaderRoute: typeof DemoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app': {
@@ -421,88 +365,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app/': {
-      id: '/app/'
-      path: '/'
-      fullPath: '/app/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/solutions/healthcare-conferences': {
-      id: '/solutions/healthcare-conferences'
-      path: '/healthcare-conferences'
-      fullPath: '/solutions/healthcare-conferences'
-      preLoaderRoute: typeof SolutionsHealthcareConferencesRouteImport
-      parentRoute: typeof SolutionsRoute
+    '/generate': {
+      id: '/generate'
+      path: '/generate'
+      fullPath: '/generate'
+      preLoaderRoute: typeof GenerateRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/solutions/executive-forums': {
-      id: '/solutions/executive-forums'
-      path: '/executive-forums'
-      fullPath: '/solutions/executive-forums'
-      preLoaderRoute: typeof SolutionsExecutiveForumsRouteImport
-      parentRoute: typeof SolutionsRoute
+    '/import': {
+      id: '/import'
+      path: '/import'
+      fullPath: '/import'
+      preLoaderRoute: typeof ImportRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/solutions/event-agencies': {
-      id: '/solutions/event-agencies'
-      path: '/event-agencies'
-      fullPath: '/solutions/event-agencies'
-      preLoaderRoute: typeof SolutionsEventAgenciesRouteImport
-      parentRoute: typeof SolutionsRoute
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/solutions/corporate-summits': {
-      id: '/solutions/corporate-summits'
-      path: '/corporate-summits'
-      fullPath: '/solutions/corporate-summits'
-      preLoaderRoute: typeof SolutionsCorporateSummitsRouteImport
-      parentRoute: typeof SolutionsRoute
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/app/talent': {
-      id: '/app/talent'
-      path: '/talent'
-      fullPath: '/app/talent'
-      preLoaderRoute: typeof AppTalentRouteImport
-      parentRoute: typeof AppRoute
+    '/resources': {
+      id: '/resources'
+      path: '/resources'
+      fullPath: '/resources'
+      preLoaderRoute: typeof ResourcesRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/app/run-of-show': {
-      id: '/app/run-of-show'
+    '/run-of-show': {
+      id: '/run-of-show'
       path: '/run-of-show'
-      fullPath: '/app/run-of-show'
-      preLoaderRoute: typeof AppRunOfShowRouteImport
-      parentRoute: typeof AppRoute
+      fullPath: '/run-of-show'
+      preLoaderRoute: typeof RunOfShowRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/app/events': {
-      id: '/app/events'
-      path: '/events'
-      fullPath: '/app/events'
-      preLoaderRoute: typeof AppEventsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/av': {
-      id: '/app/av'
-      path: '/av'
-      fullPath: '/app/av'
-      preLoaderRoute: typeof AppAvRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/activity': {
-      id: '/app/activity'
-      path: '/activity'
-      fullPath: '/app/activity'
-      preLoaderRoute: typeof AppActivityRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+    '/solutions': {
+      id: '/solutions'
+      path: '/solutions'
+      fullPath: '/solutions'
+      preLoaderRoute: typeof SolutionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.mcp/list-tools': {
@@ -512,18 +435,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/.mcp/invoke-tool/$tool': {
-      id: '/.mcp/invoke-tool/$tool'
-      path: '/.mcp/invoke-tool/$tool'
-      fullPath: '/.mcp/invoke-tool/$tool'
-      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/activity': {
+      id: '/app/activity'
+      path: '/activity'
+      fullPath: '/app/activity'
+      preLoaderRoute: typeof AppActivityRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/av': {
+      id: '/app/av'
+      path: '/av'
+      fullPath: '/app/av'
+      preLoaderRoute: typeof AppAvRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/events': {
+      id: '/app/events'
+      path: '/events'
+      fullPath: '/app/events'
+      preLoaderRoute: typeof AppEventsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/run-of-show': {
+      id: '/app/run-of-show'
+      path: '/run-of-show'
+      fullPath: '/app/run-of-show'
+      preLoaderRoute: typeof AppRunOfShowRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/talent': {
+      id: '/app/talent'
+      path: '/talent'
+      fullPath: '/app/talent'
+      preLoaderRoute: typeof AppTalentRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/solutions/corporate-summits': {
+      id: '/solutions/corporate-summits'
+      path: '/corporate-summits'
+      fullPath: '/solutions/corporate-summits'
+      preLoaderRoute: typeof SolutionsCorporateSummitsRouteImport
+      parentRoute: typeof SolutionsRoute
+    }
+    '/solutions/event-agencies': {
+      id: '/solutions/event-agencies'
+      path: '/event-agencies'
+      fullPath: '/solutions/event-agencies'
+      preLoaderRoute: typeof SolutionsEventAgenciesRouteImport
+      parentRoute: typeof SolutionsRoute
+    }
+    '/solutions/executive-forums': {
+      id: '/solutions/executive-forums'
+      path: '/executive-forums'
+      fullPath: '/solutions/executive-forums'
+      preLoaderRoute: typeof SolutionsExecutiveForumsRouteImport
+      parentRoute: typeof SolutionsRoute
+    }
+    '/solutions/healthcare-conferences': {
+      id: '/solutions/healthcare-conferences'
+      path: '/healthcare-conferences'
+      fullPath: '/solutions/healthcare-conferences'
+      preLoaderRoute: typeof SolutionsHealthcareConferencesRouteImport
+      parentRoute: typeof SolutionsRoute
     }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
       fullPath: '/.lovable/oauth/consent'
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
