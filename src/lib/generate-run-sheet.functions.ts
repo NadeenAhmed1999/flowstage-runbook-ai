@@ -100,6 +100,7 @@ ${data.sponsors.map((s) => `- ${s.name} — ${s.placement}`).join("\n") || "None
 AV REQUIREMENTS:
 ${data.avRequirements || "Standard conference AV"}
 ${data.templateGuidance ? `\nEVENT-TYPE GUIDANCE (apply throughout the document):\n${data.templateGuidance}\n` : ""}
+${data.operationsBrief ? `\nOPERATIONAL MODEL (authoritative — venue, rooms, concurrent tracks, setup/reset, requirements, resources, detected conflicts and NOT SPECIFIED gaps; reason across the whole event, never invent unspecified details):\n${data.operationsBrief}\n` : ""}
 Produce the complete document. ${
       isMultiDay
         ? `This is a ${dayCount}-day program. Build the timeline day-by-day with a clear "DAY 1", "DAY 2"… header before each day's blocks. Each day starts 30 minutes before its first session with house open, includes explicit transition blocks between every session, and ends with a wrap/closeout for that day. Add an end-of-day reset / overnight handoff note where appropriate.`

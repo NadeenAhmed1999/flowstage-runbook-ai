@@ -130,7 +130,10 @@ export function deriveSetupBlocks(model: OpsModel): SetupBlock[] {
     if (hasWorkshop) tasks.push("Workshop furniture (tables, chairs) set", "Facilitator materials and participant packs placed");
     tasks.push("Staff ready confirmation to stage manager");
 
-    const rooms = [...new Set(b.items.filter((x) => !isPause(x)).map(nameFor))];
+    const target = b.items.filter((x) => !isPause(x));
+    const rooms = target.length
+      ? [...new Set(target.map(nameFor))]
+      : b.items.map((x) => (x.room.value ? roomName(x.room.value) ?? "Catering area not specified" : "Catering area not specified"));
     const minimum = kb === "meal" ? 0 : model.rules.minResetMin;
     blocks.push({
       id: `setup-${a.day}-${a.end}-${b.start}`,

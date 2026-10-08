@@ -4,7 +4,9 @@ import { FileSpreadsheet, FileText } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useEvent } from "@/components/event-context";
 import { buildTimeline } from "@/lib/run-of-show";
-import { TimelineTable } from "@/components/document/timeline-table";
+import { OpsRunOfShow } from "@/components/document/ops-run-of-show";
+import { ConflictsPanel } from "@/components/document/conflicts-panel";
+import { buildOperationsBrief } from "@/lib/event-brief";
 import { AiRunSheet } from "@/components/document/ai-run-sheet";
 import { SmartReviewPanel } from "@/components/document/smart-review";
 import { BriefingCenter } from "@/components/document/briefing-center";
@@ -36,7 +38,8 @@ export const Route = createFileRoute("/run-of-show")({
 });
 
 function RunOfShowPage() {
-  const { event, runSheet, setRunSheet } = useEvent();
+  const { event, runSheet, setRunSheet, ops, setOps } = useEvent();
+  const operationsBrief = buildOperationsBrief(ops);
   const generateFn = useServerFn(generateRunSheet);
   const reviewFn = useServerFn(reviewRunSheet);
   const scoreFn = useServerFn(scoreReadiness);
@@ -76,6 +79,7 @@ function RunOfShowPage() {
     sponsors: event.sponsors.map((s) => ({ name: s.name, placement: s.placement })),
     avRequirements: event.avRequirements,
     templateGuidance: event.templateGuidance,
+    operationsBrief,
     components: (event.components ?? []).map((c) => ({
       label: c.kind,
       name: c.name,
@@ -154,6 +158,7 @@ function RunOfShowPage() {
           sponsors: event.sponsors.map((s) => ({ name: s.name, placement: s.placement })),
           avRequirements: event.avRequirements,
           templateGuidance: event.templateGuidance,
+          operationsBrief,
         },
 
       });
@@ -301,6 +306,10 @@ function RunOfShowPage() {
         </div>
       )}
 
+      <div className="no-print mb-6">
+        <ConflictsPanel ops={ops} setOps={setOps} />
+      </div>
+
       {(runSheet || readiness || readinessLoading || readinessError) && (
         <div className="mb-6">
           <ReadinessScorePanel
@@ -360,14 +369,12 @@ function RunOfShowPage() {
           </div>
         </header>
 
-        {/* Timeline */}
-        <section className="mb-10 overflow-x-auto">
+        {/* Operational run-of-show */}
+        <section className="mb-10">
           <h3 className="mb-4 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-muted-foreground">
-            Timeline
+            Operational Run-of-Show
           </h3>
-          <div className="min-w-[700px]">
-            <TimelineTable rows={rows} />
-          </div>
+          <OpsRunOfShow ops={ops} setOps={setOps} />
         </section>
 
         {runSheet ? (
