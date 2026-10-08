@@ -66,6 +66,7 @@ const InputSchema = z.object({
   sponsors: z.array(z.object({ name: z.string(), placement: z.string() })),
   avRequirements: z.string().max(2000),
   templateGuidance: z.string().max(2000).optional(),
+  operationsBrief: z.string().max(8000).optional(),
   components: z
     .array(
       z.object({
@@ -157,6 +158,7 @@ ${
     : ""
 }
 ${data.templateGuidance ? `\nEVENT-TYPE GUIDANCE:\n${data.templateGuidance}\n` : ""}
+${data.operationsBrief ? `\nOPERATIONAL MODEL (authoritative — venue, rooms, concurrent tracks, setup/reset, requirements, resources, detected conflicts and NOT SPECIFIED gaps; reason across the whole event, never invent unspecified details):\n${data.operationsBrief}\n` : ""}
 Return the structured Readiness Report.`;
 
     return generateValidatedJSON({

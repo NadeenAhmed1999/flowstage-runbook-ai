@@ -95,12 +95,6 @@ export function OpsRunOfShow({ ops, setOps }: { ops: OpsModel; setOps?: (m: OpsM
   const setStatus = (id: string, status: ItemStatus) =>
     setOps?.({ ...ops, items: ops.items.map((i) => (i.id === id ? { ...i, status } : i)) });
 
-  const dayDate = (d: number) => {
-    const base = new Date("2026-12-01T00:00:00");
-    return d;
-  };
-  void dayDate;
-
   const renderCell = (i: ProgrammeItem) => {
     const pause = isPause(i);
     const reqs = reqsFor(i);
@@ -250,7 +244,7 @@ export function OpsRunOfShow({ ops, setOps }: { ops: OpsModel; setOps?: (m: OpsM
                         <p className="font-mono text-[10px] tabular text-muted-foreground">{b.end}</p>
                         {b.concurrent && <p className="mt-1 font-mono text-[9px] font-bold uppercase text-navy">∥ {lanes.length} tracks</p>}
                       </div>
-                      <div className={b.concurrent ? `grid gap-2 sm:grid-cols-${Math.min(lanes.length, 3)}` : "space-y-2"} style={b.concurrent ? { gridTemplateColumns: undefined } : undefined}>
+                      <div className="space-y-2">
                         {b.concurrent ? (
                           <div className="grid gap-2 md:grid-cols-2">{lanes.map(renderCell)}</div>
                         ) : (
