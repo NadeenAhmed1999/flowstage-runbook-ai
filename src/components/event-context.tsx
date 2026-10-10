@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import type { ComponentKind, PrimaryEventType } from "@/lib/event-components";
 import type { OpsModel } from "@/lib/event-model";
-import { diaOps, DIA_META } from "@/lib/dia-summit-event";
+import { sampleOps, SAMPLE_META } from "@/lib/sample-summit-event";
 import { legacySignature, opsToLegacy, resolveOps } from "@/lib/event-migrate";
 
 export type Session = {
@@ -255,13 +255,13 @@ export function eventFromOps(base: Omit<EventData, "sessions" | "breaks" | "spea
 
 export const seedEvent: EventData = eventFromOps(
   {
-    ...DIA_META,
+    ...SAMPLE_META,
     primaryEventType: "summit",
     sponsors: [],
     components: [],
     avRequirements: "",
   },
-  diaOps,
+  sampleOps,
 );
 
 type Ctx = {

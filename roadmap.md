@@ -1,15 +1,16 @@
 # FlowStage roadmap
 
-## Phase 1 — operational model (done)
-- [x] Event model with four information states, venue/rooms, programme items, requirements, resources, economics
-- [x] Dependency graph and conflict engine (Apply only after confirmation)
-- [x] DIA Africa Access Summit seed and acceptance tests
-- [x] Operational run-of-show: parallel tracks, setup/reset blocks, "not specified" fields, role views
-- [x] AI run sheet, Smart Review and Readiness receive the full operational brief
+## Verification follow-up (user-ordered; report after each step)
+- [x] 1. Anonymized public pages — fictional sample summit on home page, Demo and all default pages; no real DIA names
+- [ ] 2. Persistence — waiting for user OK on the proposed storage approach
+- [ ] 3. Trust fixes — import accepts missing/partial dates; AI run sheet keeps parallel rows and labels suggestions; Readiness treats "not specified" as unknown, confidence shown separately
+- [ ] 4. Placeholder rooms — label in every row, undo, rename screen
+- [ ] Then stop and report
 
-## Phase 2 — after the acceptance gate is signed off
-- [ ] Venue Setup and room/AV editing in the builder
-- [ ] Live Event view (Current / Next / Upcoming)
-- [ ] Import review screen: rooms, tracks, requirements
-- [ ] Excel export of the operational grid; economics summary panel
-- [ ] Demo page switched to the operational model
+## Later (user decides order)
+- Rooms and tracks on the import review screen
+- Room and AV editing in the event builder
+- Excel export of the track layout
+- Live Event screen
+- Budget summary (deferred)
+- Dashboard / Events / Talent & AV / Activity: connect to the real event or label as examples
