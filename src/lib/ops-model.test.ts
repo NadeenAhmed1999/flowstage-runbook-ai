@@ -83,7 +83,7 @@ describe("DIA acceptance — event model", () => {
 
 describe("migration", () => {
   it("seed event keeps legacy fields in sync with the model", () => {
-    expect(seedEvent.name).toBe("DIA Africa Access Summit 2026");
+    expect(seedEvent.name).toBe("Meridian Health Access Summit 2026 (Sample)");
     expect(seedEvent.sessions.length).toBe(15);
     expect(seedEvent.breaks.length).toBe(6);
     expect(resolveOps(seedEvent)).toBe(seedEvent.ops);
@@ -101,5 +101,16 @@ describe("migration", () => {
   it("edits to legacy sessions re-derive the model", () => {
     const edited = { ...seedEvent, sessions: seedEvent.sessions.slice(1) };
     expect(resolveOps(edited).items.length).toBe(seedEvent.ops!.items.length - 1);
+  });
+});
+
+describe("anonymized sample", () => {
+  it("keeps the same structure and conflicts, with no real names", async () => {
+    const { sampleOps } = await import("@/lib/sample-summit-event");
+    const pairs = buildBands(sampleOps.items).filter((b) => b.concurrent).map((b) => b.items.map((i) => i.code).sort().join("/"));
+    expect(pairs).toEqual(["3A/3B", "4A/4B", "7A/7B", "8A/8B"]);
+    const ids = (m: typeof diaOps) => detectConflicts(m).map((c) => c.id).filter((id) => id !== "missing-venue");
+    expect(ids(sampleOps)).toEqual(ids(diaOps));
+    expect(JSON.stringify(sampleOps)).not.toMatch(/Mukanga|Fathallah|Ghamrawy|Gates|EDA|DIA|Africa|Cairo|Hilton/);
   });
 });
