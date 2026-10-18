@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppTopbar } from "@/components/app-shell/topbar";
+import { ExampleDataBanner } from "@/components/app-shell/example-data-banner";
 import { StatusPill } from "@/components/app-shell/status-pill";
 import {
   events,
@@ -49,6 +50,7 @@ function Overview() {
         title="Production overview"
         subtitle="Run-of-show readiness across your active portfolio"
       />
+      <ExampleDataBanner />
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto max-w-7xl space-y-6">
           {/* Export bar */}
