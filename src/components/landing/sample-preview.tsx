@@ -18,7 +18,7 @@ function previewRows(): TimelineRow[] {
     .map((i) => {
       const pause = i.type === "break" || i.type === "meal";
       const speakerNames =
-        i.speakers.state === "confirmed"
+        i.speakers.state === "confirmed" && i.speakers.value
           ? i.speakers.value.map((id) => people.get(id)?.name).filter(Boolean).join(", ")
           : undefined;
       return {
@@ -28,6 +28,7 @@ function previewRows(): TimelineRow[] {
         title: i.code ? `${i.code} · ${i.title}` : i.title,
         subtitle: i.track ? `${i.track} · Day ${i.day}` : `Day ${i.day}`,
         talent: speakerNames || (pause ? "—" : "Speaker not specified"),
+        cues: [],
       } satisfies TimelineRow;
     });
 }
