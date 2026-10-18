@@ -1,11 +1,40 @@
 import { Link } from "@tanstack/react-router";
 import { TimelineTable } from "@/components/document/timeline-table";
-import { buildTimeline } from "@/lib/run-of-show";
-import { seedEvent } from "@/components/event-context";
+import type { TimelineRow } from "@/lib/run-of-show";
+import { sampleOps, SAMPLE_META } from "@/lib/sample-summit-event";
+
+function toMin(t: string) {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+}
+
+/** Preview rows built only from the sample event's actual programme data. */
+function previewRows(): TimelineRow[] {
+  const people = new Map(sampleOps.people.map((p) => [p.id, p]));
+  return sampleOps.items
+    .filter((i) => i.day === 2)
+    .sort((a, b) => toMin(a.start) - toMin(b.start))
+    .slice(0, 4)
+    .map((i) => {
+      const pause = i.type === "break" || i.type === "meal";
+      const speakerNames =
+        i.speakers.state === "confirmed"
+          ? i.speakers.value.map((id) => people.get(id)?.name).filter(Boolean).join(", ")
+          : undefined;
+      return {
+        time: i.start,
+        durationMin: toMin(i.end) - toMin(i.start),
+        kind: pause ? "break" : "session",
+        title: i.code ? `${i.code} · ${i.title}` : i.title,
+        subtitle: i.track ? `${i.track} · Day ${i.day}` : `Day ${i.day}`,
+        talent: speakerNames || (pause ? "—" : "Speaker not specified"),
+      } satisfies TimelineRow;
+    });
+}
 
 export function SamplePreview() {
-  const rows = buildTimeline(seedEvent).slice(0, 4);
-  const speakers = seedEvent.speakers.slice(0, 3);
+  const rows = previewRows();
+  const speakers = sampleOps.people.slice(0, 3);
   return (
     <section className="mx-auto max-w-7xl px-6 py-12">
       <div className="grid overflow-hidden rounded-xl border border-border bg-surface animate-in-up lg:grid-cols-[380px_1fr]">
@@ -18,10 +47,10 @@ export function SamplePreview() {
             <h2 className="mt-1 text-lg font-semibold text-foreground">Event Details</h2>
           </div>
           <div className="space-y-5">
-            <Field label="Event Name" value={seedEvent.name} />
+            <Field label="Event Name" value={SAMPLE_META.name} />
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Type" value={seedEvent.type} />
-              <Field label="Date" value={seedEvent.date} />
+              <Field label="Type" value={SAMPLE_META.type} />
+              <Field label="Date" value={SAMPLE_META.date} />
             </div>
             <div className="space-y-2">
               <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -32,7 +61,7 @@ export function SamplePreview() {
                   <div key={p.id} className="flex items-center gap-2 rounded border border-border bg-surface px-2 py-1.5">
                     <div className="size-5 rounded-full bg-navy/10" />
                     <span className="text-xs">
-                      {p.name} ({p.role})
+                      {p.name} · {p.organisation ?? p.role}
                     </span>
                   </div>
                 ))}
@@ -55,9 +84,9 @@ export function SamplePreview() {
                 <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">
                   Sample event — fictional data
                 </p>
-                <h3 className="mt-2 text-2xl font-bold tracking-tight text-navy">{seedEvent.name}</h3>
+                <h3 className="mt-2 text-2xl font-bold tracking-tight text-navy">{SAMPLE_META.name}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {seedEvent.type} · {seedEvent.date} → {seedEvent.endDate}
+                  {SAMPLE_META.type} · {SAMPLE_META.date} → {SAMPLE_META.endDate}
                 </p>
               </div>
               <div className="text-right">

@@ -58,26 +58,7 @@ export function buildTimeline(event: EventData) {
 
   const rows: TimelineRow[] = [];
 
-  // Always start with house open 30 min before first session
-  const firstSessionTime = event.sessions
-    .map((s) => timeToMinutes(s.startTime))
-    .sort((a, b) => a - b)[0];
-
-  if (firstSessionTime !== undefined) {
-    const houseOpen = addMinutes("00:00", Math.max(0, firstSessionTime - 30));
-    rows.push({
-      time: houseOpen,
-      durationMin: 30,
-      kind: "ops",
-      title: "House Opens",
-      subtitle: "Ambient loop, walk-in music at FOH",
-      cues: [
-        { label: "LOOP VIDEO", tone: "accent" },
-        { label: "HOUSE 60%", tone: "muted" },
-      ],
-      backstageNote: "Ushers in position. Confirm mic battery levels.",
-    });
-  }
+  // No invented rows: the timeline shows only what the event data actually contains.
 
   // Sessions
   for (const s of event.sessions) {
