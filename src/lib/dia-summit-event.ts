@@ -12,11 +12,11 @@ import { buildSummit } from "@/lib/summit-skeleton";
 export const diaOps = buildSummit({
   venue: { name: confirmed("Grand Meridian Hotel"), city: "Springfield", country: "Freedonia" },
   people: [
-    { id: "p-mukanga", name: "Dr. Adrian Mbeki", role: "Speaker", organisation: "Aurora Foundation" },
-    { id: "p-fathallah", name: "Selim Haddad", role: "Speaker", organisation: "Continental Health Alliance" },
-    { id: "p-ghamrawy", name: "H.E. Dr. Farid Nasser", role: "Speaker", organisation: "National Medicines Authority", vip: true },
+    { id: "p-alpha", name: "Dr. Adrian Mbeki", role: "Speaker", organisation: "Aurora Foundation" },
+    { id: "p-beta", name: "Selim Haddad", role: "Speaker", organisation: "Continental Health Alliance" },
+    { id: "p-gamma", name: "H.E. Dr. Farid Nasser", role: "Speaker", organisation: "National Medicines Authority", vip: true },
   ],
-  openingSpeakers: ["p-mukanga", "p-fathallah", "p-ghamrawy"],
+  openingSpeakers: ["p-alpha", "p-beta", "p-gamma"],
   openingNotes: "Tie in Day 0 insights into opening remarks and collaboration with the foundation and the medicines authority.",
   vipDetail: "H.E. Dr. Farid Nasser speaking — protocol not specified",
   titles: {

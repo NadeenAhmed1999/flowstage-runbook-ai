@@ -34,7 +34,7 @@ describe("acceptance — event model (anonymized private test event)", () => {
     expect(s3a.chairs.state).toBe("unknown");
     expect(s3a.interpretation.state).toBe("unknown");
     const open = diaOps.items.find((i) => i.id === "d2-open")!;
-    expect(open.speakers).toEqual({ state: "confirmed", value: ["p-mukanga", "p-fathallah", "p-ghamrawy"] });
+    expect(open.speakers).toEqual({ state: "confirmed", value: ["p-alpha", "p-beta", "p-gamma"] });
   });
 
   it("derives setup/reset blocks for every split to and from tracks", () => {
@@ -58,7 +58,7 @@ describe("acceptance — event model (anonymized private test event)", () => {
   });
 
   it("detects a person double-booked in concurrent sessions", () => {
-    const m = { ...diaOps, items: diaOps.items.map((i) => (i.code === "3A" || i.code === "3B" ? { ...i, speakers: { state: "confirmed" as const, value: ["p-fathallah"] } } : i)) };
+    const m = { ...diaOps, items: diaOps.items.map((i) => (i.code === "3A" || i.code === "3B" ? { ...i, speakers: { state: "confirmed" as const, value: ["p-beta"] } } : i)) };
     expect(detectConflicts(m).some((x) => x.rule === "person_double_booked")).toBe(true);
   });
 
@@ -73,7 +73,7 @@ describe("acceptance — event model (anonymized private test event)", () => {
 
   it("builds dependency edges and a brief with gaps", () => {
     const edges = buildDependencyGraph(diaOps);
-    expect(edges.some((e) => e.relation === "speaker" && e.to.id === "p-ghamrawy")).toBe(true);
+    expect(edges.some((e) => e.relation === "speaker" && e.to.id === "p-gamma")).toBe(true);
     expect(edges.some((e) => e.relation === "setup_before")).toBe(true);
     const brief = buildOperationsBrief(diaOps);
     expect(brief).toContain("∥");
