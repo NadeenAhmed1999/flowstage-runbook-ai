@@ -5,6 +5,7 @@ import { seedEvent } from "@/components/event-context";
 
 export function SamplePreview() {
   const rows = buildTimeline(seedEvent).slice(0, 4);
+  const speakers = seedEvent.speakers.slice(0, 3);
   return (
     <section className="mx-auto max-w-7xl px-6 py-12">
       <div className="grid overflow-hidden rounded-xl border border-border bg-surface animate-in-up lg:grid-cols-[380px_1fr]">
@@ -17,20 +18,22 @@ export function SamplePreview() {
             <h2 className="mt-1 text-lg font-semibold text-foreground">Event Details</h2>
           </div>
           <div className="space-y-5">
-            <Field label="Event Name" value="Global Tech Summit 2025" />
+            <Field label="Event Name" value={seedEvent.name} />
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Type" value="Conference" />
-              <Field label="Date" value="2025-11-14" />
+              <Field label="Type" value={seedEvent.type} />
+              <Field label="Date" value={seedEvent.date} />
             </div>
             <div className="space-y-2">
               <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Key Speakers
+                Speakers
               </label>
               <div className="space-y-2">
-                {["Elena Thorne (CTO)", "Marcus Chen (Product Lead)", "Dr. Aris Patel (Researcher)"].map((n) => (
-                  <div key={n} className="flex items-center gap-2 rounded border border-border bg-surface px-2 py-1.5">
+                {speakers.map((p) => (
+                  <div key={p.id} className="flex items-center gap-2 rounded border border-border bg-surface px-2 py-1.5">
                     <div className="size-5 rounded-full bg-navy/10" />
-                    <span className="text-xs">{n}</span>
+                    <span className="text-xs">
+                      {p.name} ({p.role})
+                    </span>
                   </div>
                 ))}
               </div>
@@ -50,18 +53,16 @@ export function SamplePreview() {
             <div className="mb-8 flex justify-between border-b border-navy/10 pb-6">
               <div>
                 <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">
-                  Official Document // CONFIDENTIAL
+                  Sample event — fictional data
                 </p>
-                <h3 className="mt-2 text-2xl font-bold tracking-tight text-navy">
-                  Global Tech Summit 2025
-                </h3>
+                <h3 className="mt-2 text-2xl font-bold tracking-tight text-navy">{seedEvent.name}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Opening Keynote · The Future of Distributed Systems
+                  {seedEvent.type} · {seedEvent.date} → {seedEvent.endDate}
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-mono text-xs font-medium text-foreground">REV: 2.1</p>
-                <p className="mt-1 text-xs text-muted-foreground">09:00 START</p>
+                <p className="font-mono text-xs font-medium text-foreground">SAMPLE</p>
+                <p className="mt-1 text-xs text-muted-foreground">{rows[0]?.time ?? "09:00"} START</p>
               </div>
             </div>
             <TimelineTable rows={rows} />
