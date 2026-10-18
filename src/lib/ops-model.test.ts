@@ -7,7 +7,7 @@ import { legacyToOps, opsToLegacy, resolveOps } from "@/lib/event-migrate";
 import { seedEvent, gccSampleEvent } from "@/components/event-context";
 import { buildOperationsBrief } from "@/lib/event-brief";
 
-describe("DIA acceptance — event model", () => {
+describe("acceptance — event model (anonymized private test event)", () => {
   const bands = buildBands(diaOps.items);
   const concurrent = bands.filter((b) => b.concurrent).map((b) => b.items.map((i) => i.code).sort().join("/"));
 
