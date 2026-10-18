@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppTopbar } from "@/components/app-shell/topbar";
+import { ExampleDataBanner } from "@/components/app-shell/example-data-banner";
 import { activity } from "@/lib/dashboard-data";
 import { Pencil, Send, MessageSquare, Zap, CheckCheck } from "lucide-react";
 
@@ -20,6 +21,7 @@ function ActivityPage() {
   return (
     <>
       <AppTopbar breadcrumb="Operations" title="Activity" subtitle="Every change across your productions" />
+      <ExampleDataBanner />
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto max-w-3xl">
           <ol className="relative border-l border-border pl-6">

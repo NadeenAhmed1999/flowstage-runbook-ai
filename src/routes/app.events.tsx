@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppTopbar } from "@/components/app-shell/topbar";
+import { ExampleDataBanner } from "@/components/app-shell/example-data-banner";
 import { StatusPill } from "@/components/app-shell/status-pill";
 import { events, type EventStatus } from "@/lib/dashboard-data";
 
@@ -24,6 +25,7 @@ function EventsPage() {
   return (
     <>
       <AppTopbar breadcrumb="Operations" title="Events" subtitle="All productions managed by your team" />
+      <ExampleDataBanner />
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto max-w-7xl space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">

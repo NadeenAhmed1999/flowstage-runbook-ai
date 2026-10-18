@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppTopbar } from "@/components/app-shell/topbar";
+import { ExampleDataBanner } from "@/components/app-shell/example-data-banner";
 import { talent } from "@/lib/dashboard-data";
 
 export const Route = createFileRoute("/app/talent")({
@@ -18,6 +19,7 @@ function TalentPage() {
   return (
     <>
       <AppTopbar breadcrumb="People" title="Talent Roster" subtitle="Speakers, moderators, and backstage assignments" />
+      <ExampleDataBanner />
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto max-w-7xl space-y-4">
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
