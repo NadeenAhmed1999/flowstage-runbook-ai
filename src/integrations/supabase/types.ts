@@ -14,13 +14,77 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      event_collaborators: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_collaborators_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string
+          event_meta: Json
+          id: string
+          ops: Json
+          owner_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_meta?: Json
+          id?: string
+          ops?: Json
+          owner_id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_meta?: Json
+          id?: string
+          ops?: Json
+          owner_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      event_access: {
+        Args: { _event_id: string; _user_id: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
