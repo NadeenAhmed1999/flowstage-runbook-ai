@@ -15,7 +15,7 @@ export type EventMeta = {
   date: string;
   endDate?: string;
   templateGuidance?: string;
-  avRequirements?: string;
+  avRequirements: string;
   sponsors: Sponsor[];
   components: EventComponent[];
 };
