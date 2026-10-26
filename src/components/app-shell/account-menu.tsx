@@ -63,7 +63,7 @@ export function AccountMenu() {
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
-    void navigate({ to: "/auth", replace: true });
+    void navigate({ to: "/auth", search: { next: "" }, replace: true });
   }
 
   return (
