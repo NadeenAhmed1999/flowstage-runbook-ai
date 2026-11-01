@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { FileSpreadsheet, FileText } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useEvent } from "@/components/event-context";
+import { SaveControls } from "@/components/app-shell/save-controls";
 import { buildTimeline } from "@/lib/run-of-show";
 import { OpsRunOfShow } from "@/components/document/ops-run-of-show";
 import { ConflictsPanel } from "@/components/document/conflicts-panel";
@@ -227,6 +228,7 @@ function RunOfShowPage() {
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-navy">{event.name}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <SaveControls />
           <Link
             to="/generate"
             className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-accent/30 hover:bg-surface"
