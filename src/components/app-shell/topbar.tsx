@@ -1,5 +1,7 @@
 import { Search, Bell, Plus } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { SaveControls } from "@/components/app-shell/save-controls";
+import { resetSavedEvent } from "@/hooks/use-saved-event";
 
 export function AppTopbar({ title, subtitle, breadcrumb }: { title: string; subtitle?: string; breadcrumb?: string }) {
   return (
@@ -23,8 +25,10 @@ export function AppTopbar({ title, subtitle, breadcrumb }: { title: string; subt
           <Bell className="h-4 w-4" />
           <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-accent" />
         </button>
+        <SaveControls />
         <Link
           to="/generate"
+          onClick={() => resetSavedEvent()}
           className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground shadow-sm transition-all hover:bg-accent/90 hover:shadow-md hover:-translate-y-px active:translate-y-0"
         >
           <Plus className="h-3.5 w-3.5" /> New event

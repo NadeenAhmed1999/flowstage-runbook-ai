@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { resetSavedEvent } from "@/hooks/use-saved-event";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { FileSpreadsheet } from "lucide-react";
 import {
@@ -160,7 +161,10 @@ function GeneratePage() {
                 <button
                   key={tpl.id}
                   type="button"
-                  onClick={() => setEvent(applyTemplate(tpl, event.date, newId))}
+                  onClick={() => {
+                    setEvent(applyTemplate(tpl, event.date, newId));
+                    resetSavedEvent();
+                  }}
                   className={`group text-left rounded-lg border p-4 transition-colors ${
                     active
                       ? "border-accent bg-accent/5"
