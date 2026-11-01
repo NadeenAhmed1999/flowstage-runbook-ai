@@ -11,6 +11,8 @@ import {
 
 import appCss from "../styles.css?url";
 import { EventProvider } from "@/components/event-context";
+import { SignOutReset } from "@/components/app-shell/signout-reset";
+import { Toaster } from "@/components/ui/sonner";
 import { SiteNav } from "@/components/layout/site-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
 
@@ -126,6 +128,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <EventProvider>
+        <SignOutReset />
         <div className="flex min-h-screen flex-col bg-background">
           {!isApp && <SiteNav />}
           <main className="flex-1">
@@ -133,6 +136,7 @@ function RootComponent() {
           </main>
           {!isApp && <SiteFooter />}
         </div>
+        <Toaster />
       </EventProvider>
     </QueryClientProvider>
   );

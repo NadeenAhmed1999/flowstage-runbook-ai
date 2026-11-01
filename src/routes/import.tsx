@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { resetSavedEvent } from "@/hooks/use-saved-event";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { AppTopbar } from "@/components/app-shell/topbar";
@@ -90,6 +91,7 @@ function ImportPage() {
     if (!mapping) return;
     const eventData = mappedEventToEventData(mapping);
     setEvent(eventData);
+    resetSavedEvent();
     navigate({ to: "/run-of-show" });
   }
 
