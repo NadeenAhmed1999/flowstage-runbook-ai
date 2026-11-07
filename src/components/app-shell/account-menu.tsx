@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 export function useAuthState() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -41,16 +42,18 @@ export function useAuthState() {
 }
 
 export function AccountMenu() {
-  const { userId, email } = useAuthState();
+  const { userId, email, ready } = useAuthState();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  if (!ready) return <span aria-label="Loading account" className="block h-11 w-11" />;
 
   if (!userId) {
     return (
       <Link
         to="/auth"
         search={{ next: "/app" }}
-        className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold text-navy shadow-sm transition hover:bg-surface"
+        className="inline-flex min-h-11 shrink-0 items-center rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold text-navy shadow-sm transition hover:bg-surface"
       >
         Sign in
       </Link>
@@ -69,19 +72,20 @@ export function AccountMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
+        <Button
           aria-label="Account menu"
-          className="grid h-8 w-8 place-items-center rounded-full bg-navy text-[11px] font-bold text-navy-foreground shadow-sm transition hover:bg-navy/90"
+          title="Account menu"
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-navy p-0 text-[11px] font-bold text-navy-foreground shadow-sm transition hover:bg-navy/90"
         >
           {initial}
-        </button>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="truncate text-xs font-medium text-muted-foreground">
           {email}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut} className="text-xs">
+        <DropdownMenuItem onClick={handleSignOut} className="min-h-11 text-xs">
           <LogOut className="h-3.5 w-3.5" /> Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -90,7 +94,7 @@ export function AccountMenu() {
 }
 
 /** Sidebar footer account block — real session state, no invented personas. */
-export function SidebarAccount() {
+export function SidebarAccount({ compact = false }: { compact?: boolean }) {
   const { userId, email } = useAuthState();
 
   if (!userId) {
@@ -98,21 +102,23 @@ export function SidebarAccount() {
       <Link
         to="/auth"
         search={{ next: "/app" }}
-        className="flex items-center gap-2 rounded-md border border-border bg-background px-2.5 py-2 text-xs font-medium text-navy shadow-sm transition hover:bg-surface"
+        aria-label="Sign in"
+        title="Sign in"
+        className="flex min-h-11 items-center gap-2 rounded-md border border-border bg-background px-3.5 py-2 text-xs font-medium text-navy shadow-sm transition hover:bg-surface lg:px-2.5"
       >
-        <UserRound className="h-4 w-4 text-muted-foreground" />
-        Sign in to save events
+        <UserRound className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <span className={compact ? "hidden lg:block" : ""}>Sign in</span>
       </Link>
     );
   }
 
   const initial = (email ?? "?").slice(0, 1).toUpperCase();
   return (
-    <div className="flex items-center gap-2 px-1">
+    <div className="flex min-w-0 items-center gap-2 px-1" title={email ?? undefined}>
       <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-navy text-[10px] font-bold text-navy-foreground">
         {initial}
       </div>
-      <div className="min-w-0 leading-tight">
+      <div className={`min-w-0 leading-tight ${compact ? "hidden lg:block" : ""}`}>
         <p className="truncate text-xs font-medium text-foreground">{email}</p>
         <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Signed in</p>
       </div>

@@ -1,5 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { AccountMenu } from "@/components/app-shell/account-menu";
+import { resetSavedEvent } from "@/hooks/use-saved-event";
 
 const SOLUTIONS = [
   { to: "/solutions/healthcare-conferences", label: "Healthcare Conferences" },
@@ -12,9 +14,9 @@ export function SiteNav() {
   const [openSolutions, setOpenSolutions] = useState(false);
   return (
     <nav className="no-print sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
-        <div className="flex items-center gap-8">
-          <Link to="/" className="font-mono text-sm font-bold uppercase tracking-tighter text-foreground">
+      <div className="mx-auto grid h-14 max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 sm:flex sm:justify-between sm:px-6">
+        <div className="flex min-w-0 items-center gap-8">
+          <Link to="/" className="truncate font-mono text-sm font-bold uppercase tracking-tighter text-foreground">
             FlowStage //
           </Link>
           <div className="hidden gap-6 text-sm font-medium text-muted-foreground md:flex">
@@ -51,13 +53,14 @@ export function SiteNav() {
             <Link to="/resources" className="hover:text-foreground transition-colors">Resources</Link>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <Link to="/auth" search={{ next: "" }} className="text-sm font-medium text-muted-foreground hover:text-foreground">Sign in</Link>
+        <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+          <AccountMenu />
           <Link
             to="/generate"
-            className="rounded-md bg-navy px-3.5 py-1.5 text-sm font-medium text-navy-foreground shadow-sm hover:bg-navy/90 transition-colors"
+            onClick={() => resetSavedEvent()}
+            className="inline-flex min-h-11 items-center rounded-md bg-navy px-3.5 py-1.5 text-sm font-medium text-navy-foreground shadow-sm hover:bg-navy/90 transition-colors"
           >
-            Start Building
+            New event
           </Link>
         </div>
       </div>
