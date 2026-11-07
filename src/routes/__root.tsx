@@ -15,6 +15,7 @@ import { SignOutReset } from "@/components/app-shell/signout-reset";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteNav } from "@/components/layout/site-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { MobileNav } from "@/components/app-shell/mobile-nav";
 
 function NotFoundComponent() {
   return (
@@ -125,16 +126,18 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isApp = pathname.startsWith("/app");
+  const hasPhoneNav = isApp || ["/import", "/generate", "/run-of-show"].includes(pathname);
   return (
     <QueryClientProvider client={queryClient}>
       <EventProvider>
         <SignOutReset />
         <div className="flex min-h-screen flex-col bg-background">
           {!isApp && <SiteNav />}
-          <main className="flex-1">
+          <main className={hasPhoneNav ? "flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0" : "flex-1"}>
             <Outlet />
           </main>
           {!isApp && <SiteFooter />}
+          {hasPhoneNav && <MobileNav />}
         </div>
         <Toaster />
       </EventProvider>

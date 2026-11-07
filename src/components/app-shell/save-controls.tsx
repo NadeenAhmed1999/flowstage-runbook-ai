@@ -12,6 +12,7 @@ import {
 import { useAuthState } from "@/components/app-shell/account-menu";
 import { useSavedEvent } from "@/hooks/use-saved-event";
 import { listSavedEvents, type SavedEventSummary } from "@/lib/event-store";
+import { Button } from "@/components/ui/button";
 
 export function SaveControls() {
   const { userId } = useAuthState();
@@ -20,13 +21,13 @@ export function SaveControls() {
   const [listError, setListError] = useState<string | null>(null);
 
   const btn =
-    "inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold text-navy shadow-sm transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50";
+    "inline-flex h-11 shrink-0 items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold text-navy shadow-sm transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50";
 
   if (!userId) {
     return (
-      <button type="button" disabled className={btn} title="Sign in to save" aria-label="Save (sign in to save)">
+      <Button type="button" variant="outline" disabled className={btn} title="Sign in to save" aria-label="Save (sign in to save)">
         <Save className="h-3.5 w-3.5" /> Sign in to save
-      </button>
+      </Button>
     );
   }
 
@@ -52,9 +53,9 @@ export function SaveControls() {
     <>
       <DropdownMenu onOpenChange={(open) => open && void refresh()}>
         <DropdownMenuTrigger asChild>
-          <button type="button" className={btn}>
+          <Button type="button" variant="outline" className={btn}>
             <FolderOpen className="h-3.5 w-3.5" /> My events
-          </button>
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-64">
           <DropdownMenuLabel className="text-xs text-muted-foreground">Saved events</DropdownMenuLabel>
@@ -65,7 +66,7 @@ export function SaveControls() {
           {items?.map((it) => (
             <DropdownMenuItem
               key={it.id}
-              className="flex flex-col items-start text-xs"
+              className="flex min-h-11 flex-col items-start text-xs"
               onClick={() =>
                 load(it.id).catch((err) => toast.error(err instanceof Error ? err.message : "Could not open event"))
               }
@@ -81,9 +82,9 @@ export function SaveControls() {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-      <button type="button" onClick={onSave} disabled={status === "saving"} className={btn} aria-label="Save event">
+      <Button type="button" variant="outline" onClick={onSave} disabled={status === "saving"} className={btn} aria-label="Save event">
         <Save className="h-3.5 w-3.5" /> {status === "saving" ? "Saving…" : "Save"}
-      </button>
+      </Button>
     </>
   );
 }
