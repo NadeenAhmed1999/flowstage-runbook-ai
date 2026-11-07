@@ -1,5 +1,10 @@
 # FlowStage roadmap
 
+## Current: UI step 1 only
+- [ ] Device-specific navigation and real account controls
+- [ ] Remove search and notification dot; unify New event label
+- [ ] Verify normal sign-in, phone and tablet navigation; stop before Checkpoint B
+
 ## Verification follow-up (user-ordered; report after each step)
 - [x] 1. Anonymized public pages — fictional sample summit on home page, Demo and all default pages; no real DIA names
 - [ ] 2. Persistence — waiting for user OK on the proposed storage approach
