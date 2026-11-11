@@ -6,7 +6,7 @@ import { TimelineTable } from "@/components/document/timeline-table";
 import { ArrowUpRight, Printer, Pencil } from "lucide-react";
 
 export const Route = createFileRoute("/app/run-of-show")({
-  head: () => ({ meta: [{ title: "Run-of-Show · FlowStage" }] }),
+  head: () => ({ meta: [{ title: "Run-of-show · FlowStage" }] }),
   component: AppRunOfShow,
 });
 
@@ -18,7 +18,8 @@ function AppRunOfShow() {
     <>
       <AppTopbar
         breadcrumb={`Events / ${event.name}`}
-        title="Run-of-Show"
+        title="Run-of-show"
+        primary="none"
         subtitle={`${event.type} · ${event.date} · ${rows.length} cues`}
       />
       <div className="flex-1 overflow-auto p-6">

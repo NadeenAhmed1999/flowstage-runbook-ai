@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 const tabs = [
   { to: "/app", label: "Overview", icon: LayoutDashboard },
-  { to: "/app/run-of-show", label: "Run-of-Show", icon: FileText },
+  { to: "/app/run-of-show", label: "Run-of-show", icon: FileText },
   { to: "/app/talent", label: "Talent", icon: Users },
   { to: "/app/av", label: "AV", icon: Cable },
 ] as const;

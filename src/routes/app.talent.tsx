@@ -18,7 +18,7 @@ const statusCls: Record<string, string> = {
 function TalentPage() {
   return (
     <>
-      <AppTopbar breadcrumb="People" title="Talent Roster" subtitle="Speakers, moderators, and backstage assignments" />
+      <AppTopbar breadcrumb="People" title="Talent" primary="none" subtitle="Speakers, moderators, and backstage assignments" />
       <ExampleDataBanner />
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto max-w-7xl space-y-4">

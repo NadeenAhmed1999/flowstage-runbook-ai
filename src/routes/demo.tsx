@@ -10,13 +10,13 @@ import type { OpsModel } from "@/lib/event-model";
 export const Route = createFileRoute("/demo")({
   head: () => ({
     meta: [
-      { title: "Demo Event · FlowStage Operational Run-of-Show" },
+      { title: "Sample event · FlowStage" },
       {
         name: "description",
         content:
           "Explore a fictional two-day summit in FlowStage: parallel tracks, changeovers, conflicts and unknowns, all on one operational run-of-show.",
       },
-      { property: "og:title", content: "FlowStage Demo — Operational Run-of-Show" },
+      { property: "og:title", content: "FlowStage sample — operational run-of-show" },
       {
         property: "og:description",
         content: "A fictional summit with parallel tracks, changeover checks and conflict detection.",
@@ -74,7 +74,7 @@ function DemoPage() {
 
       <article className="rounded-sm border border-border bg-background p-6 shadow-sm sm:p-10">
         <h2 className="mb-4 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-muted-foreground">
-          Operational Run-of-Show
+          Operational run-of-show
         </h2>
         <OpsRunOfShow ops={ops} setOps={setOps} />
       </article>

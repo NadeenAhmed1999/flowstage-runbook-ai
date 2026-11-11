@@ -19,10 +19,10 @@ import {
 const nav = [
   { to: "/app", label: "Overview", icon: LayoutDashboard, exact: true },
   { to: "/app/events", label: "Events", icon: CalendarRange },
-  { to: "/app/run-of-show", label: "Run-of-Show", icon: FileText },
+  { to: "/app/run-of-show", label: "Run-of-show", icon: FileText },
   { to: "/app/talent", label: "Talent", icon: Users },
-  { to: "/app/av", label: "AV Checklist", icon: Cable },
-  { to: "/import", label: "Import Excel", icon: FileSpreadsheet },
+  { to: "/app/av", label: "AV checklist", icon: Cable },
+  { to: "/import", label: "Import", icon: FileSpreadsheet },
   { to: "/app/activity", label: "Activity", icon: Activity },
 ];
 

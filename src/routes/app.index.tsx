@@ -47,7 +47,7 @@ function Overview() {
     <>
       <AppTopbar
         breadcrumb="Operations"
-        title="Production overview"
+        title="Overview"
         subtitle="Run-of-show readiness across your active portfolio"
       />
       <ExampleDataBanner />

@@ -4,7 +4,7 @@ import { avChecklist } from "@/lib/dashboard-data";
 import { CheckCircle2, Clock3, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/app/av")({
-  head: () => ({ meta: [{ title: "AV Checklist · FlowStage" }] }),
+  head: () => ({ meta: [{ title: "AV checklist · FlowStage" }] }),
   component: AvPage,
 });
 
@@ -24,7 +24,8 @@ function AvPage() {
     <>
       <AppTopbar
         breadcrumb="Production"
-        title="AV Checklist"
+        title="AV checklist"
+        primary="none"
         subtitle={`${ready} of ${total} items ready across all productions`}
       />
       <div className="flex-1 overflow-auto p-6">

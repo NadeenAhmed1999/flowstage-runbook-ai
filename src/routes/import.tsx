@@ -29,13 +29,13 @@ import {
 export const Route = createFileRoute("/import")({
   head: () => ({
     meta: [
-      { title: "Import from Excel · FlowStage" },
+      { title: "Import an event · FlowStage" },
       {
         name: "description",
         content:
           "Migrate an existing event plan from Excel into FlowStage. AI auto-maps sessions, speakers, breaks, sponsors, and components.",
       },
-      { property: "og:title", content: "Import from Excel · FlowStage" },
+      { property: "og:title", content: "Import an event · FlowStage" },
       {
         property: "og:description",
         content: "AI-mapped Excel import for professional event operations.",
@@ -106,7 +106,8 @@ function ImportPage() {
     <>
       <AppTopbar
         breadcrumb="Import"
-        title="Import from Excel or Word"
+        title="Import an event"
+        primary="none"
         subtitle="Migrate an existing event plan. AI maps sessions, speakers, breaks, sponsors & components."
       />
       <div className="flex-1 overflow-auto p-6">

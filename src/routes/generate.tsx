@@ -22,7 +22,7 @@ import {
 export const Route = createFileRoute("/generate")({
   head: () => ({
     meta: [
-      { title: "Generate Run-of-Show · FlowStage" },
+      { title: "New event · FlowStage" },
       {
         name: "description",
         content:
@@ -125,9 +125,9 @@ function GeneratePage() {
       <div className="mb-10 flex items-end justify-between gap-6">
         <div>
           <p className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-accent">
-            New Document
+            New event
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-navy">Configure your event</h1>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-navy">Set up your event</h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
             Provide the essentials. FlowStage builds the timeline, cues, transitions, and backstage notes
             from your inputs.
@@ -874,7 +874,7 @@ function GeneratePage() {
               type="submit"
               className="rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-accent-foreground shadow-sm hover:bg-accent/90 transition-colors"
             >
-              Generate Run-of-Show →
+              Generate run-of-show →
             </button>
           </div>
         </div>

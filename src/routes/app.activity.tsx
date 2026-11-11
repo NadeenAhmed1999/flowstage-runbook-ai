@@ -20,7 +20,7 @@ const iconMap = {
 function ActivityPage() {
   return (
     <>
-      <AppTopbar breadcrumb="Operations" title="Activity" subtitle="Every change across your productions" />
+      <AppTopbar breadcrumb="Operations" title="Activity" primary="none" subtitle="Every change across your productions" />
       <ExampleDataBanner />
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto max-w-3xl">

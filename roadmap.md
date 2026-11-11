@@ -20,3 +20,4 @@
 - Live Event screen
 - Budget summary (deferred)
 - Dashboard / Events / Talent & AV / Activity: connect to the real event or label as examples
+- [x] UI step 2.1 shared blocks + 2.2 titles/wording/one primary action (2.3–2.5 wait for approval)
