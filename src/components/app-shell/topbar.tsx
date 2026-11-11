@@ -1,9 +1,8 @@
-import { Bell, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { SaveControls } from "@/components/app-shell/save-controls";
 import { resetSavedEvent } from "@/hooks/use-saved-event";
 import { AccountMenu } from "./account-menu";
-import { Button } from "@/components/ui/button";
 
 export function AppTopbar({ title, subtitle, breadcrumb }: { title: string; subtitle?: string; breadcrumb?: string }) {
   return (
@@ -19,9 +18,6 @@ export function AppTopbar({ title, subtitle, breadcrumb }: { title: string; subt
       </div>
       <div className="shrink-0 lg:order-last"><AccountMenu /></div>
       <div className="col-span-2 flex shrink-0 items-center justify-end gap-2 lg:col-span-1 lg:ml-auto">
-        <Button variant="outline" size="icon" aria-label="Notifications" className="h-11 w-11 shrink-0 border-border bg-background text-muted-foreground hover:border-accent/30 hover:bg-surface hover:text-foreground">
-          <Bell className="h-4 w-4" />
-        </Button>
         <SaveControls />
         <Link
           to="/generate"
