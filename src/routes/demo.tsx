@@ -1,5 +1,8 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEvent } from "@/components/event-context";
+import { resetSavedEvent } from "@/hooks/use-saved-event";
+import { Button } from "@/components/ui/button";
 import { OpsRunOfShow } from "@/components/document/ops-run-of-show";
 import { ConflictsPanel } from "@/components/document/conflicts-panel";
 import { sampleOps, SAMPLE_META } from "@/lib/sample-summit-event";
@@ -29,6 +32,14 @@ export const Route = createFileRoute("/demo")({
 });
 
 function DemoPage() {
+  const { reset, setRunSheet } = useEvent();
+  const navigate = useNavigate();
+  function openSample() {
+    reset();
+    setRunSheet(null);
+    resetSavedEvent();
+    void navigate({ to: "/run-of-show" });
+  }
   // Local, in-page state only: visitors can try fixes; nothing is saved.
   const [ops, setOps] = useState<OpsModel>(sampleOps);
   const stats = useMemo(() => {
@@ -59,9 +70,9 @@ function DemoPage() {
           <Kpi label="Open issues" value={stats.conflicts} />
         </div>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link to="/generate" className="rounded-md bg-navy px-4 py-2 text-sm font-medium text-navy-foreground hover:bg-navy/90">
-            New event
-          </Link>
+          <Button onClick={openSample} className="bg-navy text-navy-foreground hover:bg-navy/90">
+            Open in run-of-show
+          </Button>
           <Link to="/pricing" className="rounded-md border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-surface">
             See pricing
           </Link>

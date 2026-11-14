@@ -1,5 +1,12 @@
 # FlowStage roadmap
 
+## Current small UI job
+- [x] Sample button resets to untouched sample and opens run-of-show
+- [x] My events uses shared empty state and existing save action
+- [x] Empty conflicts wording; no invented check timestamp
+- [x] All 25 existing tests; signed-out sample reset and empty conflicts at 390px and 1280px
+- [ ] Signed-in My events browser check — session mint failed because Lovable Cloud reported the database unavailable
+
 ## Current: UI step 1 only
 - [x] Device-specific navigation and real account controls
 - [x] Remove search and notification dot; unify New event label

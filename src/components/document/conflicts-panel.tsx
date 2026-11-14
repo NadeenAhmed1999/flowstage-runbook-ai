@@ -60,7 +60,7 @@ export function ConflictsPanel({ ops, setOps }: { ops: OpsModel; setOps: (m: Ops
             )}
           </li>
         ))}
-        {conflicts.length === 0 && <li className="text-xs text-muted-foreground">No open conflicts.</li>}
+        {conflicts.length === 0 && <li className="text-xs text-muted-foreground">No conflicts found</li>}
       </ul>
     </section>
   );

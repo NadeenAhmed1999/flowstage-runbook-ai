@@ -13,6 +13,7 @@ import { useAuthState } from "@/components/app-shell/account-menu";
 import { useSavedEvent } from "@/hooks/use-saved-event";
 import { listSavedEvents, type SavedEventSummary } from "@/lib/event-store";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export function SaveControls() {
   const { userId } = useAuthState();
@@ -62,7 +63,21 @@ export function SaveControls() {
           <DropdownMenuSeparator />
           {listError && <p className="px-2 py-1.5 text-xs text-destructive">{listError}</p>}
           {items === null && !listError && <p className="px-2 py-1.5 text-xs text-muted-foreground">Loading…</p>}
-          {items?.length === 0 && <p className="px-2 py-1.5 text-xs text-muted-foreground">No saved events yet.</p>}
+          {items?.length === 0 && (
+            <EmptyState
+              title="No saved events yet"
+              description="Save the current event to find it here."
+              action={
+                <Button
+                  type="button"
+                  disabled={status === "saving"}
+                  onClick={async () => { await onSave(); await refresh(); }}
+                >
+                  Save current event
+                </Button>
+              }
+            />
+          )}
           {items?.map((it) => (
             <DropdownMenuItem
               key={it.id}
