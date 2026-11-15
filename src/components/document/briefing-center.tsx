@@ -8,6 +8,8 @@ import {
 } from "@/lib/generate-briefing.functions";
 import type { RunSheet } from "@/lib/generate-run-sheet.functions";
 import type { EventData } from "@/components/event-context";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 
 type Channel = {
   id: BriefingAudience;
@@ -75,7 +77,7 @@ export function BriefingCenter({
   runSheet,
 }: {
   event: EventData;
-  runSheet: RunSheet;
+  runSheet: RunSheet | null;
 }) {
   const fn = useServerFn(generateBriefing);
   const [active, setActive] = useState<BriefingAudience>("speaker");
@@ -92,6 +94,7 @@ export function BriefingCenter({
     setChannels((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
 
   const run = async (id: BriefingAudience) => {
+    if (!runSheet) return;
     update(id, { loading: true, error: null });
     try {
       const brief = await fn({
@@ -116,7 +119,8 @@ export function BriefingCenter({
   };
 
   const activeState = channels[active];
-  const activeChannel = CHANNELS.find((c) => c.id === active)!;
+  const activeChannel = CHANNELS.find((c) => c.id === active);
+  if (!activeChannel) return null;
 
   return (
     <section className="rounded-sm border border-navy/15 bg-background">
@@ -184,7 +188,7 @@ export function BriefingCenter({
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <button
+              {(activeState.brief || activeState.loading || activeState.error) && <button
                 type="button"
                 onClick={() => run(active)}
                 disabled={activeState.loading}
@@ -201,7 +205,7 @@ export function BriefingCenter({
                     {activeState.brief ? "Regenerate" : "Generate"}
                   </>
                 )}
-              </button>
+              </button>}
               {activeState.brief && (
                 <button
                   type="button"
@@ -222,7 +226,12 @@ export function BriefingCenter({
             )}
 
             {!activeState.brief && !activeState.loading && !activeState.error && (
-              <EmptyState channel={activeChannel} onRun={() => run(active)} />
+              <EmptyState
+                icon={activeChannel.icon}
+                title="No briefs yet"
+                description={runSheet ? undefined : "Generate the run sheet first."}
+                action={<Button type="button" className="min-h-11" disabled={!runSheet} onClick={() => run(active)}>Generate briefings</Button>}
+              />
             )}
 
             {activeState.loading && !activeState.brief && <LoadingShimmer />}
@@ -241,35 +250,6 @@ function StatusDot({ state }: { state: ChannelState }) {
   if (state.error) return <span className="h-1.5 w-1.5 rounded-full bg-destructive" />;
   if (state.brief) return <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />;
   return <span className="h-1.5 w-1.5 rounded-full bg-border" />;
-}
-
-function EmptyState({ channel, onRun }: { channel: Channel; onRun: () => void }) {
-  const Icon = channel.icon;
-  return (
-    <div className="flex flex-col items-start gap-3 rounded-sm border border-dashed border-border bg-surface/50 p-6">
-      <div className="inline-flex h-9 w-9 items-center justify-center rounded-sm bg-navy text-navy-foreground">
-        <Icon className="h-4 w-4" />
-      </div>
-      <div>
-        <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">
-          Channel offline
-        </p>
-        <p className="mt-1 text-sm text-foreground">
-          No briefing generated yet for {channel.recipient.toLowerCase()}.
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          FlowStage will distill only the run-of-show content this audience needs.
-        </p>
-      </div>
-      <button
-        type="button"
-        onClick={onRun}
-        className="rounded-sm bg-accent px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-accent-foreground hover:bg-accent/90"
-      >
-        ✶ Generate brief
-      </button>
-    </div>
-  );
 }
 
 function LoadingShimmer() {

@@ -174,7 +174,7 @@ function RunOfShowPage() {
 
   const autoTriggered = useRef(false);
   useEffect(() => {
-    if (!runSheet && !loading && !autoTriggered.current) {
+    if (ops.items.length > 0 && !runSheet && !loading && !autoTriggered.current) {
       autoTriggered.current = true;
       void handleGenerate();
     }
@@ -313,7 +313,7 @@ function RunOfShowPage() {
         <ConflictsPanel ops={ops} setOps={setOps} />
       </div>
 
-      {(runSheet || readiness || readinessLoading || readinessError) && (
+      {(
         <div className="mb-6">
           <ReadinessScorePanel
             report={readiness}
@@ -324,7 +324,7 @@ function RunOfShowPage() {
         </div>
       )}
 
-      {(runSheet || review || reviewLoading || reviewError) && (
+      {(
         <div className="mb-6">
           <SmartReviewPanel
             review={review}
@@ -346,7 +346,7 @@ function RunOfShowPage() {
         </div>
       )}
 
-      {runSheet && (
+      {(
         <div className="no-print mb-8">
           <BriefingCenter event={event} runSheet={runSheet} />
         </div>

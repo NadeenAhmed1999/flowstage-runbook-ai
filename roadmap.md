@@ -1,5 +1,11 @@
 # FlowStage roadmap
 
+## Current: remaining Step 2.3 only
+- [ ] Shared empty states: run-of-show, briefings, Smart Review, readiness, import
+- [ ] Empty and populated browser checks at 390px and 1280px; existing 25 tests
+- [ ] Optional signed-in My events empty-state check if a test session is available
+- Steps 2.4, 2.5 and Checkpoint B are out of scope.
+
 ## Current small UI job
 - [x] Sample button resets to untouched sample and opens run-of-show
 - [x] My events uses shared empty state and existing save action

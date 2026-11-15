@@ -4,6 +4,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { AppTopbar } from "@/components/app-shell/topbar";
 import { useEvent } from "@/components/event-context";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 import {
   parseWorkbookFile,
   mappedEventToEventData,
@@ -40,6 +42,8 @@ export const Route = createFileRoute("/import")({
         property: "og:description",
         content: "AI-mapped Excel import for professional event operations.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: ImportPage,
@@ -281,8 +285,7 @@ function UploadPane({
         </p>
       </div>
 
-      <label
-        htmlFor="xlsx-upload"
+      <div
         onDragOver={(e) => {
           e.preventDefault();
           setDragOver(true);
@@ -300,17 +303,12 @@ function UploadPane({
             : "border-border bg-surface/50 hover:border-accent/60 hover:bg-accent/[0.02]"
         }`}
       >
-        <div className="grid h-12 w-12 place-items-center rounded-full bg-accent/10 text-accent">
-          <UploadCloud className="h-6 w-6" />
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-foreground">
-            Drop your Excel or Word file here, or click to browse
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            .xlsx, .xls, .csv, .docx · up to 20 sheets · handled securely
-          </p>
-        </div>
+        <EmptyState
+          icon={UploadCloud}
+          title="No file chosen"
+          description="Import an existing Excel or Word agenda with sessions, dates, times and speakers."
+          action={<Button type="button" className="min-h-11" onClick={() => inputRef.current?.click()}>Choose file</Button>}
+        />
         <input
           ref={inputRef}
           id="xlsx-upload"
@@ -322,7 +320,7 @@ function UploadPane({
             if (f) onFile(f);
           }}
         />
-      </label>
+      </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-3 text-xs">
         <FeatureLine text="AI detects headers, dates, and roster columns automatically." />

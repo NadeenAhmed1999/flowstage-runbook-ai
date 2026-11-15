@@ -12,6 +12,10 @@ import {
   type ProgrammeItem,
 } from "@/lib/event-model";
 import { buildBands, deriveSetupBlocks, type SetupBlock, type TimeBand } from "@/lib/ops-schedule";
+import { Link } from "@tanstack/react-router";
+import { useEvent } from "@/components/event-context";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 
 type View = "full" | "production" | "room" | "speaker";
 const VIEWS: { id: View; label: string }[] = [
@@ -74,6 +78,7 @@ function typeTone(i: ProgrammeItem): string {
 }
 
 export function OpsRunOfShow({ ops, setOps }: { ops: OpsModel; setOps?: (m: OpsModel) => void }) {
+  const { reset } = useEvent();
   const [view, setView] = useState<View>("full");
   const [track, setTrack] = useState<string>("all");
   const [open, setOpen] = useState<Record<string, boolean>>({});
@@ -192,6 +197,13 @@ export function OpsRunOfShow({ ops, setOps }: { ops: OpsModel; setOps?: (m: OpsM
 
   return (
     <div className="space-y-4" data-testid="ops-run-of-show">
+      {ops.items.length === 0 && (
+        <EmptyState
+          title="No programme items"
+          action={<Button asChild className="min-h-11"><Link to="/import">Import agenda</Link></Button>}
+          secondary={<Button type="button" variant="link" className="min-h-11" onClick={reset}>Use the sample</Button>}
+        />
+      )}
       <div className="no-print flex flex-wrap items-center gap-2">
         <div className="flex flex-wrap gap-1 rounded-md border border-border p-0.5">
           {VIEWS.map((v) => (

@@ -2,6 +2,8 @@ import { useState } from "react";
 import type { SmartReview, SmartReviewFinding } from "@/lib/smart-review.functions";
 import { AlertTriangle, AlertCircle, Info, ShieldCheck, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   review: SmartReview | null;
@@ -72,7 +74,7 @@ export function SmartReviewPanel({ review, loading, error, onRun }: Props) {
               <span className="text-sky-600 dark:text-sky-400">{counts.low} Low</span>
             </div>
           )}
-          <button
+          {(review || loading || error) && <button
             type="button"
             onClick={onRun}
             disabled={loading}
@@ -86,7 +88,7 @@ export function SmartReviewPanel({ review, loading, error, onRun }: Props) {
             ) : (
               <>✶ {review ? "Re-run review" : "Run Smart Review"}</>
             )}
-          </button>
+          </button>}
         </div>
       </header>
 
@@ -106,10 +108,11 @@ export function SmartReviewPanel({ review, loading, error, onRun }: Props) {
         )}
 
         {!loading && !review && !error && (
-          <p className="text-sm text-muted-foreground">
-            Run Smart Review to surface operational risks, missing details, timing issues, and
-            improvement suggestions across your run-of-show.
-          </p>
+          <EmptyState
+            icon={ShieldCheck}
+            title="Not run yet"
+            action={<Button type="button" className="min-h-11" onClick={onRun}>Run Smart Review</Button>}
+          />
         )}
 
         {review && (

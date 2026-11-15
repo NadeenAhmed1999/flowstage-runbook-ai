@@ -4,6 +4,8 @@ import { useEvent } from "@/components/event-context";
 import { buildTimeline } from "@/lib/run-of-show";
 import { TimelineTable } from "@/components/document/timeline-table";
 import { ArrowUpRight, Printer, Pencil } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/app/run-of-show")({
   head: () => ({ meta: [{ title: "Run-of-show · FlowStage" }] }),
@@ -11,7 +13,7 @@ export const Route = createFileRoute("/app/run-of-show")({
 });
 
 function AppRunOfShow() {
-  const { event } = useEvent();
+  const { event, ops, reset } = useEvent();
   const rows = buildTimeline(event);
 
   return (
@@ -55,9 +57,17 @@ function AppRunOfShow() {
               </div>
             </div>
             <div className="overflow-x-auto p-5">
-              <div className="min-w-[700px]">
-                <TimelineTable rows={rows} />
-              </div>
+              {ops.items.length === 0 ? (
+                <EmptyState
+                  title="No programme items"
+                  action={<Button asChild className="min-h-11"><Link to="/import">Import agenda</Link></Button>}
+                  secondary={<Button type="button" variant="link" className="min-h-11" onClick={reset}>Use the sample</Button>}
+                />
+              ) : (
+                <div className="min-w-[700px]">
+                  <TimelineTable rows={rows} />
+                </div>
+              )}
             </div>
           </section>
 

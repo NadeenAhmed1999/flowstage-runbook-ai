@@ -1,5 +1,6 @@
 import type { ReadinessReport, ReadinessCategory, ReadinessRisk } from "@/lib/readiness-score.functions";
-import { AlertTriangle, CheckCircle2, ShieldAlert, Activity, Gauge } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ShieldAlert, Gauge } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const STATUS_META: Record<
   ReadinessReport["status"],
@@ -134,10 +135,7 @@ export function ReadinessScorePanel({
         )}
 
         {!loading && !report && !error && (
-          <div className="flex items-center gap-3 rounded-md border border-dashed border-border bg-surface/40 px-4 py-6 text-xs text-muted-foreground">
-            <Activity className="h-4 w-4 text-muted-foreground" />
-            Score will calculate once the run sheet is generated.
-          </div>
+          <EmptyState icon={Gauge} title="Not calculated" description="Score will calculate once the run sheet is generated." />
         )}
       </div>
     </section>
