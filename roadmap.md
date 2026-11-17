@@ -1,9 +1,14 @@
 # FlowStage roadmap
 
+## Current: four-item follow-up only
+- [x] Clear signup outcome message, import formats hint, singular Generate brief label
+- [x] Read-only owner session checks at 390px and 1280px; no event writes or Save clicks
+- [x] Existing 25 tests; changes ready for commit
+
 ## Current: remaining Step 2.3 only
 - [ ] Shared empty states: run-of-show, briefings, Smart Review, readiness, import
 - [ ] Empty and populated browser checks at 390px and 1280px; existing 25 tests
-- [ ] Optional signed-in My events empty-state check if a test session is available
+- [x] Signed-in My events empty-state check through owner self session at both widths
 - Steps 2.4, 2.5 and Checkpoint B are out of scope.
 
 ## Current small UI job
@@ -11,7 +16,7 @@
 - [x] My events uses shared empty state and existing save action
 - [x] Empty conflicts wording; no invented check timestamp
 - [x] All 25 existing tests; signed-out sample reset and empty conflicts at 390px and 1280px
-- [ ] Signed-in My events browser check — session mint failed because Lovable Cloud reported the database unavailable
+- [x] Signed-in My events browser check — owner self session passed at both widths
 
 ## Current: UI step 1 only
 - [x] Device-specific navigation and real account controls

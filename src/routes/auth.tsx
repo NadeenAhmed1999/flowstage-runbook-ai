@@ -5,6 +5,14 @@ import { lovable } from "@/integrations/lovable/index";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  head: () => ({ meta: [
+    { title: "Account access · FlowStage" },
+    { name: "description", content: "Sign in or create your FlowStage account to save your professional event plans." },
+    { property: "og:title", content: "Account access · FlowStage" },
+    { property: "og:description", content: "Access your saved FlowStage event plans." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   validateSearch: (s: Record<string, unknown>) => ({
     next: typeof s.next === "string" ? s.next : "",
   }),
@@ -56,7 +64,7 @@ function AuthPage() {
         if (error) throw error;
         void navigate({ href: nextPath });
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -64,8 +72,12 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        setInfo("Account created. Check your email if confirmation is required, then sign in.");
-        setMode("signin");
+        if (data.session) {
+          void navigate({ href: nextPath });
+        } else {
+          setInfo(`We sent a confirmation link to ${email}. Open it to finish creating your account.`);
+          setMode("signin");
+        }
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Sign-in failed");

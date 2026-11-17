@@ -230,7 +230,7 @@ export function BriefingCenter({
                 icon={activeChannel.icon}
                 title="No briefs yet"
                 description={runSheet ? undefined : "Generate the run sheet first."}
-                action={<Button type="button" className="min-h-11" disabled={!runSheet} onClick={() => run(active)}>Generate briefings</Button>}
+                action={<Button type="button" className="min-h-11" disabled={!runSheet} onClick={() => run(active)}>Generate brief</Button>}
               />
             )}
 

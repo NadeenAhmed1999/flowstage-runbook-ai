@@ -307,7 +307,10 @@ function UploadPane({
           icon={UploadCloud}
           title="No file chosen"
           description="Import an existing Excel or Word agenda with sessions, dates, times and speakers."
-          action={<Button type="button" className="min-h-11" onClick={() => inputRef.current?.click()}>Choose file</Button>}
+          action={<>
+            <p className="mb-4 text-xs text-muted-foreground">.xlsx, .xls, .csv, .docx · up to 20 sheets · handled securely</p>
+            <Button type="button" className="min-h-11" onClick={() => inputRef.current?.click()}>Choose file</Button>
+          </>}
         />
         <input
           ref={inputRef}
