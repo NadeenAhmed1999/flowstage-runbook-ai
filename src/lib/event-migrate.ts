@@ -114,6 +114,7 @@ export function legacyToOps(event: EventData, base?: OpsModel): OpsModel {
       notes: s.description || undefined,
       origin: { kind: "session", id: s.id },
       ...base0(s.id),
+      ...(s.partId ? { partId: s.partId } : {}),
     };
   };
 
@@ -137,6 +138,7 @@ export function legacyToOps(event: EventData, base?: OpsModel): OpsModel {
     status: "planned",
     origin: { kind: "break", id: b.id },
     ...base0(b.id),
+    ...(b.partId ? { partId: b.partId } : {}),
   });
 
   const fromComponent = (c: NonNullable<EventData["components"]>[number]): ProgrammeItem => ({
@@ -187,9 +189,8 @@ export function legacyToOps(event: EventData, base?: OpsModel): OpsModel {
 /** Reverse adapter: programme items → legacy sessions/breaks/people used by existing features. */
 export function opsToLegacy(ops: OpsModel): Pick<EventData, "sessions" | "breaks" | "speakers" | "moderators"> {
   const dur = (i: ProgrammeItem) => Math.max(0, toMin(i.end) - toMin(i.start));
-  // Items in extra (non-main, non-component) parts carry their part name so nothing disappears silently.
-  const partName = new Map((ops.parts ?? []).filter((p) => p.id !== MAIN_PART_ID && !p.componentId).map((p) => [p.id, p.name]));
-  const partTag = (i: ProgrammeItem) => (i.partId && partName.has(i.partId) ? `[Part: ${partName.get(i.partId)}]` : "");
+  // Items outside Main programme keep their part link; one-part events get no extra field.
+  const partOf = (i: ProgrammeItem) => (i.partId && i.partId !== MAIN_PART_ID ? { partId: i.partId } : {});
   const nonComponent = ops.items.filter((i) => i.origin?.kind !== "component");
   const modIds = new Set(nonComponent.flatMap((i) => [...(i.moderators.value ?? []), ...(i.chairs.value ?? [])]));
   const sessions: Session[] = nonComponent
@@ -199,14 +200,15 @@ export function opsToLegacy(ops: OpsModel): Pick<EventData, "sessions" | "breaks
       title: i.title,
       startTime: i.start,
       durationMin: dur(i),
-      description: [partTag(i), i.track ? `[${i.track}]` : "", i.notes ?? ""].filter(Boolean).join(" "),
+      description: [i.track ? `[${i.track}]` : "", i.notes ?? ""].filter(Boolean).join(" "),
       speakerIds: i.speakers.value ?? [],
       moderatorIds: [...(i.moderators.value ?? []), ...(i.chairs.value ?? [])],
       day: i.day,
+      ...partOf(i),
     }));
   const breaks: Break[] = nonComponent
     .filter(isPause)
-    .map((i) => ({ id: i.origin?.id ?? i.id, label: partTag(i) ? `${partTag(i)} ${i.title}` : i.title, startTime: i.start, durationMin: dur(i), day: i.day }));
+    .map((i) => ({ ...partOf(i), id: i.origin?.id ?? i.id, label: i.title, startTime: i.start, durationMin: dur(i), day: i.day }));
   return {
     sessions,
     breaks,

@@ -37,7 +37,7 @@ function partFromComponent(c: EventComponent, prev?: Part): Part {
     day: c.day ?? 1,
     start: c.startTime,
     end: c.endTime,
-    track: prev?.track,
+    track: c.track ?? prev?.track,
     notes: c.notes,
     venue: c.venue,
     hosts: c.hosts,
@@ -67,6 +67,12 @@ export function withParts(ops: OpsModel | OpsModelV1, components: EventComponent
     return { ...i, partId: ids.has(cp) ? cp : MAIN_PART_ID };
   });
   return { ...ops, version: 2, parts, items };
+}
+
+/** Name of a non-main part, for the AI "Part:" note. Main programme / unknown returns undefined. */
+export function partNameFor(parts: Part[] | undefined, partId: string | undefined): string | undefined {
+  if (!partId || partId === MAIN_PART_ID) return undefined;
+  return parts?.find((p) => p.id === partId)?.name;
 }
 
 /** Upgrade any stored model to v2. An already-v2 model is returned unchanged. */

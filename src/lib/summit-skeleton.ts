@@ -3,7 +3,7 @@ import { confirmed, unknown, type OpsModel, type OpsModelV1, type ProgrammeItem,
 import { assignTracks } from "@/lib/ops-schedule";
 
 /**
- * Name-free structure shared by the private DIA test event and the public sample:
+ * Name-free structure shared by the test fixture and the public sample:
  * days, times, types, session codes, parallel pairs and gaps. Titles and people are
  * supplied by each event file, so private names never enter public bundles.
  */

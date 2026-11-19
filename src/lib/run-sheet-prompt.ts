@@ -22,7 +22,7 @@ export function buildRunSheetPrompt(data: z.infer<typeof RunSheetInputSchema>): 
                 `- ${s.startTime} (${s.durationMin}min) ${s.title}
   Speakers: ${s.speakers.join(", ") || "—"}
   Moderators: ${s.moderators.join(", ") || "—"}
-  ${s.description ?? ""}`,
+${s.part ? `  Part: ${s.part}\n` : ""}  ${s.description ?? ""}`,
             )
             .join("\n") || "- (no sessions)";
         return isMultiDay ? `\n=== DAY ${d} ===\n${lines}` : lines;

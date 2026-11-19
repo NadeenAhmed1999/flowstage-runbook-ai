@@ -47,6 +47,8 @@ export const RunSheetInputSchema = z.object({
       speakers: z.array(z.string()),
       moderators: z.array(z.string()),
       day: z.number().int().min(1).optional(),
+      /** Part name, only for sessions outside Main programme. */
+      part: z.string().max(120).optional(),
     }),
   ),
   breaks: z.array(

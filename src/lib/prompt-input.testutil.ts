@@ -1,3 +1,4 @@
+import { partNameFor } from "@/lib/event-parts";
 import type { EventData } from "@/components/event-context";
 import { buildOperationsBrief } from "@/lib/event-brief";
 import { resolveOps } from "@/lib/event-migrate";
@@ -13,7 +14,7 @@ export function promptFor(event: EventData): string {
     eventType: event.type,
     eventDate: event.date,
     eventEndDate: event.endDate,
-    sessions: event.sessions.map((s) => ({ title: s.title, startTime: s.startTime, durationMin: s.durationMin, description: s.description, day: s.day, speakers: name(s.speakerIds, event.speakers), moderators: name(s.moderatorIds, event.moderators) })),
+    sessions: event.sessions.map((s) => ({ title: s.title, startTime: s.startTime, durationMin: s.durationMin, description: s.description, day: s.day, part: partNameFor(event.ops?.parts, s.partId), speakers: name(s.speakerIds, event.speakers), moderators: name(s.moderatorIds, event.moderators) })),
     breaks: event.breaks.map((b) => ({ label: b.label, startTime: b.startTime, durationMin: b.durationMin, day: b.day })),
     sponsors: event.sponsors.map((s) => ({ name: s.name, placement: s.placement })),
     avRequirements: event.avRequirements,

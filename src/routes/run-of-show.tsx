@@ -1,3 +1,4 @@
+import { partNameFor } from "@/lib/event-parts";
 import { InlineError } from "@/components/ui/inline-error";
 import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -142,6 +143,7 @@ function RunOfShowPage() {
             durationMin: s.durationMin,
             description: s.description,
             day: s.day,
+            part: partNameFor(event.ops?.parts, s.partId),
             speakers: s.speakerIds
               .map((id) => event.speakers.find((p) => p.id === id))
               .filter(Boolean)

@@ -7,6 +7,8 @@ import { legacySignature, opsToLegacy, resolveOps } from "@/lib/event-migrate";
 
 export type Session = {
   id: string;
+  /** Part this session belongs to (empty = Main programme). */
+  partId?: string;
   title: string;
   startTime: string; // HH:MM
   durationMin: number;
@@ -20,6 +22,8 @@ export type Session = {
 export type Person = { id: string; name: string; role: string };
 export type Break = {
   id: string;
+  /** Part this break belongs to (empty = Main programme). */
+  partId?: string;
   label: string;
   startTime: string;
   durationMin: number;
@@ -34,6 +38,8 @@ export type Sponsor = { id: string; name: string; placement: string };
  */
 export type EventComponent = {
   id: string;
+  /** Default track for this part. */
+  track?: string;
   kind: ComponentKind;
   name: string;
   day?: number;
