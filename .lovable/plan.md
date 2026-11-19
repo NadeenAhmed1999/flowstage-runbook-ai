@@ -1,61 +1,83 @@
-# Event setup clean-up and nested parts
+# Step 2b: nested parts on screen
 
-## What I checked before writing this
-- `event-model.ts`: each programme item (`ProgrammeItem`) already has `day`, `start`, `end`, `room` and an optional free-text `track`, plus `origin.kind` set to "session", "break" or "component". `OpsModel` already has one shared `people` list. There's no part or partId yet.
-- `/generate` Type dropdown has 5 fixed values: Conference, Summit, Corporate Event, Panel, Hybrid Panel.
-- The sample event's default type is "Healthcare Conference", which isn't in that dropdown. That's how the dropdown can show the wrong type.
-- Import: the file picker accepts only .xlsx/.xls/.csv/.docx, but drag-and-drop has no check.
-- **"Up to 20 sheets" is true.** The server rejects a workbook with more than 20 sheets. It also only reads the first 200 rows and 20 columns of each sheet, and the hint doesn't say so.
-- **"Handled securely" can't be backed up as written.** The file is read in your browser, but its contents are sent to the AI service to map the columns. I recommend replacing it with: "Contents are sent to our AI to map columns".
-- Tests: 25 in `ops-model.test.ts` and `run-sheet-parsing.test.ts`.
+Split into three sub-steps. I stop and report after each one.
 
-Credit estimates are rough ranges from similar jobs so far.
+## 1. Keeping parts and existing features in sync (the core decision)
 
-## Step 5 first: phone run-of-show (independent)
-This only changes how the page looks, not the event data, so it can go first. At 390px the timeline becomes one list sorted by time, with the room or track shown on each row. The top bar stops being cut off.
-- Estimate: 2–4 credits. Risk: low. It's the same component the parts work changes later, so it may need a small touch-up after step 2.
+**Single source of truth: the existing component list plus a part link on sessions and breaks.**
+- Every part except "Main programme" is stored as a component, as today. Components already have name, kind, day, start/end, venue, hosts, notes and the AV/staffing/protocol checklists. Add two optional fields to a component: `track`, and kind "other" for parts that aren't a ceremony, dinner and so on.
+- Add an optional `partId` to sessions and breaks. Leaving it empty means "Main programme".
+- The operational model's `parts` and each item's part link stay **derived** from this, through the existing `withParts` and `legacyToOps`. That's the same one-way flow as today, so the run sheet, Smart Review, readiness, briefings and exports keep reading what they read now.
 
-## Step 1: one event-type list everywhere
-- One shared list of event types: Conference, Summit, Corporate event, Panel, Hybrid panel, Gala / dinner, Awards, Product launch, Investor forum, Workshop / training, Executive summit.
-- That list is used by: the `/generate` Type dropdown, a new type dropdown on the import review (replacing the free-text box), the import AI instructions ("pick one value from this list, or Unknown"), and each template's type.
-- Remove the hidden `primaryEventType`. It becomes an alias of the visible type, so the screen and the saved value can't disagree. A stored type that isn't on the list shows as "Other: <value>", never as a different type.
-- Templates are relabelled "Starting point". Choosing one shows a confirmation ("This replaces your name, sessions and components") whenever there is work to lose.
-- Import files: drag-and-drop gets the same check as the picker. A .doc file gets a plain message: "Save it as .docx and try again". The hint gets the honest wording above.
-- Estimate: 4–7 credits. Risk: low to medium. Old saved types that aren't on the list need the "Other" fallback.
+**Why this is the smallest safe option:** there's no second copy to keep in step. The parts list on screen is just the component list plus "Main programme". A one-part event has no new fields filled in, so its output stays identical to the recorded snapshot, and the existing snapshot test guards that.
 
-## Step 2: nested parts (data model)
-**Answer: yes, programme items just get a part link, without a new nested structure.** Add:
-- `parts: Part[]` on `OpsModel`. Each part has: id, name, kind (from today's component types), day, start, end, track, notes, and its checklists (AV, staffing, protocol, moved from today's components).
-- `partId` on each programme item. The existing `track` stays and comes from its part unless set on the item.
-- People stay in the one shared list. A speaker in two parts is linked from items in both.
+**What could still drift, and how I'd guard it:**
+- **Deleted part:** a session could point to a part that no longer exists. On load it falls back to Main programme, which `withParts` already does, with a test.
+- **Item settings:** rooms, status and AV set on the run-of-show for an item are kept by item id, as today. Moving an item to another part must keep them, with a test.
+- **What the AI sees:** the run-sheet prompt today lists components as blocks, but doesn't know which sessions belong to which part. I'd add a "Part: …" note per session only when it isn't in Main programme. For one-part events nothing changes. I'll state this in the report; there are no other changes to what the AI is told.
 
-Migrating old events and the sample (nothing gets deleted):
-- Bump the saved model version from 1 to 2. On load, a version-1 event becomes one part called "Main programme", covering all its items. Each old component becomes its own part. Old fields are kept.
-- The sample and the private test agenda are migrated by the same code, with tests checking the item, people and room counts are unchanged.
-- Your account has no saved events yet. Saved events are upgraded when opened and stored as version 2 only on the next Save.
-- Estimate: 8–12 credits. Risk: **the highest of all steps**. It touches the shared event data that the run sheet, Smart Review, readiness, briefings, the Excel/Word export and saving all read. Any one of them could silently ignore parts. A one-part event must look exactly as it does today, which I'll check against the current output.
+## 2. Setup page (/generate): parts
 
-## Step 3: conflicts across parts and readiness per part
-- Conflict checks: the existing person, room and transit-gap checks already compare all items. They'll show which part each item belongs to, and add a "no travel gap between parts" rule using the existing minimum transit time.
-- Readiness: one score per part, plus an event score that shows the weakest part and names it.
-- AI calls: today 1 per readiness run. With parts, 1 per part (3 parts = 3 calls). Only parts that changed are re-scored: each part keeps a fingerprint of its content, and unchanged parts reuse their stored score.
-- Estimate: 6–9 credits. Risk: medium. The AI's scores vary between runs, so the weakest part can change without any edits. The screen will say when each part was scored.
+- The "Event Components" section becomes **"Parts of this event"**. "Main programme" is always first, can be renamed but not deleted, and shows the event's sessions and breaks.
+- **Add a part:** the existing "+ Add component" menu, relabelled "+ Add part", plus an "Other part" choice.
+- **Edit a part:** name, kind, day, start/end, track, venue, hosts and notes. Reorder by dragging or with the up/down arrows, which already exist for components.
+- **Each part shows its own:**
+  - sessions and breaks: each has a "Part" dropdown, and new ones are added to the part you're in;
+  - the speakers used in those sessions, read from the one shared people list;
+  - its checklists.
+- **Deleting a part that has sessions or breaks asks first:** "This part has N sessions and M breaks. Move them to Main programme, or delete them too?" Buttons: Move to Main programme / Delete them / Cancel. An empty part is deleted without asking.
+- **Empty states:** "No sessions in this part yet. Add a session or move one here from another part."
+- Starting points still replace parts after the existing confirmation.
 
-## Step 4: import with parts and editable review
-- The AI mapper returns parts only when the document clearly has separate blocks (for example, a gala evening after conference days). Otherwise it returns one part. It also picks a type from the shared list.
-- The review screen lets you edit rows (title, time, room, part) and choose the type before importing.
-- Estimate: 6–10 credits. Risk: medium. The AI may group parts wrongly, so the review screen is the safeguard. I'll test it with the anonymised agenda.
+## 3. Run-of-show: grouped by part
 
-## Recommended order and total
-5 → 1 → 2 → 3 → 4. About 26–42 credits in total. I'll stop and report after each step.
+- **Laptop:** each part is a titled group (name, day, time range, track), with its items in the existing layout underneath. One-part events look exactly as today, with no group heading.
+- **Phone:** one list sorted by day and time across all parts. Each row has a small part label, plus the track when one is set. No side-by-side columns.
+- Lanes on laptop are not in this step.
 
-## What I'd do differently
-- Remove `primaryEventType` instead of starting to fill it in. Two type fields are what caused the mismatch.
-- Leave out the laptop lane view of parts side by side until steps 2 and 3 are stable. The existing parallel-session display already covers sessions running at the same time.
+## 4. Test fixture
 
-## Files I expect to read or touch
-- Step 5: `src/components/document/ops-run-of-show.tsx`, `src/routes/app.run-of-show.tsx`, `src/components/app-shell/topbar.tsx`
-- Step 1: `src/routes/generate.tsx`, `src/routes/import.tsx`, `src/lib/excel-import.functions.ts`, `src/components/event-context.tsx`, the template definitions file (located during the step)
-- Step 2: `src/lib/event-model.ts`, `event-migrate.ts`, `event-persist.ts`, `ops-schedule.ts`, `src/lib/ops-model.test.ts`
-- Step 3: `src/lib/conflicts.ts`, `dependencies.ts`, the readiness function
-- Step 4: `excel-import.functions.ts`, `word-io.ts`, `src/routes/import.tsx`
+Replace the copy of the private DIA agenda in `src/lib/__fixtures__/legacy-snapshot-v1.json`. Instead, a tiny anonymous fixture with made-up titles and names ("Sample Forum", "Session 1A", "Speaker A"):
+- 2 days, one pair of sessions running at the same time, a break, a meal, one component;
+- one person in two sessions, one unknown room.
+
+The snapshot is re-recorded from the current code before any parts change. It still covers the sample and the tiny fixture, so the test keeps proving one-part output is unchanged. The DIA-agenda checks that only count items move to an in-memory check without a stored copy.
+
+## Out of scope
+Cross-part conflict checks, readiness per part, import changes, visual restyle, laptop lanes.
+
+## Sub-steps and honest credit estimate
+My last estimate was low (said 3–4, actual 6.8), so these ranges are wider.
+
+| Sub-step | Contents | Credits |
+|---|---|---|
+| 2b-1 | Fixture swap, part links on sessions/breaks, sync tests, the AI note | 4–7 |
+| 2b-2 | Setup page parts section, part dropdowns, delete confirmation, empty states | 7–12 |
+| 2b-3 | Run-of-show grouping on laptop, one list on phone | 4–7 |
+| **Total** | | **15–26** |
+
+## Technical details
+
+**Files expected**
+- 2b-1: `src/components/event-context.tsx` (Session/Break/EventComponent types), `src/lib/event-migrate.ts`, `src/lib/event-parts.ts`, `src/lib/generate-run-sheet.functions.ts`, `src/lib/run-sheet-parsing.ts` (input schema), `src/lib/__fixtures__/*`, `src/lib/event-parts.test.ts`, a new `src/lib/tiny-fixture.ts`.
+- 2b-2: `src/routes/generate.tsx` (likely split into a new `src/components/generate/parts-section.tsx` because the file is about 1,170 lines).
+- 2b-3: `src/components/document/ops-run-of-show.tsx`, `src/lib/ops-schedule.ts` if grouping needs a helper.
+
+**Tests to add**
+- A session's part link becomes the item's part link. A missing part falls back to Main programme.
+- Moving a session to another part keeps its room, status and AV settings.
+- Deleting a part with "move": its items end up in Main programme. With "delete": they're removed, and the counts match.
+- An extra part's sessions still appear in the run sheet, exports and briefings, labelled with the part name.
+- The one-part snapshot equals the stored one (sample and tiny fixture).
+- The AI prompt for a one-part event is unchanged character for character. A multi-part one gets "Part:" notes.
+- Phone list ordering: day, then time, across parts.
+
+**Browser checks (read-only: nothing saved, no real data deleted)**
+- 390px and 1280px, signed out and with your account.
+- On the setup page, in memory only:
+  - add an "Other part" and rename it;
+  - move a session into it;
+  - delete it and see the confirmation text with both choices;
+  - check empty-state hints.
+- Run-of-show: the sample shows no group headings (one part). With a two-part event built in memory, laptop shows groups and phone shows one list with part labels. Page width fits the screen.
+- My events still shows its empty state.
