@@ -1,5 +1,5 @@
 import type { PrimaryEventType } from "@/lib/event-components";
-import type { OpsModel } from "@/lib/event-model";
+import type { OpsModel, OpsModelV1 } from "@/lib/event-model";
 import { eventFromOps, type EventData, type EventComponent, type Sponsor } from "@/components/event-context";
 
 /**
@@ -36,6 +36,7 @@ export function pickEventMeta(e: EventData): EventMeta {
 }
 
 /** Rebuild a full EventData from saved meta + the stored operational model. */
-export function eventFromSaved(meta: EventMeta, ops: OpsModel): EventData {
+/** Accepts stored v1 or v2 models; v1 is upgraded on open and stored as v2 only on the next Save. */
+export function eventFromSaved(meta: EventMeta, ops: OpsModel | OpsModelV1): EventData {
   return eventFromOps(meta, ops);
 }

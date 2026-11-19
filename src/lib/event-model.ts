@@ -1,3 +1,4 @@
+import type { ComponentKind } from "@/lib/event-components";
 /**
  * FlowStage operational event model.
  *
@@ -159,6 +160,8 @@ export type ProgrammeItem = {
   status: ItemStatus;
   notes?: string;
   origin?: { kind: "session" | "break" | "component"; id: string };
+  /** Part this item belongs to (model v2). */
+  partId?: string;
 };
 
 // ---------- Requirements ----------
@@ -263,8 +266,35 @@ export type Economics = { currency: string; lines: EconomicsLine[] };
 
 // ---------- Aggregate ----------
 
+// ---------- Parts (model v2) ----------
+
+export type PartKind = ComponentKind | "main" | "other";
+
+/** A part of the event (main programme, opening ceremony, gala dinner, ...). Its track is only a default for its items. */
+export type Part = {
+  id: string;
+  name: string;
+  kind: PartKind;
+  day: number;
+  start: string; // HH:MM
+  end?: string;
+  track?: string;
+  notes?: string;
+  /** Legacy component this part was created from (moved across, nothing dropped). */
+  componentId?: string;
+  venue?: string;
+  hosts?: string[];
+  expectedAttendees?: number;
+  aiContext?: string;
+  checklists: { av: string[]; staffing: string[]; protocol: string[] };
+};
+
+/** Stored model before parts existed. Still accepted on load and upgraded by migrateOps. */
+export type OpsModelV1 = Omit<OpsModel, "version" | "parts"> & { version: 1; parts?: Part[] };
+
 export type OpsModel = {
-  version: 1;
+  version: 2;
+  parts: Part[];
   venue: Venue;
   rooms: Room[];
   people: Person[];

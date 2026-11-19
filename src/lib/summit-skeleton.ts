@@ -1,4 +1,5 @@
-import { confirmed, unknown, type OpsModel, type ProgrammeItem, type ProgrammeType } from "@/lib/event-model";
+import { migrateOps } from "@/lib/event-parts";
+import { confirmed, unknown, type OpsModel, type OpsModelV1, type ProgrammeItem, type ProgrammeType } from "@/lib/event-model";
 import { assignTracks } from "@/lib/ops-schedule";
 
 /**
@@ -44,6 +45,10 @@ export type SummitContent = {
 };
 
 export function buildSummit(c: SummitContent): OpsModel {
+  return migrateOps(buildSummitV1(c));
+}
+
+function buildSummitV1(c: SummitContent): OpsModelV1 {
   const items: ProgrammeItem[] = SLOTS.map(([id, type, day, start, end, code]) => {
     const pause = type === "break" || type === "meal";
     const nr = { state: "not_required" as const };

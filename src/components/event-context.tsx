@@ -1,6 +1,7 @@
+import { migrateOps } from "@/lib/event-parts";
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import type { ComponentKind, PrimaryEventType } from "@/lib/event-components";
-import type { OpsModel } from "@/lib/event-model";
+import type { OpsModel, OpsModelV1 } from "@/lib/event-model";
 import { sampleOps, SAMPLE_META } from "@/lib/sample-summit-event";
 import { legacySignature, opsToLegacy, resolveOps } from "@/lib/event-migrate";
 
@@ -246,10 +247,11 @@ export const gccSampleEvent: EventData = {
 import type { RunSheet } from "@/lib/generate-run-sheet.functions";
 
 /** Build a full EventData from an operational model, keeping legacy fields in sync. */
-export function eventFromOps(base: Omit<EventData, "sessions" | "breaks" | "speakers" | "moderators" | "ops">, ops: OpsModel): EventData {
-  const legacy = opsToLegacy(ops);
+export function eventFromOps(base: Omit<EventData, "sessions" | "breaks" | "speakers" | "moderators" | "ops">, ops: OpsModel | OpsModelV1): EventData {
+  const v2 = migrateOps(ops, base.components ?? []);
+  const legacy = opsToLegacy(v2);
   const e: EventData = { ...base, ...legacy };
-  return { ...e, ops: { ...ops, legacySignature: legacySignature(e) } };
+  return { ...e, ops: { ...v2, legacySignature: legacySignature(e) } };
 }
 
 export const seedEvent: EventData = eventFromOps(

@@ -11,6 +11,7 @@ import {
   type Room,
 } from "@/lib/event-model";
 import { assignTracks } from "@/lib/ops-schedule";
+import { withParts, MAIN_PART_ID } from "@/lib/event-parts";
 
 export function legacySignature(e: Pick<EventData, "sessions" | "breaks" | "components">): string {
   return JSON.stringify([e.sessions, e.breaks, e.components ?? []]);
@@ -167,7 +168,7 @@ export function legacyToOps(event: EventData, base?: OpsModel): OpsModel {
     ...(event.components ?? []).map(fromComponent),
   ]);
 
-  return {
+  return withParts({
     version: 1,
     venue: base?.venue ?? { name: unknown() },
     rooms,
@@ -179,12 +180,16 @@ export function legacyToOps(event: EventData, base?: OpsModel): OpsModel {
     rules: base?.rules ?? { minResetMin: 15, minSpeakerTransitMin: 10 },
     dismissedConflicts: base?.dismissedConflicts ?? [],
     legacySignature: legacySignature(event),
-  };
+    parts: base?.parts,
+  }, event.components ?? []);
 }
 
 /** Reverse adapter: programme items → legacy sessions/breaks/people used by existing features. */
 export function opsToLegacy(ops: OpsModel): Pick<EventData, "sessions" | "breaks" | "speakers" | "moderators"> {
   const dur = (i: ProgrammeItem) => Math.max(0, toMin(i.end) - toMin(i.start));
+  // Items in extra (non-main, non-component) parts carry their part name so nothing disappears silently.
+  const partName = new Map((ops.parts ?? []).filter((p) => p.id !== MAIN_PART_ID && !p.componentId).map((p) => [p.id, p.name]));
+  const partTag = (i: ProgrammeItem) => (i.partId && partName.has(i.partId) ? `[Part: ${partName.get(i.partId)}]` : "");
   const nonComponent = ops.items.filter((i) => i.origin?.kind !== "component");
   const modIds = new Set(nonComponent.flatMap((i) => [...(i.moderators.value ?? []), ...(i.chairs.value ?? [])]));
   const sessions: Session[] = nonComponent
@@ -194,14 +199,14 @@ export function opsToLegacy(ops: OpsModel): Pick<EventData, "sessions" | "breaks
       title: i.title,
       startTime: i.start,
       durationMin: dur(i),
-      description: [i.track ? `[${i.track}]` : "", i.notes ?? ""].filter(Boolean).join(" "),
+      description: [partTag(i), i.track ? `[${i.track}]` : "", i.notes ?? ""].filter(Boolean).join(" "),
       speakerIds: i.speakers.value ?? [],
       moderatorIds: [...(i.moderators.value ?? []), ...(i.chairs.value ?? [])],
       day: i.day,
     }));
   const breaks: Break[] = nonComponent
     .filter(isPause)
-    .map((i) => ({ id: i.origin?.id ?? i.id, label: i.title, startTime: i.start, durationMin: dur(i), day: i.day }));
+    .map((i) => ({ id: i.origin?.id ?? i.id, label: partTag(i) ? `${partTag(i)} ${i.title}` : i.title, startTime: i.start, durationMin: dur(i), day: i.day }));
   return {
     sessions,
     breaks,
