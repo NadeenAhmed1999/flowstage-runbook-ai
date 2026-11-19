@@ -39,3 +39,8 @@
 - Budget summary (deferred)
 - Dashboard / Events / Talent & AV / Activity: connect to the real event or label as examples
 - [x] UI step 2.1 shared blocks + 2.2 titles/wording/one primary action (2.3–2.5 wait for approval)
+
+## Current: step 2b (parts on screen)
+- [x] 2b-1 fixture swap, part links on sessions/breaks, sync tests, AI Part: note
+- [ ] 2b-2 setup page parts UI (waiting for approval)
+- [ ] 2b-3 run-of-show grouping and phone list (waiting for approval)
