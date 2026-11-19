@@ -30,23 +30,28 @@ export function AiRunSheet({ sheet }: { sheet: RunSheet }) {
             return (
               <li
                 key={i}
-                className="grid grid-cols-[88px_120px_1fr] gap-4 border-b border-border bg-background px-4 py-4 first:border-t transition-colors hover:bg-accent/[0.03]"
+                className="flex min-w-0 flex-col gap-1.5 border-b md:grid md:grid-cols-[88px_120px_1fr] md:gap-4 border-border bg-background px-4 py-4 first:border-t transition-colors hover:bg-accent/[0.03]"
               >
-                <div>
+                <div className="flex items-baseline gap-2 md:block">
                   <p className="font-mono text-sm font-semibold text-navy">{b.time}</p>
                   <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
                     +{b.durationMin} min
                   </p>
                 </div>
-                <div>
+                <div className="hidden md:block">
                   <span
                     className={`inline-block rounded-sm px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider ${style.cls}`}
                   >
                     {style.label}
                   </span>
                 </div>
-                <div>
+                <div className="min-w-0 break-words">
                   <p className="text-sm font-semibold text-navy">{b.title}</p>
+                  <span
+                    className={`mt-1 inline-block rounded-sm px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider md:hidden ${style.cls}`}
+                  >
+                    {style.label}
+                  </span>
                   {b.subtitle && (
                     <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{b.subtitle}</p>
                   )}
