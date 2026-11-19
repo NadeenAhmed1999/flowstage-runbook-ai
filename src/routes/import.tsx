@@ -1,4 +1,4 @@
-import { EVENT_TYPES, importTypeSelection, importFileProblem } from "@/lib/event-types";
+import { EVENT_TYPES, importTypeSelection, importFileProblem, withListedType } from "@/lib/event-types";
 import { useMemo, useRef, useState } from "react";
 import { resetSavedEvent } from "@/hooks/use-saved-event";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -84,7 +84,7 @@ function ImportPage() {
     setError(null);
     try {
       const result = await importFn({ data: parsed });
-      setMapping(result);
+      setMapping(withListedType(result));
     } catch (err) {
       setError(err instanceof Error ? err.message : "AI mapping failed. Try again or map manually.");
     } finally {

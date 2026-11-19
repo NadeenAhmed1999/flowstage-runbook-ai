@@ -4,6 +4,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { FileSpreadsheet } from "lucide-react";
 import {
   useEvent,
+  seedEvent,
+  type EventData,
   type Person,
   type Session,
   type Break,
@@ -20,6 +22,19 @@ import {
   type ComponentKind,
 } from "@/lib/event-components";
 
+
+/**
+ * Starting-point confirmation rule: the event counts as edited when it differs (by value)
+ * from the untouched sample or from the last starting point applied here.
+ */
+let baselineJson: string | null = null;
+function markBaseline(e: EventData) {
+  baselineJson = JSON.stringify(e);
+}
+function isEdited(e: EventData) {
+  const now = JSON.stringify(e);
+  return now !== JSON.stringify(seedEvent) && now !== baselineJson;
+}
 
 export const Route = createFileRoute("/generate")({
   head: () => ({
@@ -164,12 +179,11 @@ function GeneratePage() {
                   key={tpl.id}
                   type="button"
                   onClick={() => {
-                    const hasWork =
-                      event.sessions.length + event.breaks.length + event.sponsors.length + (event.components?.length ?? 0) > 0 ||
-                      event.name.trim() !== "";
-                    if (hasWork) setPendingTpl(tpl);
+                    if (isEdited(event)) setPendingTpl(tpl);
                     else {
-                      setEvent(applyTemplate(tpl, event.date, newId));
+                      const next = applyTemplate(tpl, event.date, newId);
+                      markBaseline(next);
+                      setEvent(next);
                       resetSavedEvent();
                     }
                   }}
@@ -205,7 +219,9 @@ function GeneratePage() {
                 <AlertDialogAction
                   onClick={() => {
                     if (pendingTpl) {
-                      setEvent(applyTemplate(pendingTpl, event.date, newId));
+                      const next = applyTemplate(pendingTpl, event.date, newId);
+                      markBaseline(next);
+                      setEvent(next);
                       resetSavedEvent();
                     }
                     setPendingTpl(null);

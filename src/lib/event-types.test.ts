@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { EVENT_TYPES, eventTypeOptions, importTypeSelection, importFileProblem } from "./event-types";
+import { EVENT_TYPES, eventTypeOptions, importTypeSelection, importFileProblem, withListedType } from "./event-types";
 
 describe("event type list", () => {
   it("contains the agreed types including Gala / dinner, Awards and Other", () => {
@@ -13,6 +13,10 @@ describe("event type list", () => {
   it("import preselects a matching type, otherwise Other", () => {
     expect(importTypeSelection("Gala / dinner")).toBe("Gala / dinner");
     expect(importTypeSelection("Healthcare Conference")).toBe("Other");
+  });
+  it("import mapping stores Other when the AI type is not on the list", () => {
+    expect(withListedType({ name: "X", type: "Healthcare Conference" }).type).toBe("Other");
+    expect(withListedType({ name: "X", type: "Awards" }).type).toBe("Awards");
   });
   it("import file checks give plain messages", () => {
     expect(importFileProblem("a.docx")).toBeNull();

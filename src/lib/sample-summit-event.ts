@@ -42,7 +42,7 @@ export const sampleOps = buildSummit({
 
 export const SAMPLE_META = {
   name: "Meridian Health Access Summit 2026 (Sample)",
-  type: "Regulatory & Health Access Summit",
+  type: "Summit",
   date: "2026-12-01",
   endDate: "2026-12-03",
 };

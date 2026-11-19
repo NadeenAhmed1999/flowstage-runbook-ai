@@ -32,6 +32,11 @@ export function importTypeSelection(aiType: string): EventTypeName {
   return isListedEventType(aiType) ? aiType : "Other";
 }
 
+/** Import mapping: store the same type the dropdown shows (unlisted AI types become "Other"). */
+export function withListedType<T extends { type: string }>(m: T): T {
+  return { ...m, type: importTypeSelection(m.type) };
+}
+
 /** Import file check. Returns a plain message, or null when the file is allowed. */
 export function importFileProblem(fileName: string): string | null {
   const ext = fileName.toLowerCase().split(".").pop() ?? "";
