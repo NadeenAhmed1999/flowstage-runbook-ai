@@ -1,93 +1,61 @@
-# UI step 2 — First-run guidance and learnability
+# Event setup clean-up and nested parts
 
-Goal: a new event team member understands what to do in under a minute, on phone or laptop, without any existing feature being removed. Uses existing design tokens only. Nothing invented: every count, tick and message comes from real state.
+## What I checked before writing this
+- `event-model.ts`: each programme item (`ProgrammeItem`) already has `day`, `start`, `end`, `room` and an optional free-text `track`, plus `origin.kind` set to "session", "break" or "component". `OpsModel` already has one shared `people` list. There's no part or partId yet.
+- `/generate` Type dropdown has 5 fixed values: Conference, Summit, Corporate Event, Panel, Hybrid Panel.
+- The sample event's default type is "Healthcare Conference", which isn't in that dropdown. That's how the dropdown can show the wrong type.
+- Import: the file picker accepts only .xlsx/.xls/.csv/.docx, but drag-and-drop has no check.
+- **"Up to 20 sheets" is true.** The server rejects a workbook with more than 20 sheets. It also only reads the first 200 rows and 20 columns of each sheet, and the hint doesn't say so.
+- **"Handled securely" can't be backed up as written.** The file is read in your browser, but its contents are sent to the AI service to map the columns. I recommend replacing it with: "Contents are sent to our AI to map columns".
+- Tests: 25 in `ops-model.test.ts` and `run-sheet-parsing.test.ts`.
 
-## 1. "Start here" checklist
+Credit estimates are rough ranges from similar jobs so far.
 
-**What it is:** a compact card with 4 steps, each ticked only from real state:
+## Step 5 first: phone run-of-show (independent)
+This only changes how the page looks, not the event data, so it can go first. At 390px the timeline becomes one list sorted by time, with the room or track shown on each row. The top bar stops being cut off.
+- Estimate: 2–4 credits. Risk: low. It's the same component the parts work changes later, so it may need a small touch-up after step 2.
 
-1. **Choose your event** — "Use the sample" or "Import Excel / Word". Ticked when an event other than the untouched sample is loaded, or the user explicitly chose to continue with the sample.
-2. **Review conflicts** — opens the conflicts panel on the run-of-show. Ticked when the user has opened it (and shows the real open-conflict count from the conflict engine).
-3. **Generate briefings** — opens the Briefing Center. Ticked when at least one brief exists for this event.
-4. **Save your event** — Save button. Ticked when the event has a saved ID. Signed out: shows "Sign in to save" instead; the other three steps still work without signing in.
+## Step 1: one event-type list everywhere
+- One shared list of event types: Conference, Summit, Corporate event, Panel, Hybrid panel, Gala / dinner, Awards, Product launch, Investor forum, Workshop / training, Executive summit.
+- That list is used by: the `/generate` Type dropdown, a new type dropdown on the import review (replacing the free-text box), the import AI instructions ("pick one value from this list, or Unknown"), and each template's type.
+- Remove the hidden `primaryEventType`. It becomes an alias of the visible type, so the screen and the saved value can't disagree. A stored type that isn't on the list shows as "Other: <value>", never as a different type.
+- Templates are relabelled "Starting point". Choosing one shows a confirmation ("This replaces your name, sessions and components") whenever there is work to lose.
+- Import files: drag-and-drop gets the same check as the picker. A .doc file gets a plain message: "Save it as .docx and try again". The hint gets the honest wording above.
+- Estimate: 4–7 credits. Risk: low to medium. Old saved types that aren't on the list need the "Other" fallback.
 
-**Where it appears:**
-- Laptop/tablet: top of Overview (`/app`) and a slim collapsible strip at the top of the run-of-show.
-- Phone: same card at the top of Overview, full width; strip on run-of-show collapses to one line ("Start here · 2 of 4").
+## Step 2: nested parts (data model)
+**Answer: yes, programme items just get a part link, without a new nested structure.** Add:
+- `parts: Part[]` on `OpsModel`. Each part has: id, name, kind (from today's component types), day, start, end, track, notes, and its checklists (AV, staffing, protocol, moved from today's components).
+- `partId` on each programme item. The existing `track` stays and comes from its part unless set on the item.
+- People stay in the one shared list. A speaker in two parts is linked from items in both.
 
-**Dismiss / bring back:** "Hide" link on the card. Brought back from a "Start here" item in the account menu (and in the phone "More" sheet). Progress and hidden state stored in the browser (per device), keyed per event, so no sign-in needed. Auto-hides once all 4 are done, with a single "All set" line that can be closed.
+Migrating old events and the sample (nothing gets deleted):
+- Bump the saved model version from 1 to 2. On load, a version-1 event becomes one part called "Main programme", covering all its items. Each old component becomes its own part. Old fields are kept.
+- The sample and the private test agenda are migrated by the same code, with tests checking the item, people and room counts are unchanged.
+- Your account has no saved events yet. Saved events are upgraded when opened and stored as version 2 only on the next Save.
+- Estimate: 8–12 credits. Risk: **the highest of all steps**. It touches the shared event data that the run sheet, Smart Review, readiness, briefings, the Excel/Word export and saving all read. Any one of them could silently ignore parts. A one-part event must look exactly as it does today, which I'll check against the current output.
 
-## 2. Empty states
+## Step 3: conflicts across parts and readiness per part
+- Conflict checks: the existing person, room and transit-gap checks already compare all items. They'll show which part each item belongs to, and add a "no travel gap between parts" rule using the existing minimum transit time.
+- Readiness: one score per part, plus an event score that shows the weakest part and names it.
+- AI calls: today 1 per readiness run. With parts, 1 per part (3 parts = 3 calls). Only parts that changed are re-scored: each part keeps a fingerprint of its content, and unchanged parts reuse their stored score.
+- Estimate: 6–9 credits. Risk: medium. The AI's scores vary between runs, so the weakest part can change without any edits. The screen will say when each part was scored.
 
-One shared empty-state block: icon, one sentence on what this page is for, one primary button, optional secondary text link.
+## Step 4: import with parts and editable review
+- The AI mapper returns parts only when the document clearly has separate blocks (for example, a gala evening after conference days). Otherwise it returns one part. It also picks a type from the shared list.
+- The review screen lets you edit rows (title, time, room, part) and choose the type before importing.
+- Estimate: 6–10 credits. Risk: medium. The AI may group parts wrongly, so the review screen is the safeguard. I'll test it with the anonymised agenda.
 
-| Page | When empty | Primary button |
-|---|---|---|
-| Run-of-show | No programme items | Import agenda (secondary: Use the sample) |
-| Conflicts panel | No conflicts found | none — states "No conflicts found" with the time it was checked |
-| Briefing Center | No briefs yet | Generate briefings |
-| Smart Review | Not run yet | Run Smart Review |
-| Readiness score | Not calculated | Calculate readiness |
-| Copilot | No messages | existing suggested questions stay |
-| My events menu | Signed in, none saved | Save current event |
-| My events menu | Signed out | Sign in to save |
-| Import | No file chosen | Choose file (accepts .xlsx / .docx) |
-| Rooms / requirements / resources sections | None in event | Add room / Add requirement / Add resource (only where an add action already exists; otherwise text only) |
+## Recommended order and total
+5 → 1 → 2 → 3 → 4. About 26–42 credits in total. I'll stop and report after each step.
 
-Example-data pages (Dashboard, Events, Talent & AV, Activity) keep the existing "Example data" banner; no empty state added since they show labelled examples.
+## What I'd do differently
+- Remove `primaryEventType` instead of starting to fill it in. Two type fields are what caused the mismatch.
+- Leave out the laptop lane view of parts side by side until steps 2 and 3 are stable. The existing parallel-session display already covers sessions running at the same time.
 
-## 3. Page titles and one primary action
-
-Pattern: Title (what it is) · one-line subtitle from real data · one filled primary button; everything else secondary/outline or in an overflow menu.
-
-| Page | Title | Primary action |
-|---|---|---|
-| Overview `/app` | Overview | New event |
-| Run-of-show | Run-of-show | Save (signed out: Sign in to save) |
-| Generate | New event | Generate run-of-show |
-| Import | Import an event | Choose file |
-| Events | Events | New event |
-| Talent | Talent | none (example data) |
-| AV | AV checklist | none (example data) |
-| Activity | Activity | none (example data) |
-| Demo | Sample event | Open in run-of-show |
-
-Wording rules: sentence case, verbs first, same word everywhere ("Run-of-show", "Briefings", "Smart Review", "Readiness", "New event", "Import"). Fix current mismatches ("Talent Roster" vs "Talent", "Production overview" vs "Overview", "Run-Of-Show" casing).
-
-## 4. Polish (no redesign)
-
-- Spacing: one page padding scale (phone 16px, tablet 24px, laptop 32px); consistent gap between panels.
-- Type: page title / section title / body / meta — 4 levels only, applied via existing tokens.
-- Loading: skeleton rows for run-of-show, briefs, readiness, Smart Review; buttons show spinner + "Generating…" and are disabled while running.
-- Errors: one inline error block with plain message and "Try again"; AI rate/credit errors explained in plain words. No silent failures.
-- Saving: existing Saved / Unsaved indicator unchanged (Checkpoint B owns it).
-- Phone: primary action reachable without horizontal scroll; tables become stacked cards where they currently overflow.
-
-## 5. Steps (each small and testable)
-
-**Step 2.1 — Shared building blocks.** Empty-state, inline-error, skeleton, page-header components.
-Files: `src/components/ui/empty-state.tsx` (new), `src/components/ui/inline-error.tsx` (new), `src/components/app-shell/topbar.tsx`.
-Test: typecheck + one page renders each.
-
-**Step 2.2 — Titles, wording, one primary action.**
-Files: `src/routes/app.index.tsx`, `app.run-of-show.tsx`, `app.events.tsx`, `app.talent.tsx`, `app.av.tsx`, `app.activity.tsx`, `generate.tsx`, `import.tsx`, `run-of-show.tsx`, `demo.tsx`, `src/components/app-shell/sidebar.tsx`, `mobile-nav.tsx`.
-Test: browser at 390px and 1280px, screenshot each header.
-
-**Step 2.3 — Empty states.**
-Files: run-of-show/conflicts/briefing/smart-review/readiness/copilot components (located under `src/components/`), `save-controls.tsx`, `import.tsx`.
-Test: load an empty event and signed-out My events; screenshot each.
-
-**Step 2.4 — Start here checklist.**
-Files: `src/hooks/use-onboarding.ts` (new, browser storage), `src/components/onboarding/start-here.tsx` (new), `app.index.tsx`, `run-of-show.tsx`, `account-menu.tsx`, `mobile-nav.tsx`, small unit test `src/lib/onboarding.test.ts` for tick rules.
-Test: signed out — tick steps 1–3, hide, bring back via menu, reload keeps state; phone + laptop.
-
-**Step 2.5 — Loading/error and spacing polish.**
-Files: AI feature components (run sheet, briefs, readiness, Smart Review, Copilot), `src/styles.css` (spacing/type tokens only if missing).
-Test: force an AI error in browser, confirm message + retry; skeletons visible; existing 25 tests pass.
-
-After each step: stop and report what changed and what was tested.
-
-## Assumptions to confirm
-- Checklist progress is per device (browser storage), not synced to the account. Syncing could come later.
-- "Review conflicts" counts as done when opened, not when all conflicts are resolved.
-- Checkpoint B (JSON export/restore, snapshots, organisation/VIP protection) stays separate and is not part of this.
+## Files I expect to read or touch
+- Step 5: `src/components/document/ops-run-of-show.tsx`, `src/routes/app.run-of-show.tsx`, `src/components/app-shell/topbar.tsx`
+- Step 1: `src/routes/generate.tsx`, `src/routes/import.tsx`, `src/lib/excel-import.functions.ts`, `src/components/event-context.tsx`, the template definitions file (located during the step)
+- Step 2: `src/lib/event-model.ts`, `event-migrate.ts`, `event-persist.ts`, `ops-schedule.ts`, `src/lib/ops-model.test.ts`
+- Step 3: `src/lib/conflicts.ts`, `dependencies.ts`, the readiness function
+- Step 4: `excel-import.functions.ts`, `word-io.ts`, `src/routes/import.tsx`
