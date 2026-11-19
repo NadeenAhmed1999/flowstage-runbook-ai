@@ -75,7 +75,6 @@ export function mappedEventToEventData(m: MappedEvent): EventData {
   return {
     name: m.name,
     type: m.type,
-    primaryEventType: m.primaryEventType as EventData["primaryEventType"],
     date: m.date,
     endDate: m.endDate && m.endDate !== m.date ? m.endDate : undefined,
     sessions,
@@ -117,8 +116,7 @@ export function exportEventToExcel(event: EventData) {
     [],
     ["Event Name", event.name],
     ["Event Type", event.type],
-    ["Primary Type", event.primaryEventType ?? ""],
-    ["Start Date", event.date],
+        ["Start Date", event.date],
     ["End Date", event.endDate ?? event.date],
     ["Sessions", event.sessions.length],
     ["Speakers", event.speakers.length],

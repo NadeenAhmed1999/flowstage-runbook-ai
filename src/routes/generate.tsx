@@ -10,7 +10,9 @@ import {
   type Sponsor,
   type EventComponent,
 } from "@/components/event-context";
-import { EVENT_TEMPLATES, applyTemplate } from "@/lib/event-templates";
+import { EVENT_TEMPLATES, applyTemplate, type EventTemplate } from "@/lib/event-templates";
+import { eventTypeOptions } from "@/lib/event-types";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import {
   COMPONENT_BLUEPRINTS,
   COMPONENT_KINDS,
@@ -80,6 +82,7 @@ function GeneratePage() {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
+  const [pendingTpl, setPendingTpl] = useState<EventTemplate | null>(null);
   const update = <K extends keyof typeof event>(k: K, v: (typeof event)[K]) =>
     setEvent({ ...event, [k]: v });
 
@@ -149,10 +152,9 @@ function GeneratePage() {
         }}
       >
         {/* Templates */}
-        <Section title="Start from a Template" step="00">
+        <Section title="Starting point" step="00">
           <p className="mb-4 text-sm text-muted-foreground">
-            Choose an event type to pre-fill sessions, breaks, sponsor moments, and AV requirements. Templates also give the
-            AI run-sheet generator deeper, event-specific operational context.
+            Pre-fills sessions, breaks and sponsors. Choosing one replaces your current event name, sessions, breaks, sponsors and parts.
           </p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {EVENT_TEMPLATES.map((tpl) => {
@@ -162,8 +164,14 @@ function GeneratePage() {
                   key={tpl.id}
                   type="button"
                   onClick={() => {
-                    setEvent(applyTemplate(tpl, event.date, newId));
-                    resetSavedEvent();
+                    const hasWork =
+                      event.sessions.length + event.breaks.length + event.sponsors.length + (event.components?.length ?? 0) > 0 ||
+                      event.name.trim() !== "";
+                    if (hasWork) setPendingTpl(tpl);
+                    else {
+                      setEvent(applyTemplate(tpl, event.date, newId));
+                      resetSavedEvent();
+                    }
                   }}
                   className={`group text-left rounded-lg border p-4 transition-colors ${
                     active
@@ -184,6 +192,30 @@ function GeneratePage() {
               );
             })}
           </div>
+          <AlertDialog open={pendingTpl !== null} onOpenChange={(o) => !o && setPendingTpl(null)}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Replace your current event?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Using "{pendingTpl?.label}" replaces your event name, sessions, breaks, sponsors and parts. This can't be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Keep my event</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    if (pendingTpl) {
+                      setEvent(applyTemplate(pendingTpl, event.date, newId));
+                      resetSavedEvent();
+                    }
+                    setPendingTpl(null);
+                  }}
+                >
+                  Replace
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </Section>
 
 
@@ -205,8 +237,8 @@ function GeneratePage() {
                 value={event.type}
                 onChange={(e) => update("type", e.target.value)}
               >
-                {["Conference", "Summit", "Corporate Event", "Panel", "Hybrid Panel"].map((t) => (
-                  <option key={t}>{t}</option>
+                {eventTypeOptions(event.type).map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
             </Field>

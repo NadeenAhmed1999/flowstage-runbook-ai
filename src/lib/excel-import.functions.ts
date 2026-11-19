@@ -1,3 +1,4 @@
+import { EVENT_TYPES } from "@/lib/event-types";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
@@ -25,8 +26,8 @@ const PersonSchema = z.object({ name: z.string(), role: z.string().default("") }
 
 export const MappedEventSchema = z.object({
   name: z.string(),
-  type: z.string().default("Conference"),
-  primaryEventType: z.string().default("conference"),
+  type: z.string().default("Other"),
+  primaryEventType: z.string().optional(),
   date: z.string(), // YYYY-MM-DD
   endDate: z.string().optional(),
   sessions: z.array(
@@ -102,6 +103,7 @@ export const importEventFromExcel = createServerFn({ method: "POST" })
 - Dedupe speakers/moderators into their rosters (name + role if available).
 - Put anything you cannot map cleanly into the top-level "notes" field, and list unclear areas in confidence.unclear.
 - Set confidence.overall (0-1): 1 = highly confident structural match, 0.5 = partial, <0.4 = user should map manually.
+- Event type: "type" must be exactly one value from this list, or Other: ${EVENT_TYPES.join(", ")}. Return only that value.
 - If the event name is not obvious, use the file name (minus extension) as a fallback.`;
 
     const prompt = `File: ${data.fileName}

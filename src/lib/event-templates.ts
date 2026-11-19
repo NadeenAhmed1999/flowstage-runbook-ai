@@ -33,7 +33,7 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
       "This is a senior healthcare conference. Use clinical and regulatory terminology (interoperability, reliance pathways, pharmacovigilance, HCP, KOL, IRB). Include live captioning cues for accessibility, conflict-of-interest acknowledgements before sponsored content, and a dedicated registration-desk operating note for badge reprints and VIP arrivals. Sponsor visibility must remain clearly separated from clinical content per industry compliance norms.",
     seed: mk({
       name: "Healthcare Innovation Summit",
-      type: "Healthcare Conference",
+      type: "Conference",
       avRequirements:
         "Main stage with dual 16:9 screens, IMAG, lavalier x4 for panel, 2 handhelds for Q&A, lectern gooseneck for keynote, confidence monitor with timer. Live captioning feed for keynote and panels. Registration desk with 4 check-in stations and badge printers. Sponsor pods adjacent to coffee service. Backup wireless kit in green room.",
       sessions: [
@@ -63,7 +63,7 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
       "This is an invite-only executive summit for CEOs and board members. Tone is measured and confidential — use Chatham House Rule reminders before roundtables, VIP arrival protocols (private entrance, dedicated host), and a discreet press/photography policy. Networking moments are the product; protect them with strict session-end discipline and concierge-led transitions.",
     seed: mk({
       name: "Executive Leadership Summit",
-      type: "Executive Summit",
+      type: "Executive summit",
       avRequirements:
         "Single-camera IMAG, two lavalier mics for fireside, four table mics for roundtable, ambient room wash, no audience-facing recording during Chatham House sessions. Discreet comms, no visible run-of-show on stage.",
       sessions: [
@@ -91,7 +91,7 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
       "This is a televised-style awards ceremony. Treat the show like a broadcast: pre-show VT, host walk-on with playoff music, category VTs before each reveal, winner walk-up cues with spotlight follow, acceptance speech length cap (90 seconds) with playoff music as soft cue, ISO cam on the winners' table. Build in step-and-repeat photography time after each category. Include a contingency for a no-show winner (read citation, hold trophy backstage).",
     seed: mk({
       name: "Industry Excellence Awards",
-      type: "Awards Ceremony",
+      type: "Awards",
       avRequirements:
         "Broadcast switcher with 4 cameras (host wide, host close, audience reaction, podium ISO), follow-spot for winner walk-ups, in-ear comms for host, podium mic + 2 handhelds for category presenters, playoff music presets per category, VT playback ready for each category package.",
       sessions: [
@@ -120,7 +120,7 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
       "This is a product launch with press in the room. Embargo lifts at the moment of reveal — coordinate with comms before any slide goes live. Include a rehearsed demo backup path (recorded video stand-in if live demo fails), reveal lighting hit, applause cue, and a tightly-managed press Q&A with selected moderators. Hands-on area opens immediately after keynote; staff briefing required 60 minutes prior.",
     seed: mk({
       name: "Product Launch Event",
-      type: "Product Launch",
+      type: "Product launch",
       avRequirements:
         "Single keynote screen 16:9, presenter clicker with backup, lectern + lavalier on presenter, demo station with HDMI + USB-C feeds, recorded demo VT loaded as failover, dramatic reveal lighting cue, ambient music bed for hands-on area.",
       sessions: [
@@ -145,7 +145,7 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
       "This is a regulated investor forum. Include a disclaimer slide before all pitch sessions (no offer to sell securities). Use a strict pitch clock (7 minutes pitch, 3 minutes Q&A) with visible countdown timer on confidence monitor and audible chime at 1 minute remaining. Capture investor RSVPs at registration for accurate room counts. Networking is the deliverable — protect break timing.",
     seed: mk({
       name: "Capital Markets Investor Forum",
-      type: "Investor Forum",
+      type: "Investor forum",
       avRequirements:
         "Pitch stage with single 16:9 screen, lectern mic + lavalier, visible 10-minute countdown timer on confidence monitor, audible chime at 1 minute remaining, pitch deck preload via USB at registration, FOH disclaimer slide template loaded.",
       sessions: [
@@ -174,7 +174,7 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
       "This is an instructor-led training day with active participation. Tone is facilitative, not theatrical. Include a materials check at registration (printed workbooks, name tents), table assignments by skill level, timed breakout exercises with a visible countdown on the room screen, and a feedback survey link displayed in the closeout. Lower AV complexity — clarity and pacing matter more than production polish.",
     seed: mk({
       name: "Practitioner Workshop",
-      type: "Workshop / Training",
+      type: "Workshop / training",
       avRequirements:
         "Single projection screen, instructor lavalier + 2 roaming handhelds for participant questions, visible breakout countdown timer, printed workbooks at each seat, whiteboard + flipcharts per table.",
       sessions: [
@@ -201,7 +201,7 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
       "This is a formal seated gala. Coordinate tightly with the venue F&B team — course service drives the show clock, not the other way around. Welcome reception, table call to seats, host walk-on between courses, headline speaker between main and dessert, entertainment after dessert, late-night call. Include a dietary requirements protocol at the table (allergens marked on covers) and a discreet sponsor mention woven into the host script.",
     seed: mk({
       name: "Annual Gala Dinner",
-      type: "Gala Dinner",
+      type: "Gala / dinner",
       avRequirements:
         "Two follow-spots for stage, host lavalier + handheld for guest speakers, room wash with table uplighting, ambient music bed throughout dinner with louder presets for entrance and entertainment, single 16:9 screen for host visuals only (no slide deck content during service).",
       sessions: [

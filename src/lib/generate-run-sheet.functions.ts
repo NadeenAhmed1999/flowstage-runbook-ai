@@ -85,7 +85,7 @@ Cues should be short, uppercase, operational. Notes should sound like a working 
     const prompt = `Generate a production-ready run-of-show document for the following event:
 
 EVENT: ${data.eventName}
-TYPE: ${data.eventType}${data.primaryEventType ? ` (${data.primaryEventType})` : ""}
+TYPE: ${data.eventType}
 DATE: ${data.eventDate}${isMultiDay ? ` → ${data.eventEndDate} (${dayCount}-day program)` : ""}
 
 SESSIONS:

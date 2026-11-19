@@ -1,3 +1,4 @@
+import { EVENT_TYPES, importTypeSelection, importFileProblem } from "@/lib/event-types";
 import { useMemo, useRef, useState } from "react";
 import { resetSavedEvent } from "@/hooks/use-saved-event";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -269,8 +270,19 @@ function UploadPane({
   setDragOver: (v: boolean) => void;
   inputRef: React.RefObject<HTMLInputElement | null>;
 }) {
+  const [fileError, setFileError] = useState<string | null>(null);
+  const check = (f: File) => {
+    const problem = importFileProblem(f.name);
+    setFileError(problem);
+    if (!problem) onFile(f);
+  };
   return (
     <div className="rounded-xl border border-border bg-background p-8">
+      {fileError && (
+        <p role="alert" className="mb-4 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+          {fileError}
+        </p>
+      )}
       <div className="mb-6">
         <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-accent">
           Migration · Excel &amp; Word
@@ -295,7 +307,7 @@ function UploadPane({
           e.preventDefault();
           setDragOver(false);
           const f = e.dataTransfer.files?.[0];
-          if (f) onFile(f);
+          if (f) check(f);
         }}
         className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-12 text-center transition-colors ${
           dragOver
@@ -308,7 +320,7 @@ function UploadPane({
           title="No file chosen"
           description="Import an existing Excel or Word agenda with sessions, dates, times and speakers."
           action={<>
-            <p className="mb-4 text-xs text-muted-foreground">.xlsx, .xls, .csv, .docx · up to 20 sheets · handled securely</p>
+            <p className="mb-4 text-xs text-muted-foreground">.xlsx, .xls, .csv, .docx · up to 20 sheets, first 200 rows each · contents are sent to our AI to map columns</p>
             <Button type="button" className="min-h-11" onClick={() => inputRef.current?.click()}>Choose file</Button>
           </>}
         />
@@ -320,7 +332,7 @@ function UploadPane({
           className="sr-only"
           onChange={(e) => {
             const f = e.target.files?.[0];
-            if (f) onFile(f);
+            if (f) check(f);
           }}
         />
       </div>
@@ -423,11 +435,15 @@ function MappingReview({
           />
         </Field>
         <Field label="Event type">
-          <input
-            value={mapping.type}
+          <select
+            value={importTypeSelection(mapping.type)}
             onChange={(e) => update("type", e.target.value)}
             className={inputCls}
-          />
+          >
+            {EVENT_TYPES.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
         </Field>
         <Field label="Start date">
           <input

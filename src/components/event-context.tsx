@@ -60,7 +60,7 @@ export type EventComponent = {
 export type EventData = {
   name: string;
   type: string;
-  /** Primary event type (Conference, Summit, Forum, Workshop, Exhibition, Annual Meeting, Product Launch, …). */
+  /** DEPRECATED: no longer set or read for decisions; kept so older saved events still load. `type` is the only event type. */
   primaryEventType?: PrimaryEventType;
   date: string; // YYYY-MM-DD — first/only day
   /** Optional end date (YYYY-MM-DD) for multi-day events. */
@@ -84,7 +84,6 @@ const uid = () => Math.random().toString(36).slice(2, 9);
 export const gccSampleEvent: EventData = {
   name: "GCC Healthcare Innovation Summit 2026",
   type: "Healthcare Conference",
-  primaryEventType: "summit",
   date: "2026-03-12",
   components: [
     {
@@ -256,7 +255,6 @@ export function eventFromOps(base: Omit<EventData, "sessions" | "breaks" | "spea
 export const seedEvent: EventData = eventFromOps(
   {
     ...SAMPLE_META,
-    primaryEventType: "summit",
     sponsors: [],
     components: [],
     avRequirements: "",
