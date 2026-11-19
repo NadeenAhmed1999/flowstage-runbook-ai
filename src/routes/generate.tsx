@@ -7,21 +7,21 @@ import {
   seedEvent,
   type EventData,
   type Person,
-  type Session,
-  type Break,
   type Sponsor,
-  type EventComponent,
 } from "@/components/event-context";
 import { EVENT_TEMPLATES, applyTemplate, type EventTemplate } from "@/lib/event-templates";
 import { eventTypeOptions } from "@/lib/event-types";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import {
-  COMPONENT_BLUEPRINTS,
-  COMPONENT_KINDS,
-  componentBlueprint,
-  type ComponentKind,
-} from "@/lib/event-components";
-
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { PartsSection } from "@/components/generate/parts-section";
 
 /**
  * Starting-point confirmation rule: the event counts as edited when it differs (by value)
@@ -46,7 +46,12 @@ export const Route = createFileRoute("/generate")({
           "Input event details, sessions, speakers, breaks, and AV requirements to generate a professional run-of-show document.",
       },
       { property: "og:title", content: "FlowStage Generator" },
-      { property: "og:description", content: "Build a professional run-of-show document in minutes." },
+      {
+        property: "og:description",
+        content: "Build a professional run-of-show document in minutes.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: GeneratePage,
@@ -65,78 +70,13 @@ function computeDayCount(start: string, end?: string): number {
   return Math.max(1, diff + 1);
 }
 
-function DayPicker({
-  value,
-  dayCount,
-  onChange,
-}: {
-  value: number | undefined;
-  dayCount: number;
-  onChange: (day: number) => void;
-}) {
-  if (dayCount <= 1) return null;
-  return (
-    <select
-      className={inputCls}
-      value={value ?? 1}
-      onChange={(e) => onChange(Number(e.target.value))}
-      aria-label="Day"
-    >
-      {Array.from({ length: dayCount }, (_, i) => i + 1).map((d) => (
-        <option key={d} value={d}>
-          Day {d}
-        </option>
-      ))}
-    </select>
-  );
-}
-
 function GeneratePage() {
   const { event, setEvent, newId } = useEvent();
   const navigate = useNavigate();
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const [pendingTpl, setPendingTpl] = useState<EventTemplate | null>(null);
   const update = <K extends keyof typeof event>(k: K, v: (typeof event)[K]) =>
     setEvent({ ...event, [k]: v });
-
-  const reorderComponents = (from: number, to: number) => {
-    const list = [...(event.components ?? [])];
-    if (from < 0 || from >= list.length || to < 0 || to >= list.length || from === to) return;
-    const [moved] = list.splice(from, 1);
-    list.splice(to, 0, moved);
-    update("components", list);
-  };
-
-  const duplicateComponent = (i: number) => {
-    const list = [...(event.components ?? [])];
-    const src = list[i];
-    if (!src) return;
-    const ops = src.operationalRequirements;
-    const copy: EventComponent = {
-      ...src,
-      id: newId(),
-      name: `${src.name} (copy)`,
-      hosts: src.hosts ? [...src.hosts] : undefined,
-      speakers: src.speakers ? [...src.speakers] : undefined,
-      moderators: src.moderators ? [...src.moderators] : undefined,
-      operationalRequirements: ops
-        ? {
-            av: ops.av ? [...ops.av] : undefined,
-            staffing: ops.staffing ? [...ops.staffing] : undefined,
-            protocol: ops.protocol ? [...ops.protocol] : undefined,
-            catering: ops.catering,
-            security: ops.security,
-          }
-        : undefined,
-    };
-    list.splice(i + 1, 0, copy);
-    update("components", list);
-  };
-
-  const dayCount = computeDayCount(event.date, event.endDate);
-  const multiDay = dayCount > 1;
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
@@ -145,10 +85,12 @@ function GeneratePage() {
           <p className="font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-accent">
             New event
           </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-navy">Set up your event</h1>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-navy">
+            Set up your event
+          </h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-            Provide the essentials. FlowStage builds the timeline, cues, transitions, and backstage notes
-            from your inputs.
+            Provide the essentials. FlowStage builds the timeline, cues, transitions, and backstage
+            notes from your inputs.
           </p>
         </div>
         <Link
@@ -169,7 +111,8 @@ function GeneratePage() {
         {/* Templates */}
         <Section title="Starting point" step="00">
           <p className="mb-4 text-sm text-muted-foreground">
-            Pre-fills sessions, breaks and sponsors. Choosing one replaces your current event name, sessions, breaks, sponsors and parts.
+            Pre-fills sessions, breaks and sponsors. Choosing one replaces your current event name,
+            sessions, breaks, sponsors and parts.
           </p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {EVENT_TEMPLATES.map((tpl) => {
@@ -201,7 +144,9 @@ function GeneratePage() {
                       </span>
                     )}
                   </div>
-                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{tpl.description}</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                    {tpl.description}
+                  </p>
                 </button>
               );
             })}
@@ -211,7 +156,8 @@ function GeneratePage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Replace your current event?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Using "{pendingTpl?.label}" replaces your event name, sessions, breaks, sponsors and parts. This can't be undone.
+                  Using "{pendingTpl?.label}" replaces your event name, sessions, breaks, sponsors
+                  and parts. This can't be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -234,7 +180,6 @@ function GeneratePage() {
           </AlertDialog>
         </Section>
 
-
         {/* Event basics */}
         <Section title="Event Details" step="01">
           <div className="grid gap-4 md:grid-cols-[2fr_1fr_1fr_1fr]">
@@ -254,7 +199,9 @@ function GeneratePage() {
                 onChange={(e) => update("type", e.target.value)}
               >
                 {eventTypeOptions(event.type).map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
                 ))}
               </select>
             </Field>
@@ -269,8 +216,7 @@ function GeneratePage() {
                     ...event,
                     date: next,
                     // Keep endDate >= date
-                    endDate:
-                      event.endDate && event.endDate < next ? next : event.endDate,
+                    endDate: event.endDate && event.endDate < next ? next : event.endDate,
                   });
                 }}
               />
@@ -281,9 +227,7 @@ function GeneratePage() {
                 className={inputCls}
                 min={event.date || undefined}
                 value={event.endDate ?? ""}
-                onChange={(e) =>
-                  update("endDate", e.target.value ? e.target.value : undefined)
-                }
+                onChange={(e) => update("endDate", e.target.value ? e.target.value : undefined)}
               />
             </Field>
           </div>
@@ -299,457 +243,7 @@ function GeneratePage() {
           })()}
         </Section>
 
-
-        {/* Event Components — modular programme blocks */}
-        <Section
-          title="Event Components"
-          step="02"
-          action={
-            <ComponentAddMenu
-              onAdd={(kind) => {
-                const bp = componentBlueprint(kind);
-                const next: EventComponent = {
-                  id: newId(),
-                  kind,
-                  name: bp.label,
-                  day: 1,
-                  startTime: bp.defaultStart,
-                  durationMin: bp.defaultDurationMin,
-                  operationalRequirements: {
-                    av: [...bp.defaultAV],
-                    staffing: [...bp.defaultStaffing],
-                    protocol: [...bp.defaultProtocol],
-                  },
-                  aiContext: "",
-                };
-                update("components", [...(event.components ?? []), next]);
-              }}
-            />
-          }
-        >
-          <p className="mb-4 text-sm text-muted-foreground">
-            Add modular programme blocks — Opening Ceremony, Gala Dinner, Awards, Press Conference,
-            Site Visits, and more. Each carries its own operational requirements and is woven into
-            the AI-generated master run-of-show as part of the same event.
-          </p>
-          {(event.components ?? []).length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border bg-surface/50 p-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                No components added yet. Use <span className="font-semibold text-foreground">+ Add component</span>{" "}
-                above to include ceremonies, dinners, receptions, showcases, or off-site visits.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {(event.components ?? []).map((c, i) => {
-                const bp = componentBlueprint(c.kind);
-                const isDragging = dragIndex === i;
-                const isDragOver = dragOverIndex === i && dragIndex !== null && dragIndex !== i;
-                const dropAbove = isDragOver && (dragIndex ?? 0) > i;
-                const dropBelow = isDragOver && (dragIndex ?? 0) < i;
-                const total = (event.components ?? []).length;
-
-                return (
-                  <div key={c.id} className="relative">
-                    {/* Drop indicators */}
-                    <div
-                      className={`pointer-events-none absolute inset-x-0 -top-1.5 h-1 rounded-full transition-all duration-150 ${
-                        dropAbove ? "bg-accent shadow-[0_0_0_3px_hsl(var(--accent)/0.2)]" : "bg-transparent"
-                      }`}
-                    />
-                    <div
-                      className={`pointer-events-none absolute inset-x-0 -bottom-1.5 h-1 rounded-full transition-all duration-150 ${
-                        dropBelow ? "bg-accent shadow-[0_0_0_3px_hsl(var(--accent)/0.2)]" : "bg-transparent"
-                      }`}
-                    />
-
-                    <div
-                      draggable={dragIndex === i || dragIndex === null}
-                      onDragStart={(e) => {
-                        setDragIndex(i);
-                        e.dataTransfer.effectAllowed = "move";
-                        e.dataTransfer.setData("text/plain", String(i));
-                      }}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        e.dataTransfer.dropEffect = "move";
-                        if (dragOverIndex !== i) setDragOverIndex(i);
-                      }}
-                      onDragLeave={(e) => {
-                        // only clear when leaving the card entirely
-                        const related = e.relatedTarget as Node | null;
-                        if (!related || !(e.currentTarget as HTMLElement).contains(related)) {
-                          if (dragOverIndex === i) setDragOverIndex(null);
-                        }
-                      }}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        const from = dragIndex ?? Number(e.dataTransfer.getData("text/plain"));
-                        reorderComponents(from, i);
-                        setDragIndex(null);
-                        setDragOverIndex(null);
-                      }}
-                      onDragEnd={() => {
-                        setDragIndex(null);
-                        setDragOverIndex(null);
-                      }}
-                      className={`group/comp rounded-lg border bg-surface p-4 transition-[transform,box-shadow,border-color,opacity] duration-200 ${
-                        isDragging
-                          ? "scale-[0.99] opacity-40 shadow-lg ring-1 ring-accent/40"
-                          : "hover:border-border/80 hover:shadow-sm"
-                      } ${isDragOver ? "border-accent/60" : "border-border"}`}
-                    >
-                      <div className="mb-3 flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-3">
-                          <span
-                            className="mt-0.5 flex h-7 w-6 shrink-0 cursor-grab select-none items-center justify-center rounded border border-transparent text-muted-foreground/70 transition-colors hover:border-border hover:bg-background hover:text-foreground active:cursor-grabbing active:bg-accent/10 active:text-accent"
-                            aria-label="Drag to reorder"
-                            title="Drag to reorder"
-                          >
-                            <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor" aria-hidden="true">
-                              <circle cx="2.5" cy="3" r="1.2" />
-                              <circle cx="7.5" cy="3" r="1.2" />
-                              <circle cx="2.5" cy="8" r="1.2" />
-                              <circle cx="7.5" cy="8" r="1.2" />
-                              <circle cx="2.5" cy="13" r="1.2" />
-                              <circle cx="7.5" cy="13" r="1.2" />
-                            </svg>
-                          </span>
-                          <div>
-                            <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent">
-                              {bp.category} · {bp.label}
-                            </p>
-                            <p className="mt-1 text-xs text-muted-foreground">{bp.description}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            className="rounded px-1.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
-                            onClick={() => reorderComponents(i, i - 1)}
-                            disabled={i === 0}
-                            aria-label="Move up"
-                            title="Move up"
-                          >
-                            ↑
-                          </button>
-                          <button
-                            type="button"
-                            className="rounded px-1.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
-                            onClick={() => reorderComponents(i, i + 1)}
-                            disabled={i === total - 1}
-                            aria-label="Move down"
-                            title="Move down"
-                          >
-                            ↓
-                          </button>
-                          <span className="mx-1 h-4 w-px bg-border" aria-hidden="true" />
-                          <button
-                            type="button"
-                            className="rounded px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-                            onClick={() => duplicateComponent(i)}
-                            title="Duplicate"
-                          >
-                            Duplicate
-                          </button>
-                          <button
-                            type="button"
-                            className="rounded px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                            onClick={() =>
-                              update(
-                                "components",
-                                (event.components ?? []).filter((x) => x.id !== c.id),
-                              )
-                            }
-                            title="Remove"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-
-
-                    <div
-                      className={`grid gap-3 ${
-                        multiDay
-                          ? "md:grid-cols-[2fr_1fr_1fr_1fr_1fr]"
-                          : "md:grid-cols-[2fr_1fr_1fr_1fr]"
-                      }`}
-                    >
-                      <input
-                        className={inputCls}
-                        value={c.name}
-                        placeholder="Component name"
-                        onChange={(e) => {
-                          const next = [...(event.components ?? [])];
-                          next[i] = { ...c, name: e.target.value };
-                          update("components", next);
-                        }}
-                      />
-                      <input
-                        type="time"
-                        className={inputCls}
-                        value={c.startTime}
-                        onChange={(e) => {
-                          const next = [...(event.components ?? [])];
-                          next[i] = { ...c, startTime: e.target.value };
-                          update("components", next);
-                        }}
-                      />
-                      <input
-                        type="number"
-                        min={10}
-                        max={720}
-                        className={inputCls}
-                        value={c.durationMin}
-                        onChange={(e) => {
-                          const next = [...(event.components ?? [])];
-                          next[i] = { ...c, durationMin: Number(e.target.value) };
-                          update("components", next);
-                        }}
-                      />
-                      <input
-                        className={inputCls}
-                        placeholder="Venue (optional)"
-                        value={c.venue ?? ""}
-                        onChange={(e) => {
-                          const next = [...(event.components ?? [])];
-                          next[i] = { ...c, venue: e.target.value || undefined };
-                          update("components", next);
-                        }}
-                      />
-                      <DayPicker
-                        value={c.day}
-                        dayCount={dayCount}
-                        onChange={(day) => {
-                          const next = [...(event.components ?? [])];
-                          next[i] = { ...c, day };
-                          update("components", next);
-                        }}
-                      />
-                    </div>
-                    <div className="mt-3 grid gap-3 md:grid-cols-2">
-                      <input
-                        type="number"
-                        min={0}
-                        className={inputCls}
-                        placeholder="Expected attendees"
-                        value={c.expectedAttendees ?? ""}
-                        onChange={(e) => {
-                          const next = [...(event.components ?? [])];
-                          next[i] = {
-                            ...c,
-                            expectedAttendees: e.target.value ? Number(e.target.value) : undefined,
-                          };
-                          update("components", next);
-                        }}
-                      />
-                      <input
-                        className={inputCls}
-                        placeholder="Hosts (comma-separated)"
-                        value={(c.hosts ?? []).join(", ")}
-                        onChange={(e) => {
-                          const next = [...(event.components ?? [])];
-                          const hosts = e.target.value
-                            .split(",")
-                            .map((s) => s.trim())
-                            .filter(Boolean);
-                          next[i] = { ...c, hosts: hosts.length ? hosts : undefined };
-                          update("components", next);
-                        }}
-                      />
-                    </div>
-                    <textarea
-                      rows={2}
-                      className={`${inputCls} mt-3`}
-                      placeholder="AI context — extra operational context the AI should weave into cues (VIP protocol, embargo notes, dress code, sponsor moment, etc.)"
-                      value={c.aiContext ?? ""}
-                      onChange={(e) => {
-                        const next = [...(event.components ?? [])];
-                        next[i] = { ...c, aiContext: e.target.value };
-                        update("components", next);
-                      }}
-                    />
-                    <details className="mt-3 rounded-md border border-border/60 bg-background p-3">
-                      <summary className="cursor-pointer text-xs font-semibold text-muted-foreground hover:text-foreground">
-                        Operational requirements (AV · Staffing · Protocol)
-                      </summary>
-                      <div className="mt-3 grid gap-3 md:grid-cols-3">
-                        <OpsList
-                          label="AV"
-                          items={c.operationalRequirements?.av ?? []}
-                          onChange={(av) => {
-                            const next = [...(event.components ?? [])];
-                            next[i] = {
-                              ...c,
-                              operationalRequirements: { ...c.operationalRequirements, av },
-                            };
-                            update("components", next);
-                          }}
-                        />
-                        <OpsList
-                          label="Staffing"
-                          items={c.operationalRequirements?.staffing ?? []}
-                          onChange={(staffing) => {
-                            const next = [...(event.components ?? [])];
-                            next[i] = {
-                              ...c,
-                              operationalRequirements: { ...c.operationalRequirements, staffing },
-                            };
-                            update("components", next);
-                          }}
-                        />
-                        <OpsList
-                          label="Protocol"
-                          items={c.operationalRequirements?.protocol ?? []}
-                          onChange={(protocol) => {
-                            const next = [...(event.components ?? [])];
-                            next[i] = {
-                              ...c,
-                              operationalRequirements: { ...c.operationalRequirements, protocol },
-                            };
-                            update("components", next);
-                          }}
-                        />
-                      </div>
-                    </details>
-                    </div>
-                  </div>
-                );
-
-              })}
-            </div>
-          )}
-        </Section>
-
-
-        {/* Sessions */}
-        <Section
-          title="Sessions"
-          step="03"
-          action={
-            <button
-              type="button"
-              onClick={() =>
-                update("sessions", [
-                  ...event.sessions,
-                  {
-                    id: newId(),
-                    title: "New Session",
-                    startTime: "12:00",
-                    durationMin: 30,
-                    description: "",
-                    speakerIds: [],
-                    moderatorIds: [],
-                  } satisfies Session,
-                ])
-              }
-            >
-              + Add session
-            </button>
-          }
-        >
-          <div className="space-y-4">
-            {event.sessions.map((s, i) => (
-              <div key={s.id} className="rounded-lg border border-border bg-surface p-4">
-                <div
-                  className={`grid gap-3 ${
-                    multiDay
-                      ? "md:grid-cols-[2fr_1fr_1fr_1fr_auto]"
-                      : "md:grid-cols-[2fr_1fr_1fr_auto]"
-                  }`}
-                >
-                  <input
-                    className={inputCls}
-                    value={s.title}
-                    placeholder="Session title"
-                    onChange={(e) => {
-                      const next = [...event.sessions];
-                      next[i] = { ...s, title: e.target.value };
-                      update("sessions", next);
-                    }}
-                  />
-                  <input
-                    type="time"
-                    className={inputCls}
-                    value={s.startTime}
-                    onChange={(e) => {
-                      const next = [...event.sessions];
-                      next[i] = { ...s, startTime: e.target.value };
-                      update("sessions", next);
-                    }}
-                  />
-                  <input
-                    type="number"
-                    min={5}
-                    max={480}
-                    className={inputCls}
-                    value={s.durationMin}
-                    onChange={(e) => {
-                      const next = [...event.sessions];
-                      next[i] = { ...s, durationMin: Number(e.target.value) };
-                      update("sessions", next);
-                    }}
-                  />
-                  <DayPicker
-                    value={s.day}
-                    dayCount={dayCount}
-                    onChange={(day) => {
-                      const next = [...event.sessions];
-                      next[i] = { ...s, day };
-                      update("sessions", next);
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="text-xs font-medium text-muted-foreground hover:text-destructive"
-                    onClick={() =>
-                      update(
-                        "sessions",
-                        event.sessions.filter((x) => x.id !== s.id),
-                      )
-                    }
-                  >
-                    Remove
-                  </button>
-                </div>
-                <textarea
-                  rows={2}
-                  placeholder="Short description for cue logic"
-                  className={`${inputCls} mt-3`}
-                  value={s.description}
-                  onChange={(e) => {
-                    const next = [...event.sessions];
-                    next[i] = { ...s, description: e.target.value };
-                    update("sessions", next);
-                  }}
-                />
-                <div className="mt-3 grid gap-3 md:grid-cols-2">
-                  <PeopleSelect
-                    label="Speakers"
-                    options={event.speakers}
-                    selected={s.speakerIds}
-                    onChange={(ids) => {
-                      const next = [...event.sessions];
-                      next[i] = { ...s, speakerIds: ids };
-                      update("sessions", next);
-                    }}
-                  />
-                  <PeopleSelect
-                    label="Moderators"
-                    options={event.moderators}
-                    selected={s.moderatorIds}
-                    onChange={(ids) => {
-                      const next = [...event.sessions];
-                      next[i] = { ...s, moderatorIds: ids };
-                      update("sessions", next);
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </Section>
+        <PartsSection />
 
         {/* Speakers */}
         <PeopleSection
@@ -771,84 +265,6 @@ function GeneratePage() {
           placeholderRole="e.g. Editor, The Brief"
         />
 
-        {/* Breaks */}
-        <Section
-          title="Networking Breaks"
-          step="06"
-          action={
-            <button
-              type="button"
-              onClick={() =>
-                update("breaks", [
-                  ...event.breaks,
-                  { id: newId(), label: "Break", startTime: "12:00", durationMin: 20 } satisfies Break,
-                ])
-              }
-            >
-              + Add break
-            </button>
-          }
-        >
-          <div className="space-y-3">
-            {event.breaks.map((b, i) => (
-              <div
-                key={b.id}
-                className={`grid gap-3 ${
-                  multiDay
-                    ? "md:grid-cols-[2fr_1fr_1fr_1fr_auto]"
-                    : "md:grid-cols-[2fr_1fr_1fr_auto]"
-                }`}
-              >
-                <input
-                  className={inputCls}
-                  value={b.label}
-                  onChange={(e) => {
-                    const next = [...event.breaks];
-                    next[i] = { ...b, label: e.target.value };
-                    update("breaks", next);
-                  }}
-                />
-                <input
-                  type="time"
-                  className={inputCls}
-                  value={b.startTime}
-                  onChange={(e) => {
-                    const next = [...event.breaks];
-                    next[i] = { ...b, startTime: e.target.value };
-                    update("breaks", next);
-                  }}
-                />
-                <input
-                  type="number"
-                  className={inputCls}
-                  value={b.durationMin}
-                  onChange={(e) => {
-                    const next = [...event.breaks];
-                    next[i] = { ...b, durationMin: Number(e.target.value) };
-                    update("breaks", next);
-                  }}
-                />
-                <DayPicker
-                  value={b.day}
-                  dayCount={dayCount}
-                  onChange={(day) => {
-                    const next = [...event.breaks];
-                    next[i] = { ...b, day };
-                    update("breaks", next);
-                  }}
-                />
-                <button
-                  type="button"
-                  className="text-xs font-medium text-muted-foreground hover:text-destructive"
-                  onClick={() => update("breaks", event.breaks.filter((x) => x.id !== b.id))}
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
-          </div>
-        </Section>
-
         {/* Sponsors */}
         <Section
           title="Sponsor Mentions"
@@ -859,7 +275,11 @@ function GeneratePage() {
               onClick={() =>
                 update("sponsors", [
                   ...event.sponsors,
-                  { id: newId(), name: "New Sponsor", placement: "Opening remarks" } satisfies Sponsor,
+                  {
+                    id: newId(),
+                    name: "New Sponsor",
+                    placement: "Opening remarks",
+                  } satisfies Sponsor,
                 ])
               }
             >
@@ -892,7 +312,12 @@ function GeneratePage() {
                 <button
                   type="button"
                   className="text-xs font-medium text-muted-foreground hover:text-destructive"
-                  onClick={() => update("sponsors", event.sponsors.filter((x) => x.id !== sp.id))}
+                  onClick={() =>
+                    update(
+                      "sponsors",
+                      event.sponsors.filter((x) => x.id !== sp.id),
+                    )
+                  }
                 >
                   Remove
                 </button>
@@ -952,7 +377,9 @@ function Section({
           <h2 className="mt-1 text-lg font-semibold text-navy">{title}</h2>
         </div>
         {action && (
-          <div className="text-xs font-semibold text-accent hover:underline cursor-pointer">{action}</div>
+          <div className="text-xs font-semibold text-accent hover:underline cursor-pointer">
+            {action}
+          </div>
         )}
       </div>
       {children}
@@ -1031,138 +458,5 @@ function PeopleSection({
         ))}
       </div>
     </Section>
-  );
-}
-
-function PeopleSelect({
-  label,
-  options,
-  selected,
-  onChange,
-}: {
-  label: string;
-  options: Person[];
-  selected: string[];
-  onChange: (ids: string[]) => void;
-}) {
-  return (
-    <div>
-      <p className={`${labelCls} mb-2`}>{label}</p>
-      <div className="flex flex-wrap gap-2">
-        {options.length === 0 && (
-          <span className="text-xs text-muted-foreground italic">Add people above</span>
-        )}
-        {options.map((o) => {
-          const active = selected.includes(o.id);
-          return (
-            <button
-              key={o.id}
-              type="button"
-              onClick={() =>
-                onChange(active ? selected.filter((x) => x !== o.id) : [...selected, o.id])
-              }
-              className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-                active
-                  ? "border-accent bg-accent/10 text-accent"
-                  : "border-border bg-background text-muted-foreground hover:border-foreground/30"
-              }`}
-            >
-              {o.name || "Untitled"}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function ComponentAddMenu({ onAdd }: { onAdd: (kind: ComponentKind) => void }) {
-  const grouped = COMPONENT_KINDS.reduce<Record<string, ComponentKind[]>>((acc, k) => {
-    const bp = COMPONENT_BLUEPRINTS[k];
-    (acc[bp.category] ??= []).push(k);
-    return acc;
-  }, {});
-  return (
-    <details className="relative">
-      <summary className="cursor-pointer list-none rounded-md border border-accent/40 bg-accent/5 px-3 py-1.5 text-xs font-semibold text-accent hover:bg-accent/10">
-        + Add component
-      </summary>
-      <div className="absolute right-0 z-20 mt-2 w-80 rounded-lg border border-border bg-background p-3 shadow-lg">
-        {Object.entries(grouped).map(([cat, kinds]) => (
-          <div key={cat} className="mb-3 last:mb-0">
-            <p className="mb-1.5 font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              {cat}
-            </p>
-            <div className="grid gap-1">
-              {kinds.map((k) => {
-                const bp = COMPONENT_BLUEPRINTS[k];
-                return (
-                  <button
-                    key={k}
-                    type="button"
-                    onClick={(e) => {
-                      onAdd(k);
-                      // close <details> after selection
-                      const details = (e.currentTarget.closest("details") as HTMLDetailsElement) ?? null;
-                      if (details) details.open = false;
-                    }}
-                    className="rounded-md border border-transparent px-2 py-1.5 text-left text-xs text-foreground hover:border-border hover:bg-surface"
-                  >
-                    <span className="font-semibold">{bp.label}</span>
-                    <span className="ml-2 text-muted-foreground">{bp.description}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-    </details>
-  );
-}
-
-function OpsList({
-  label,
-  items,
-  onChange,
-}: {
-  label: string;
-  items: string[];
-  onChange: (next: string[]) => void;
-}) {
-  return (
-    <div>
-      <p className={`${labelCls} mb-1.5`}>{label}</p>
-      <div className="space-y-1.5">
-        {items.map((item, i) => (
-          <div key={i} className="flex items-center gap-1.5">
-            <input
-              className={inputCls}
-              value={item}
-              onChange={(e) => {
-                const next = [...items];
-                next[i] = e.target.value;
-                onChange(next);
-              }}
-            />
-            <button
-              type="button"
-              className="text-xs text-muted-foreground hover:text-destructive"
-              onClick={() => onChange(items.filter((_, idx) => idx !== i))}
-              aria-label={`Remove ${label} item`}
-            >
-              ×
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          className="text-xs font-medium text-accent hover:underline"
-          onClick={() => onChange([...items, ""])}
-        >
-          + Add {label.toLowerCase()} item
-        </button>
-      </div>
-    </div>
   );
 }

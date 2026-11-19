@@ -14,6 +14,7 @@ export const COMPONENT_KINDS = [
   "press-conference",
   "site-visit",
   "celebration-event",
+  "other",
 ] as const;
 
 export type ComponentKind = (typeof COMPONENT_KINDS)[number];
@@ -21,7 +22,7 @@ export type ComponentKind = (typeof COMPONENT_KINDS)[number];
 export type ComponentBlueprint = {
   kind: ComponentKind;
   label: string;
-  category: "Ceremonies" | "Receptions & Dining" | "Showcases & Media" | "Off-site";
+  category: "Ceremonies" | "Receptions & Dining" | "Showcases & Media" | "Off-site" | "Other";
   defaultDurationMin: number;
   defaultStart: string; // HH:MM
   defaultAV: string[];
@@ -32,14 +33,37 @@ export type ComponentBlueprint = {
 };
 
 export const COMPONENT_BLUEPRINTS: Record<ComponentKind, ComponentBlueprint> = {
+  other: {
+    kind: "other",
+    label: "Other part",
+    category: "Other",
+    defaultDurationMin: 30,
+    defaultStart: "",
+    defaultAV: [],
+    defaultStaffing: [],
+    defaultProtocol: [],
+    aiPromptSnippet:
+      "Use only the supplied schedule, notes and requirements for this part. Unspecified details remain unknown.",
+    description: "A part with your own schedule and requirements.",
+  },
   "opening-ceremony": {
     kind: "opening-ceremony",
     label: "Opening Ceremony",
     category: "Ceremonies",
     defaultDurationMin: 45,
     defaultStart: "09:00",
-    defaultAV: ["Stage lighting hit on host walk-on", "Anthem playback preset", "IMAG center + wings", "Handheld + lavalier for host"],
-    defaultStaffing: ["Stage manager", "Host wrangler", "VIP escort x2", "Photographer + videographer"],
+    defaultAV: [
+      "Stage lighting hit on host walk-on",
+      "Anthem playback preset",
+      "IMAG center + wings",
+      "Handheld + lavalier for host",
+    ],
+    defaultStaffing: [
+      "Stage manager",
+      "Host wrangler",
+      "VIP escort x2",
+      "Photographer + videographer",
+    ],
     defaultProtocol: [
       "VIP arrival window and dedicated entrance",
       "Order of precedence for stage party",
@@ -58,7 +82,11 @@ export const COMPONENT_BLUEPRINTS: Record<ComponentKind, ComponentBlueprint> = {
     defaultStart: "17:00",
     defaultAV: ["Playoff music preset", "Recap VT ready", "Host lavalier"],
     defaultStaffing: ["Stage manager", "Photographer", "VIP escort for chair handover"],
-    defaultProtocol: ["Chair thank-yous", "Sponsor final acknowledgement", "Handover / save-the-date"],
+    defaultProtocol: [
+      "Chair thank-yous",
+      "Sponsor final acknowledgement",
+      "Handover / save-the-date",
+    ],
     aiPromptSnippet:
       "Formal closing ceremony. Include recap VT, chair thank-yous to partners and delegates, sponsor closing acknowledgement, host handover or save-the-date for next edition, and a photo call.",
     description: "Formal close with thank-yous, recap, and handover.",
@@ -69,8 +97,19 @@ export const COMPONENT_BLUEPRINTS: Record<ComponentKind, ComponentBlueprint> = {
     category: "Receptions & Dining",
     defaultDurationMin: 180,
     defaultStart: "19:00",
-    defaultAV: ["Two follow-spots", "Room wash with table uplighting", "Host lavalier + handheld", "Ambient music bed with entrance/entertainment presets"],
-    defaultStaffing: ["Banquet captain", "F&B liaison", "MC / host", "Entertainment stage manager", "Photographer"],
+    defaultAV: [
+      "Two follow-spots",
+      "Room wash with table uplighting",
+      "Host lavalier + handheld",
+      "Ambient music bed with entrance/entertainment presets",
+    ],
+    defaultStaffing: [
+      "Banquet captain",
+      "F&B liaison",
+      "MC / host",
+      "Entertainment stage manager",
+      "Photographer",
+    ],
     defaultProtocol: [
       "VIP seating chart signed off",
       "Allergen protocol at each table",
@@ -94,7 +133,13 @@ export const COMPONENT_BLUEPRINTS: Record<ComponentKind, ComponentBlueprint> = {
       "Playoff music presets per category",
       "Category VT playback",
     ],
-    defaultStaffing: ["Show caller", "Trophy handler", "Winner walker / escort", "Step-and-repeat photographer", "Autocue operator"],
+    defaultStaffing: [
+      "Show caller",
+      "Trophy handler",
+      "Winner walker / escort",
+      "Step-and-repeat photographer",
+      "Autocue operator",
+    ],
     defaultProtocol: [
       "Winners list embargoed until reveal",
       "90-second acceptance cap with soft playoff cue",
@@ -111,8 +156,17 @@ export const COMPONENT_BLUEPRINTS: Record<ComponentKind, ComponentBlueprint> = {
     category: "Receptions & Dining",
     defaultDurationMin: 90,
     defaultStart: "18:00",
-    defaultAV: ["Ambient music bed", "Sponsor loop on venue screens", "Handheld mic for optional welcome remarks"],
-    defaultStaffing: ["Greeter team", "Bar captains", "Photographer roaming", "Registration escalation lead"],
+    defaultAV: [
+      "Ambient music bed",
+      "Sponsor loop on venue screens",
+      "Handheld mic for optional welcome remarks",
+    ],
+    defaultStaffing: [
+      "Greeter team",
+      "Bar captains",
+      "Photographer roaming",
+      "Registration escalation lead",
+    ],
     defaultProtocol: ["Badge check at door", "Sponsor signage active", "Photo backdrop staffed"],
     aiPromptSnippet:
       "Standing welcome reception the evening before or start of Day 1. Focus on greeting, badge collection, sponsor visibility, and casual introductions. Include optional 3-minute welcome remarks from the chair mid-way through, no formal programming otherwise.",
@@ -126,7 +180,10 @@ export const COMPONENT_BLUEPRINTS: Record<ComponentKind, ComponentBlueprint> = {
     defaultStart: "17:30",
     defaultAV: ["Ambient music bed", "Sponsor lower-third loop on screens"],
     defaultStaffing: ["Bar captains", "Sponsor host per activation zone", "Photographer roaming"],
-    defaultProtocol: ["Sponsor activation zones staffed", "Directional signage to bars and washrooms"],
+    defaultProtocol: [
+      "Sponsor activation zones staffed",
+      "Directional signage to bars and washrooms",
+    ],
     aiPromptSnippet:
       "End-of-day standing networking reception. Protect the networking window — no formal programming. Sponsor activation zones should be actively hosted, not passive booths. Coordinate flow between conference floor and reception space.",
     description: "Standing networking with active sponsor zones and no formal programming.",
@@ -155,8 +212,16 @@ export const COMPONENT_BLUEPRINTS: Record<ComponentKind, ComponentBlueprint> = {
     category: "Showcases & Media",
     defaultDurationMin: 480,
     defaultStart: "08:30",
-    defaultAV: ["Booth power + AV drops per sponsor", "Directional signage from main hall", "Announcement PA to exhibition floor"],
-    defaultStaffing: ["Exhibition floor manager", "Sponsor liaisons per zone", "Cleaning turn crew"],
+    defaultAV: [
+      "Booth power + AV drops per sponsor",
+      "Directional signage from main hall",
+      "Announcement PA to exhibition floor",
+    ],
+    defaultStaffing: [
+      "Exhibition floor manager",
+      "Sponsor liaisons per zone",
+      "Cleaning turn crew",
+    ],
     defaultProtocol: [
       "Booth build-in and safety sign-off before doors",
       "Sponsor lead-collection compliance",
@@ -172,7 +237,11 @@ export const COMPONENT_BLUEPRINTS: Record<ComponentKind, ComponentBlueprint> = {
     category: "Showcases & Media",
     defaultDurationMin: 60,
     defaultStart: "11:00",
-    defaultAV: ["Demo station with HDMI + USB-C", "Recorded demo VT as failover", "Reveal lighting cue"],
+    defaultAV: [
+      "Demo station with HDMI + USB-C",
+      "Recorded demo VT as failover",
+      "Reveal lighting cue",
+    ],
     defaultStaffing: ["Demo lead", "Product SME on stand-by", "Media wrangler"],
     defaultProtocol: ["Embargo check before reveal", "Hands-on area staff briefed 60 min prior"],
     aiPromptSnippet:
@@ -185,8 +254,16 @@ export const COMPONENT_BLUEPRINTS: Record<ComponentKind, ComponentBlueprint> = {
     category: "Showcases & Media",
     defaultDurationMin: 45,
     defaultStart: "14:00",
-    defaultAV: ["Podium mic + lavalier for chair", "Mult-box for broadcast feeds", "Branded backdrop with lockups"],
-    defaultStaffing: ["Comms lead / moderator", "Press check-in desk", "Photographer + videographer"],
+    defaultAV: [
+      "Podium mic + lavalier for chair",
+      "Mult-box for broadcast feeds",
+      "Branded backdrop with lockups",
+    ],
+    defaultStaffing: [
+      "Comms lead / moderator",
+      "Press check-in desk",
+      "Photographer + videographer",
+    ],
     defaultProtocol: [
       "Accredited media only",
       "Embargo notes distributed at check-in",
@@ -204,7 +281,11 @@ export const COMPONENT_BLUEPRINTS: Record<ComponentKind, ComponentBlueprint> = {
     defaultDurationMin: 180,
     defaultStart: "13:00",
     defaultAV: ["Whisper radios or tour guide packs", "Hi-vis vests / PPE where required"],
-    defaultStaffing: ["Tour lead per group of 15", "Coach captain per bus", "Host contact at destination"],
+    defaultStaffing: [
+      "Tour lead per group of 15",
+      "Coach captain per bus",
+      "Host contact at destination",
+    ],
     defaultProtocol: [
       "Coach transport confirmed with pickup / dropoff points",
       "PPE / access requirements confirmed with host site",
@@ -223,7 +304,10 @@ export const COMPONENT_BLUEPRINTS: Record<ComponentKind, ComponentBlueprint> = {
     defaultStart: "20:00",
     defaultAV: ["DJ or live band", "Dance-floor lighting rig", "Wireless handheld for host toasts"],
     defaultStaffing: ["Entertainment manager", "F&B lead", "Photographer"],
-    defaultProtocol: ["Late-night noise curfew with venue", "Transport plan for delegates at close"],
+    defaultProtocol: [
+      "Late-night noise curfew with venue",
+      "Transport plan for delegates at close",
+    ],
     aiPromptSnippet:
       "Informal celebration or after-party. Live music or DJ, structured host toasts early, dance floor open after entertainment. Coordinate noise curfew with venue and delegate transport plan at close.",
     description: "Informal celebration with entertainment, toasts, and transport plan.",
