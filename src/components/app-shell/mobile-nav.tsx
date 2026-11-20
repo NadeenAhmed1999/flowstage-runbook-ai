@@ -11,7 +11,7 @@ const tabs = [
 ] as const;
 const more = [
   { to: "/app/events", label: "Events", icon: CalendarRange },
-  { to: "/import", label: "Import", icon: FileSpreadsheet },
+  { to: "/app/import", label: "Import", icon: FileSpreadsheet },
   { to: "/app/activity", label: "Activity", icon: Activity },
 ] as const;
 

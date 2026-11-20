@@ -21,7 +21,7 @@ export function AppTopbar({ title, subtitle, breadcrumb, primary = "new-event" }
       <div className="col-span-2 flex shrink-0 items-center justify-end gap-2 lg:col-span-1 lg:ml-auto">
         <SaveControls />
         {primary === "new-event" && <Link
-          to="/generate"
+          to="/app/new"
           onClick={() => resetSavedEvent()}
           className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground shadow-sm transition-all hover:bg-accent/90 hover:shadow-md hover:-translate-y-px active:translate-y-0"
         >

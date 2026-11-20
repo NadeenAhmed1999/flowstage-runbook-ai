@@ -37,7 +37,7 @@ function AppRunOfShow() {
               </div>
               <div className="flex items-center gap-2">
                 <Link
-                  to="/generate"
+                  to="/app/new"
                   className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs font-medium text-foreground hover:bg-surface"
                 >
                   <Pencil className="h-3.5 w-3.5" /> Edit
@@ -61,7 +61,7 @@ function AppRunOfShow() {
               {ops.items.length === 0 ? (
                 <EmptyState
                   title="No programme items"
-                  action={<Button asChild className="min-h-11"><Link to="/import">Import agenda</Link></Button>}
+                  action={<Button asChild className="min-h-11"><Link to="/app/import">Import agenda</Link></Button>}
                   secondary={<Button type="button" variant="link" className="min-h-11" onClick={reset}>Use the sample</Button>}
                 />
               ) : (

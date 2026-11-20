@@ -26,6 +26,8 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppActivityRouteImport } from './routes/app.activity'
 import { Route as AppAvRouteImport } from './routes/app.av'
 import { Route as AppEventsRouteImport } from './routes/app.events'
+import { Route as AppImportRouteImport } from './routes/app.import'
+import { Route as AppNewRouteImport } from './routes/app.new'
 import { Route as AppRunOfShowRouteImport } from './routes/app.run-of-show'
 import { Route as AppTalentRouteImport } from './routes/app.talent'
 import { Route as SolutionsCorporateSummitsRouteImport } from './routes/solutions.corporate-summits'
@@ -122,6 +124,16 @@ const AppEventsRoute = AppEventsRouteImport.update({
   path: '/events',
   getParentRoute: () => AppRoute,
 } as any)
+const AppImportRoute = AppImportRouteImport.update({
+  id: '/import',
+  path: '/import',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNewRoute = AppNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppRunOfShowRoute = AppRunOfShowRouteImport.update({
   id: '/run-of-show',
   path: '/run-of-show',
@@ -184,6 +196,8 @@ export interface FileRoutesByFullPath {
   '/app/activity': typeof AppActivityRoute
   '/app/av': typeof AppAvRoute
   '/app/events': typeof AppEventsRoute
+  '/app/import': typeof AppImportRoute
+  '/app/new': typeof AppNewRoute
   '/app/run-of-show': typeof AppRunOfShowRoute
   '/app/talent': typeof AppTalentRoute
   '/solutions/corporate-summits': typeof SolutionsCorporateSummitsRoute
@@ -210,6 +224,8 @@ export interface FileRoutesByTo {
   '/app/activity': typeof AppActivityRoute
   '/app/av': typeof AppAvRoute
   '/app/events': typeof AppEventsRoute
+  '/app/import': typeof AppImportRoute
+  '/app/new': typeof AppNewRoute
   '/app/run-of-show': typeof AppRunOfShowRoute
   '/app/talent': typeof AppTalentRoute
   '/solutions/corporate-summits': typeof SolutionsCorporateSummitsRoute
@@ -238,6 +254,8 @@ export interface FileRoutesById {
   '/app/activity': typeof AppActivityRoute
   '/app/av': typeof AppAvRoute
   '/app/events': typeof AppEventsRoute
+  '/app/import': typeof AppImportRoute
+  '/app/new': typeof AppNewRoute
   '/app/run-of-show': typeof AppRunOfShowRoute
   '/app/talent': typeof AppTalentRoute
   '/solutions/corporate-summits': typeof SolutionsCorporateSummitsRoute
@@ -267,6 +285,8 @@ export interface FileRouteTypes {
     | '/app/activity'
     | '/app/av'
     | '/app/events'
+    | '/app/import'
+    | '/app/new'
     | '/app/run-of-show'
     | '/app/talent'
     | '/solutions/corporate-summits'
@@ -293,6 +313,8 @@ export interface FileRouteTypes {
     | '/app/activity'
     | '/app/av'
     | '/app/events'
+    | '/app/import'
+    | '/app/new'
     | '/app/run-of-show'
     | '/app/talent'
     | '/solutions/corporate-summits'
@@ -320,6 +342,8 @@ export interface FileRouteTypes {
     | '/app/activity'
     | '/app/av'
     | '/app/events'
+    | '/app/import'
+    | '/app/new'
     | '/app/run-of-show'
     | '/app/talent'
     | '/solutions/corporate-summits'
@@ -470,6 +494,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEventsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/import': {
+      id: '/app/import'
+      path: '/import'
+      fullPath: '/app/import'
+      preLoaderRoute: typeof AppImportRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/new': {
+      id: '/app/new'
+      path: '/new'
+      fullPath: '/app/new'
+      preLoaderRoute: typeof AppNewRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/run-of-show': {
       id: '/app/run-of-show'
       path: '/run-of-show'
@@ -533,6 +571,8 @@ interface AppRouteChildren {
   AppActivityRoute: typeof AppActivityRoute
   AppAvRoute: typeof AppAvRoute
   AppEventsRoute: typeof AppEventsRoute
+  AppImportRoute: typeof AppImportRoute
+  AppNewRoute: typeof AppNewRoute
   AppRunOfShowRoute: typeof AppRunOfShowRoute
   AppTalentRoute: typeof AppTalentRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -542,6 +582,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppActivityRoute: AppActivityRoute,
   AppAvRoute: AppAvRoute,
   AppEventsRoute: AppEventsRoute,
+  AppImportRoute: AppImportRoute,
+  AppNewRoute: AppNewRoute,
   AppRunOfShowRoute: AppRunOfShowRoute,
   AppTalentRoute: AppTalentRoute,
   AppIndexRoute: AppIndexRoute,

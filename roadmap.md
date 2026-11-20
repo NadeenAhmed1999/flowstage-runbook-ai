@@ -56,3 +56,8 @@
 - [x] Job B parser review fixes, single editable draft/reducer, review UI and sheet opt-in
 - [x] Job B tests (79) and 390/1280 signed-out/owner in-memory browser checks; no event saves
 - [ ] Job C parts proposals and conflicts/warnings (waits for approval)
+
+## App shell consistency
+- [x] Job 1: New event (/app/new) and Import (/app/import) inside app shell; /generate and /import redirect; shared AppTopbar
+- [ ] Job 2: real Overview + wired exports (awaiting approval)
+- [ ] Later: Events/Talent/AV/Activity still show sample data

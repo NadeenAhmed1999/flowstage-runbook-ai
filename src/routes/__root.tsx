@@ -126,7 +126,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isApp = pathname.startsWith("/app");
-  const hasPhoneNav = isApp || ["/import", "/generate", "/run-of-show"].includes(pathname);
+  const hasPhoneNav = isApp || ["/run-of-show"].includes(pathname);
   return (
     <QueryClientProvider client={queryClient}>
       <EventProvider>

@@ -22,7 +22,7 @@ const nav = [
   { to: "/app/run-of-show", label: "Run-of-show", icon: FileText },
   { to: "/app/talent", label: "Talent", icon: Users },
   { to: "/app/av", label: "AV checklist", icon: Cable },
-  { to: "/import", label: "Import", icon: FileSpreadsheet },
+  { to: "/app/import", label: "Import", icon: FileSpreadsheet },
   { to: "/app/activity", label: "Activity", icon: Activity },
 ];
 
@@ -76,7 +76,7 @@ export function AppSidebar() {
 
       <div className="mt-auto border-t border-border p-2 lg:p-3">
         <Link
-          to="/generate"
+          to="/app/new"
           onClick={() => resetSavedEvent()}
           aria-label="New event"
           title="New event"

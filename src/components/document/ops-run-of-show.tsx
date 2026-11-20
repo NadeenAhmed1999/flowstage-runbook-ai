@@ -251,7 +251,7 @@ export function OpsRunOfShow({ ops, setOps }: { ops: OpsModel; setOps?: (m: OpsM
       {ops.items.length === 0 && (
         <EmptyState
           title="No programme items"
-          action={<Button asChild className="min-h-11"><Link to="/import">Import agenda</Link></Button>}
+          action={<Button asChild className="min-h-11"><Link to="/app/import">Import agenda</Link></Button>}
           secondary={<Button type="button" variant="link" className="min-h-11" onClick={reset}>Use the sample</Button>}
         />
       )}

@@ -233,7 +233,7 @@ function RunOfShowPage() {
         <div className="flex flex-wrap items-center gap-3">
           <SaveControls />
           <Link
-            to="/generate"
+            to="/app/new"
             className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-accent/30 hover:bg-surface"
           >
             ← Back to edit
@@ -254,7 +254,7 @@ function RunOfShowPage() {
             )}
           </button>
           <Link
-            to="/import"
+            to="/app/import"
             className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-accent/30 hover:bg-surface"
           >
             <FileSpreadsheet className="h-4 w-4" />

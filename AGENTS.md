@@ -9,3 +9,4 @@
 - Excel import runs the deterministic agenda reader in src/lib/import first; AI only names/types the event and flags break rows, and files with no agenda header use the original AI mapping. Why: real master sheets are too wide and messy for AI-only mapping, while simple files must not regress.
 
 - Excel review owns one reducer draft and converts only its edited values; skipped sheets map on explicit opt-in and cache their result. Why: typing and roster merges must reach creation without duplicate AI requests; Word retains its existing path.
+- App pages (including New event at /app/new and Import at /app/import) live under the /app layout and use AppTopbar; old /generate and /import are redirect-only routes driven by src/lib/app-routes. Why: every app page keeps sidebar/phone nav and old links keep working.
