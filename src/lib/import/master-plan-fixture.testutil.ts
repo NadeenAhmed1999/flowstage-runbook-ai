@@ -2,7 +2,7 @@
 import * as XLSX from "xlsx";
 
 const NB = "\u00a0";
-const HEADER = ["DAY", "SPACE", "LEAD", "#", "SESSION TITLE", "DATE", "OPEN", "MINs", "CLOSE", "FORMAT",
+const HEADER = ["DAY", "SPACE", "LEAD", "#", "SESSION TITLE", "DATE (day)", "OPEN", "MINs (duration)", "CLOSE", "FORMAT (Panel/Open Mic/FS)",
   "SESSION DESCRIPTION", "BLOCK & THEME NAME", "SPEAKER 1", "SPEAKER 2", "SPEAKER 3", "MODERATOR", "MC"];
 
 const r = (day: number, title: string, date: string, open: string, mins: string, close: string, format = "", speakers: string[] = [], moderator = "") =>

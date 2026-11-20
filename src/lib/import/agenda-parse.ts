@@ -22,7 +22,7 @@ const ALIASES: [Field, RegExp][] = [
   ["start", /^(open|start|start time|from|time|begins?)$/],
   ["minutes", /^(mins?|minutes|duration|duration \(min\))$/],
   ["end", /^(close|end|end time|to|finish)$/],
-  ["format", /^(format|type|session type)$/],
+  ["format", /^(format|session type)|^type$/],
   ["description", /^(session description|description|details)$/],
   ["block", /^(block.*|theme.*|track)$/],
   ["speaker", /^speaker\s*\d+$/],
@@ -39,7 +39,7 @@ export function findHeader(rows: Cell[][]): HeaderMatch | null {
   rows.slice(0, 15).forEach((row, index) => {
     const columns: Partial<Record<Field, number[]>> = {};
     row.forEach((cell, col) => {
-      const text = cleanCell(cell).toLowerCase();
+      const text = cleanCell(cell).toLowerCase().replace(/\s*\([^)]*\)\s*$/, "").trim();
       const field = ALIASES.find(([, re]) => re.test(text))?.[0];
       if (field) (columns[field] ??= []).push(col);
     });
@@ -74,7 +74,8 @@ export function parseAgendaWorkbook(fileName: string, sheets: RawSheet[]): Agend
   const ranked = rankSheets(sheets);
   const top = ranked[0];
   if (!top?.header) return null;
-  const agenda = sheets[top.index]!;
+  const agenda = sheets[top.index];
+  if (!agenda) return null;
   const { columns, row: headerRow } = top.header;
   const breakSheets = ranked.filter(r => r !== top && r.header && /break/i.test(r.name));
   const titleTexts = agenda.rows.slice(0, headerRow).flat().map(cleanCell).filter(Boolean);
@@ -92,7 +93,7 @@ export function parseAgendaWorkbook(fileName: string, sheets: RawSheet[]): Agend
   let missingTimes = 0;
   const addPerson = (map: typeof speakers, p: { name: string; role: string }) => {
     const key = p.name.toLowerCase();
-    if (!map.has(key) || (!map.get(key)!.role && p.role)) map.set(key, p);
+    if (!map.has(key) || (!map.get(key)?.role && p.role)) map.set(key, p);
     return p.name;
   };
 
@@ -122,22 +123,27 @@ export function parseAgendaWorkbook(fileName: string, sheets: RawSheet[]): Agend
       if (!start) missingTimes++;
       const format = formatToType(get(row, cols.format)[0]);
       if (forceBreak || looksLikeBreak(title, format)) {
-        breaks.push({ label: title, startTime: start ?? "", durationMin: minutes ?? derived ?? 15, day });
+        breaks.push({ label: title, startTime: start ?? "", durationMin: minutes ?? derived ?? 15, day, durationSource: minutes != null ? "provided" : derived != null ? "derived" : "inferred", inferredDay: !dayNum });
         continue;
       }
       const sp = [
         ...get(row, cols.speaker).map(parsePersonCell),
         ...get(row, cols.speakers).flatMap(t => t.split(/[;,]/).map(n => ({ name: n.trim(), role: "" }))),
       ].filter((p): p is { name: string; role: string } => Boolean(p?.name));
-      const mods = [...get(row, cols.moderator), ...get(row, cols.mc)].map(parsePersonCell)
+      const mc = get(row, cols.mc).map(parsePersonCell).filter(Boolean).map(p => `MC: ${p?.name}`);
+      const mods = get(row, cols.moderator).map(parsePersonCell)
         .filter((p): p is { name: string; role: string } => Boolean(p));
       if (derived != null) derivedDurations.push(sessions.length);
       const block = get(row, cols.block)[0];
       sessions.push({
         title,
+        sessionType: format || "Session",
+        inferredType: !format,
+        inferredDay: !dayNum,
+        durationSource: minutes != null ? "provided" : derived != null ? "derived" : "inferred",
         startTime: start ?? "",
         durationMin: minutes ?? derived ?? 30,
-        description: [format && `Format: ${format}`, block && `Block: ${block}`, ...get(row, cols.description)].filter(Boolean).join(" · "),
+        description: [format && `Format: ${format}`, block && `Block: ${block}`, ...get(row, cols.description), ...mc].filter(Boolean).join(" · "),
         speakers: sp.map(p => addPerson(speakers, p)),
         moderators: mods.map(p => addPerson(moderators, p)),
         room: get(row, cols.space)[0] ?? "",
@@ -147,15 +153,19 @@ export function parseAgendaWorkbook(fileName: string, sheets: RawSheet[]): Agend
   };
 
   readRows(agenda, columns, headerRow, false);
-  for (const b of breakSheets) readRows(sheets[b.index]!, b.header!.columns, b.header!.row, true);
+  for (const b of breakSheets) {
+    const sheet = sheets[b.index];
+    if (sheet && b.header) readRows(sheet, b.header.columns, b.header.row, true);
+  }
 
   const days = [...dayDates].sort((a, b) => a[0] - b[0]);
   let date = "";
   let endDate: string | undefined;
   if (days.length && year) {
-    date = toIsoDate(days[0]![1], days[0]![1].year ?? year);
-    const last = days[days.length - 1]![1];
-    if (days.length > 1) endDate = toIsoDate(last, last.year ?? year);
+    const first = days[0]?.[1];
+    const last = days[days.length - 1]?.[1];
+    if (first) date = toIsoDate(first, first.year ?? year);
+    if (days.length > 1 && last) endDate = toIsoDate(last, last.year ?? year);
   } else if (isoInMeta) {
     date = isoInMeta[0];
   }
@@ -168,6 +178,7 @@ export function parseAgendaWorkbook(fileName: string, sheets: RawSheet[]): Agend
   if (skippedSheets.length) unclear.push(`Not imported: ${skippedSheets.length} other sheet(s) (${skippedSheets.slice(0, 8).join(", ")}${skippedSheets.length > 8 ? ", …" : ""}).`);
 
   const mapped: MappedEvent = {
+    importReview: { year, dayDates: days.map(([day, d]) => ({ day, month: d.month, dateDay: d.day })), skippedSheets, inferredEvent: true },
     name: titleTexts[0] ?? fileName.replace(/\.[^.]+$/, ""),
     type: "Other",
     date,

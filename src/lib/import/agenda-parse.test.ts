@@ -75,3 +75,25 @@ describe("master plan workbook", () => {
     expect(parseAgendaWorkbook("notes.xlsx", [{ name: "Notes", rows: [["Hello"], ["World"]] }])).toBeNull();
   });
 });
+
+
+describe("review parser regressions", () => {
+  it("accepts FORMAT (Panel/Open Mic/FS), MINs (duration) and DATE (day)", async () => {
+    const wb = await parseWorkbookFile(masterPlanFile());
+    const m = parseAgendaWorkbook(wb.fileName, wb.sheets)?.mapped;
+    expect(m?.sessions.find(s => s.title === "Future of Care Panel")).toMatchObject({ sessionType: "Panel", durationMin: 45 });
+    expect(m?.date).toBe("2026-11-29");
+  });
+  it("keeps MC as a session note, never a moderator", () => {
+    const m = parseAgendaWorkbook("Invented.xlsx", [{ name: "Agenda", rows: [["Title", "Start", "MC", "Moderator"], ["Test session", "09:00", "MC: Host Example, Director", "Moderator: Chair Example"]] }])?.mapped;
+    expect(m?.sessions[0]?.description).toContain("MC: Host Example");
+    expect(m?.sessions[0]?.moderators).toEqual(["Chair Example"]);
+    expect(m?.moderators.map(p => p.name)).toEqual(["Chair Example"]);
+  });
+  it("retains sessions and breaks with missing start times", () => {
+    const m = parseAgendaWorkbook("Invented.xlsx", [{ name: "Agenda", rows: [["Title", "Start", "Duration"], ["Untimed session", "", 30], ["Coffee break", "", 15]] }])?.mapped;
+    expect(m?.sessions[0]).toMatchObject({ title: "Untimed session", startTime: "" });
+    expect(m?.breaks[0]).toMatchObject({ label: "Coffee break", startTime: "" });
+    expect(m?.confidence.unclear.join(" ")).toContain("2 row(s) have no start time");
+  });
+});

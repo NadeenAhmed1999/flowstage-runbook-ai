@@ -11,6 +11,7 @@ import { parseAgendaWorkbook, rankSheets } from "./import/agenda-parse";
  */
 const WorkbookInputSchema = z.object({
   fileName: z.string().max(200),
+  forceAi: z.boolean().optional(),
   sheets: z
     .array(
       z.object({
@@ -23,9 +24,20 @@ const WorkbookInputSchema = z.object({
 
 export type ExcelWorkbookInput = z.infer<typeof WorkbookInputSchema>;
 
+const Provenance = {
+  durationSource: z.enum(["provided", "derived", "inferred"]).optional(),
+  inferredDay: z.boolean().optional(),
+};
+
 const PersonSchema = z.object({ name: z.string(), role: z.string().default("") });
 
 export const MappedEventSchema = z.object({
+  importReview: z.object({
+    year: z.number().nullable(),
+    dayDates: z.array(z.object({ day: z.number(), month: z.number(), dateDay: z.number() })),
+    skippedSheets: z.array(z.string()),
+    inferredEvent: z.boolean(),
+  }).optional(),
   name: z.string(),
   type: z.string().default("Other"),
   primaryEventType: z.string().optional(),
@@ -33,6 +45,9 @@ export const MappedEventSchema = z.object({
   endDate: z.string().optional(),
   sessions: z.array(
     z.object({
+      ...Provenance,
+      sessionType: z.string().optional(),
+      inferredType: z.boolean().optional(),
       title: z.string(),
       startTime: z.string(), // HH:MM
       durationMin: z.number().int().nonnegative().default(30),
@@ -45,6 +60,7 @@ export const MappedEventSchema = z.object({
   ),
   breaks: z.array(
     z.object({
+      ...Provenance,
       label: z.string(),
       startTime: z.string(),
       durationMin: z.number().int().nonnegative().default(15),
@@ -82,19 +98,19 @@ export type MappedEvent = z.infer<typeof MappedEventSchema>;
 export const importEventFromExcel = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => WorkbookInputSchema.parse(input))
   .handler(async ({ data }): Promise<MappedEvent> => {
-    const key = process.env.LOVABLE_API_KEY;
+    const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("AI gateway not configured");
 
     const gateway = createLovableAiGatewayProvider(key);
     const model = gateway("google/gemini-3-flash-preview");
 
     // Deterministic first pass; the AI only names/types the event and flags break rows.
-    const draft = parseAgendaWorkbook(data.fileName, data.sheets);
+    const draft = data.forceAi ? null : parseAgendaWorkbook(data.fileName, data.sheets);
     if (draft) return refineDraft(model, data.fileName, draft.mapped);
 
     // No agenda header: existing AI mapping, limited to the 20 most agenda-like sheets.
     const ranked = rankSheets(data.sheets).slice(0, 20).sort((a, b) => a.index - b.index);
-    const chosen = ranked.map((r) => data.sheets[r.index]!);
+    const chosen = ranked.flatMap((r) => { const sheet = data.sheets[r.index]; return sheet ? [sheet] : []; });
 
     // Cap rows/cells per sheet for prompt safety.
     const compact = chosen.map((s) => ({
@@ -169,7 +185,7 @@ async function refineDraft(
       sessions: mapped.sessions.filter((_, i) => !breakSet.has(i)),
       breaks: [
         ...mapped.breaks,
-        ...mapped.sessions.filter((_, i) => breakSet.has(i)).map((s) => ({ label: s.title, startTime: s.startTime, durationMin: s.durationMin, day: s.day })),
+        ...mapped.sessions.filter((_, i) => breakSet.has(i)).map((s) => ({ label: s.title, startTime: s.startTime, durationMin: s.durationMin, day: s.day, ...(s.durationSource ? { durationSource: s.durationSource } : {}), ...(s.inferredDay !== undefined ? { inferredDay: s.inferredDay } : {}) })),
       ],
     };
   } catch {
