@@ -3,6 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 import { generateValidatedJSON } from "./ai-json.server";
+import { parseAgendaWorkbook, rankSheets } from "./import/agenda-parse";
 
 /**
  * Raw workbook payload sent from the browser after parsing with xlsx.
@@ -14,10 +15,10 @@ const WorkbookInputSchema = z.object({
     .array(
       z.object({
         name: z.string().max(200),
-        rows: z.array(z.array(z.union([z.string(), z.number(), z.null()]))).max(500),
+        rows: z.array(z.array(z.union([z.string(), z.number(), z.null()]))).transform((rows) => rows.slice(0, 500)),
       }),
     )
-    .max(20),
+    .max(60),
 });
 
 export type ExcelWorkbookInput = z.infer<typeof WorkbookInputSchema>;
@@ -87,8 +88,16 @@ export const importEventFromExcel = createServerFn({ method: "POST" })
     const gateway = createLovableAiGatewayProvider(key);
     const model = gateway("google/gemini-3-flash-preview");
 
+    // Deterministic first pass; the AI only names/types the event and flags break rows.
+    const draft = parseAgendaWorkbook(data.fileName, data.sheets);
+    if (draft) return refineDraft(model, data.fileName, draft.mapped);
+
+    // No agenda header: existing AI mapping, limited to the 20 most agenda-like sheets.
+    const ranked = rankSheets(data.sheets).slice(0, 20).sort((a, b) => a.index - b.index);
+    const chosen = ranked.map((r) => data.sheets[r.index]!);
+
     // Cap rows/cells per sheet for prompt safety.
-    const compact = data.sheets.map((s) => ({
+    const compact = chosen.map((s) => ({
       name: s.name,
       rows: s.rows.slice(0, 200).map((r) =>
         r.slice(0, 20).map((c) => (c === null || c === undefined ? "" : String(c).slice(0, 200))),
@@ -130,3 +139,40 @@ ${compact
 
     return result;
   });
+
+const RefineSchema = z.object({
+  name: z.string(),
+  type: z.string(),
+  breakRows: z.array(z.number().int()).default([]),
+});
+
+async function refineDraft(
+  model: Parameters<typeof generateValidatedJSON>[0]["model"],
+  fileName: string,
+  mapped: MappedEvent,
+): Promise<MappedEvent> {
+  const rows = mapped.sessions.slice(0, 120).map((s, i) => `${i}: ${s.title.slice(0, 120)}${s.description ? ` | ${s.description.slice(0, 80)}` : ""}`);
+  try {
+    const r = await generateValidatedJSON({
+      model,
+      schema: RefineSchema,
+      system: `You label an already-parsed event agenda. Return JSON {name, type, breakRows}. name: the event name from the file name or title, without the year if it is only a date. type: exactly one of ${EVENT_TYPES.join(", ")}, or Other. breakRows: indexes of rows that are breaks, meals, registration or networking rather than programme sessions. Do not invent anything.`,
+      prompt: `File: ${fileName}\nTitle guess: ${mapped.name}\nRows:\n${rows.join("\n")}`,
+      repairInstructions: "Return one JSON object with name (string), type (string), breakRows (integer array).",
+      label: "excel-import-refine",
+    });
+    const breakSet = new Set(r.breakRows.filter((i) => i >= 0 && i < mapped.sessions.length));
+    return {
+      ...mapped,
+      name: r.name.trim() || mapped.name,
+      type: (EVENT_TYPES as readonly string[]).includes(r.type) ? r.type : "Other",
+      sessions: mapped.sessions.filter((_, i) => !breakSet.has(i)),
+      breaks: [
+        ...mapped.breaks,
+        ...mapped.sessions.filter((_, i) => breakSet.has(i)).map((s) => ({ label: s.title, startTime: s.startTime, durationMin: s.durationMin, day: s.day })),
+      ],
+    };
+  } catch {
+    return { ...mapped, confidence: { ...mapped.confidence, unclear: [...mapped.confidence.unclear, "Event name and type could not be suggested automatically."] } };
+  }
+}

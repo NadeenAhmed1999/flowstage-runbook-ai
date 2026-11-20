@@ -50,3 +50,8 @@
 - [x] 2b-2 setup page parts UI; 47 tests and signed-out/owner in-memory browser checks at 390/1280 passed
 - [x] 2b-3 setup review fixes, run-of-show groups/phone list, export/briefing labels; 54 tests and 390/1280 signed-out/owner read-only checks passed
 - Step 3 conflicts/per-part readiness remains out of scope.
+
+## Current: step 4 (Excel master-sheet import)
+- [x] Job A plain-code agenda reader, invented 28-sheet fixture, tests, sheet limit lifted (66 tests; 390/1280 upload check)
+- [ ] Job B editable review screen (waits for approval)
+- [ ] Job C parts proposals and conflicts/warnings (waits for approval)
