@@ -8,6 +8,7 @@ import {
 } from "@/lib/generate-briefing.functions";
 import type { RunSheet } from "@/lib/generate-run-sheet.functions";
 import type { EventData } from "@/components/event-context";
+import { labelTimelineParts, partAssignmentsBrief } from "@/lib/part-presentation";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 
@@ -104,7 +105,8 @@ export function BriefingCenter({
           eventType: event.type,
           eventDate: event.date,
           productionSummary: runSheet.productionSummary,
-          timeline: runSheet.timeline,
+          timeline: labelTimelineParts(event, runSheet.timeline),
+          partAssignments: partAssignmentsBrief(event),
           sponsors: event.sponsors.map((s) => ({ name: s.name, placement: s.placement })),
           avRequirements: event.avRequirements,
         },

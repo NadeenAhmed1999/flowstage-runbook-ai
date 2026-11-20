@@ -38,7 +38,7 @@ export const COMPONENT_BLUEPRINTS: Record<ComponentKind, ComponentBlueprint> = {
     label: "Other part",
     category: "Other",
     defaultDurationMin: 30,
-    defaultStart: "",
+    defaultStart: "09:00",
     defaultAV: [],
     defaultStaffing: [],
     defaultProtocol: [],

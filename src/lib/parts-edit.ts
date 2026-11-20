@@ -3,6 +3,14 @@ import { componentBlueprint, type ComponentKind } from "@/lib/event-components";
 import { componentPartId, MAIN_PART_ID } from "@/lib/event-parts";
 import { resolveOps } from "@/lib/event-migrate";
 
+export const cleanHosts = (value: string) => value.split(",").map(name => name.trim()).filter(Boolean);
+
+export function eventDayCount(start: string, end?: string): number {
+  if (!start || !end) return 1;
+  const days = Math.round((Date.parse(end) - Date.parse(start)) / 86400000) + 1;
+  return Number.isFinite(days) ? Math.max(1, days) : 1;
+}
+
 export function addPart(event: EventData, kind: ComponentKind, id: string): EventData {
   const bp = componentBlueprint(kind);
   const part: EventComponent = {

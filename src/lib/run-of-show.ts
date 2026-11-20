@@ -1,4 +1,5 @@
 import type { EventData, Session, Break } from "@/components/event-context";
+import { fromMin, toMin } from "@/lib/event-model";
 
 export type CueChip = { label: string; tone: "accent" | "navy" | "muted" };
 
@@ -16,16 +17,11 @@ export type TimelineRow = {
 };
 
 function addMinutes(time: string, mins: number): string {
-  const [h, m] = time.split(":").map(Number);
-  const total = h * 60 + m + mins;
-  const hh = Math.floor(total / 60) % 24;
-  const mm = total % 60;
-  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+  return time ? fromMin(toMin(time) + mins) : "";
 }
 
 function timeToMinutes(t: string): number {
-  const [h, m] = t.split(":").map(Number);
-  return h * 60 + m;
+  return toMin(t);
 }
 
 function cuesForSession(s: Session, speakerCount: number): CueChip[] {

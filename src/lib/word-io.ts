@@ -1,6 +1,7 @@
 import type { EventData } from "@/components/event-context";
 import type { RunSheet } from "./run-sheet-parsing";
 import type { ParsedWorkbook } from "./excel-io";
+import { labelledItemTitle, labelTimelineParts } from "@/lib/part-presentation";
 
 /**
  * Read a .docx agenda into the same compact payload shape the AI mapper
@@ -127,7 +128,7 @@ export async function exportEventToWord(event: EventData, runSheet?: RunSheet | 
       table(
         [1100, 800, 3200, 1900, 2360],
         ["Time", "Dur", "Item", "Talent", "Cues"],
-        runSheet.timeline.map((b) => [
+        labelTimelineParts(event, runSheet.timeline).map((b) => [
           b.time,
           `${b.durationMin}m`,
           [b.title, b.subtitle].filter(Boolean).join(" — "),
@@ -170,7 +171,7 @@ export async function exportEventToWord(event: EventData, runSheet?: RunSheet | 
           String(s.day ?? 1),
           s.startTime,
           `${s.durationMin}m`,
-          s.title,
+          labelledItemTitle(event, s, s.title),
           s.speakerIds.map(nameOf).filter(Boolean).join(", "),
           s.moderatorIds.map(nameOf).filter(Boolean).join(", "),
         ]),
@@ -189,10 +190,19 @@ export async function exportEventToWord(event: EventData, runSheet?: RunSheet | 
           String(b.day ?? 1),
           b.startTime,
           `${b.durationMin}m`,
-          b.label,
+          labelledItemTitle(event, b, b.label),
         ]),
       ),
     );
+  }
+
+  // AI rows lack stable IDs/day; keep authoritative labels even when matching is ambiguous.
+  if (runSheet && (event.components?.length || (event.ops?.parts.length ?? 0) > 1)) {
+    children.push(new Paragraph({ text: "" }), heading("Agenda by part"), table(
+      [700, 1000, 900, 3400, 2300, 1060],
+      ["Day", "Start", "Dur", "Session", "Speakers", "Moderators"],
+      event.sessions.map(s => [String(s.day ?? 1), s.startTime, `${s.durationMin}m`, labelledItemTitle(event, s, s.title), s.speakerIds.map(nameOf).filter(Boolean).join(", "), s.moderatorIds.map(nameOf).filter(Boolean).join(", ")]),
+    ));
   }
 
   if (event.speakers.length || event.moderators.length) {

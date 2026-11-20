@@ -1,6 +1,7 @@
 import * as XLSX from "xlsx";
 import type { EventData } from "@/components/event-context";
 import type { MappedEvent } from "./excel-import.functions";
+import { labelledItemTitle } from "@/lib/part-presentation";
 
 export type ParsedWorkbook = {
   fileName: string;
@@ -137,7 +138,7 @@ export function exportEventToExcel(event: EventData) {
       s.day ?? 1,
       s.startTime,
       s.durationMin,
-      s.title,
+      labelledItemTitle(event, s, s.title),
       s.speakerIds
         .map((id) => event.speakers.find((p) => p.id === id)?.name)
         .filter(Boolean)
@@ -177,7 +178,7 @@ export function exportEventToExcel(event: EventData) {
 
   const wsB = XLSX.utils.aoa_to_sheet([
     ["Day", "Start", "Duration (min)", "Label"],
-    ...event.breaks.map((b) => [b.day ?? 1, b.startTime, b.durationMin, b.label]),
+    ...event.breaks.map((b) => [b.day ?? 1, b.startTime, b.durationMin, labelledItemTitle(event, b, b.label)]),
   ]);
   wsB["!cols"] = [{ wch: 6 }, { wch: 8 }, { wch: 14 }, { wch: 40 }];
   XLSX.utils.book_append_sheet(wb, wsB, "Breaks");

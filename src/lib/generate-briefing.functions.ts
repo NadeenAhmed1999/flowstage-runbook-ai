@@ -58,6 +58,7 @@ const InputSchema = z.object({
   ),
   sponsors: z.array(z.object({ name: z.string(), placement: z.string() })),
   avRequirements: z.string(),
+  partAssignments: z.string().optional(),
 });
 
 const AUDIENCE_BRIEFS: Record<BriefingAudience, { recipient: string; focus: string }> = {
@@ -109,7 +110,7 @@ export const generateBriefing = createServerFn({ method: "POST" })
 Audience: ${audienceMeta.recipient}.
 Editorial rule: ${audienceMeta.focus}
 
-Use specific times from the timeline. Keep section bodies tight (1–3 sentences). Reminders should be terse imperatives. Do NOT invent people or sessions that are not in the provided timeline.`;
+Use specific times from the timeline. Keep section bodies tight (1–3 sentences). Reminders should be terse imperatives. Do NOT invent people or sessions that are not in the provided timeline. When an item has a "Part:" label, retain that part name whenever you mention the item in key moments or sections.`;
 
     const prompt = `EVENT: ${data.eventName}
 TYPE: ${data.eventType}
@@ -137,6 +138,7 @@ ${data.sponsors.map((s) => `- ${s.name} — ${s.placement}`).join("\n") || "None
 
 AV POSTURE:
 ${data.avRequirements}
+${data.partAssignments ? `\nPART ASSIGNMENTS (source agenda; retain the part name on these items):\n${data.partAssignments}\n` : ""}
 
 Produce a professional ${audienceMeta.recipient} briefing.`;
 

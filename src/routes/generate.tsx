@@ -247,7 +247,7 @@ function GeneratePage() {
 
         {/* Speakers */}
         <PeopleSection
-          step="04"
+          step="03"
           title="Speakers"
           people={event.speakers}
           onChange={(ps) => update("speakers", ps)}
@@ -257,7 +257,7 @@ function GeneratePage() {
 
         {/* Moderators */}
         <PeopleSection
-          step="05"
+          step="04"
           title="Moderators"
           people={event.moderators}
           onChange={(ps) => update("moderators", ps)}
@@ -268,7 +268,7 @@ function GeneratePage() {
         {/* Sponsors */}
         <Section
           title="Sponsor Mentions"
-          step="07"
+          step="05"
           action={
             <button
               type="button"
@@ -327,7 +327,7 @@ function GeneratePage() {
         </Section>
 
         {/* AV */}
-        <Section title="AV Requirements" step="08">
+        <Section title="AV Requirements" step="06">
           <textarea
             rows={4}
             className={inputCls}

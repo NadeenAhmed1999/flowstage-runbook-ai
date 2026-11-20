@@ -3,6 +3,7 @@ import { AppTopbar } from "@/components/app-shell/topbar";
 import { useEvent } from "@/components/event-context";
 import { buildTimeline } from "@/lib/run-of-show";
 import { TimelineTable } from "@/components/document/timeline-table";
+import { OpsRunOfShow } from "@/components/document/ops-run-of-show";
 import { ArrowUpRight, Printer, Pencil } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
@@ -64,9 +65,10 @@ function AppRunOfShow() {
                   secondary={<Button type="button" variant="link" className="min-h-11" onClick={reset}>Use the sample</Button>}
                 />
               ) : (
-                <div className="min-w-[700px]">
-                  <TimelineTable rows={rows} />
-                </div>
+                ops.parts.length > 1 ? <OpsRunOfShow ops={ops} /> : <>
+                  <div className="md:hidden"><OpsRunOfShow ops={ops} /></div>
+                  <div className="hidden min-w-[700px] md:block"><TimelineTable rows={rows} /></div>
+                </>
               )}
             </div>
           </section>

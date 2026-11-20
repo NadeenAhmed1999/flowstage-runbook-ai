@@ -12,6 +12,9 @@ import {
   type ProgrammeItem,
 } from "@/lib/event-model";
 import { buildBands, deriveSetupBlocks, type SetupBlock, type TimeBand } from "@/lib/ops-schedule";
+import { groupItemsByPart, effectiveTrack } from "@/lib/part-presentation";
+import { sortItems } from "@/lib/ops-schedule";
+import { toMin } from "@/lib/event-model";
 import { Link } from "@tanstack/react-router";
 import { useEvent } from "@/components/event-context";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -90,7 +93,7 @@ export function OpsRunOfShow({ ops, setOps }: { ops: OpsModel; setOps?: (m: OpsM
   );
   const bands = useMemo(() => buildBands(filtered), [filtered]);
   const setups = useMemo(() => deriveSetupBlocks(ops), [ops]);
-  const days = [...new Set(bands.map((b) => b.day))];
+  
 
   const roomName = (id: string) => ops.rooms.find((r) => r.id === id)?.name ?? id;
   const people = (ids: string[]) => ids.map((id) => ops.people.find((p) => p.id === id)?.name ?? id).join(", ");
@@ -100,12 +103,12 @@ export function OpsRunOfShow({ ops, setOps }: { ops: OpsModel; setOps?: (m: OpsM
   const setStatus = (id: string, status: ItemStatus) =>
     setOps?.({ ...ops, items: ops.items.map((i) => (i.id === id ? { ...i, status } : i)) });
 
-  const renderCell = (i: ProgrammeItem) => {
+  const renderCell = (i: ProgrammeItem, mobile = false) => {
     const pause = isPause(i);
     const reqs = reqsFor(i);
     const isOpen = open[i.id];
     return (
-      <div key={i.id} className={`rounded-md border border-border border-l-4 ${typeTone(i)} bg-background`} data-testid="ops-item" data-track={i.track ?? ""}>
+      <div key={i.id} className={`rounded-md border border-border border-l-4 ${typeTone(i)} bg-background`} data-testid="ops-item" data-track={effectiveTrack(ops, i) ?? ""} data-day={i.day} data-start={i.start}>
         <button
           type="button"
           onClick={() => setOpen((o) => ({ ...o, [i.id]: !o[i.id] }))}
@@ -114,8 +117,10 @@ export function OpsRunOfShow({ ops, setOps }: { ops: OpsModel; setOps?: (m: OpsM
         >
           {isOpen ? <ChevronDown className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" /> : <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
           <div className="min-w-0 flex-1">
+            {mobile && <p className="mb-1 text-xs text-muted-foreground">Day {i.day} · {i.start || "Time not specified"}–{i.end} · {Math.max(0, toMin(i.end) - toMin(i.start))} min</p>}
             <div className="flex flex-wrap items-center gap-1.5">
-              {i.track && <span className="rounded bg-secondary px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-foreground">{i.track}</span>}
+              {mobile && ops.parts.length > 1 && <span className="text-[10px] text-muted-foreground" data-testid="part-label">{ops.parts.find(p => p.id === i.partId)?.name ?? "Main programme"}</span>}
+              {effectiveTrack(ops, i) && <span className="rounded bg-secondary px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-foreground">{effectiveTrack(ops, i)}</span>}
               {i.code && <span className="font-mono text-[10px] font-bold text-accent">{i.code}</span>}
               <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{i.type.replace(/-/g, " ")}</span>
             </div>
@@ -125,7 +130,7 @@ export function OpsRunOfShow({ ops, setOps }: { ops: OpsModel; setOps?: (m: OpsM
         </button>
 
         {!pause && (
-          <dl className="grid grid-cols-2 gap-x-3 gap-y-1 border-t border-border/60 px-3 py-2 text-[11px] sm:grid-cols-3">
+          <dl className="grid grid-cols-1 gap-x-3 gap-y-1 border-t border-border/60 px-3 py-2 text-[11px] md:grid-cols-3">
             {(view === "full" || view === "room" || view === "production") && (
               <Cell k="Room"><FieldText f={i.room} render={roomName} unknownLabel="Room not specified" /></Cell>
             )}
@@ -195,6 +200,52 @@ export function OpsRunOfShow({ ops, setOps }: { ops: OpsModel; setOps?: (m: OpsM
   const setupBetween = (day: number, band: TimeBand, next?: TimeBand) =>
     setups.filter((s) => s.day === day && s.start >= band.end && (!next || s.end <= next.start || s.start === band.end) && s.start === band.end);
 
+  const renderSchedule = (scheduleBands: TimeBand[], scheduleSetups: SetupBlock[]) => {
+    const scheduleDays = [...new Set(scheduleBands.map(b => b.day))];
+    return <>{scheduleDays.map((day) => {
+        const dayBands = scheduleBands.filter((b) => b.day === day);
+        return (
+          <section key={day}>
+            <h4 className="sticky top-0 z-10 border-b border-navy/20 bg-background/95 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-navy backdrop-blur">
+              Day {day}
+            </h4>
+            <div className="mt-2 space-y-2">
+              {dayBands.map((b, idx) => {
+                const lanes = b.items;
+                return (
+                  <Fragment key={b.key}>
+                    <div className="grid grid-cols-[64px_1fr] gap-3" data-testid={b.concurrent ? "concurrent-band" : "band"}>
+                      <div className="pt-2 text-right">
+                        <p className="font-mono text-sm font-semibold tabular text-accent">{b.start}</p>
+                        <p className="font-mono text-[10px] tabular text-muted-foreground">{b.end}</p>
+                        {b.concurrent && <p className="mt-1 font-mono text-[9px] font-bold uppercase text-navy">∥ {lanes.length} tracks</p>}
+                      </div>
+                      <div className="space-y-2">
+                        {b.concurrent ? (
+                          <div className="grid gap-2 md:grid-cols-2">{lanes.map(i => renderCell(i))}</div>
+                        ) : (
+                          lanes.map(i => renderCell(i))
+                        )}
+                      </div>
+                    </div>
+                    {view !== "speaker" && setupBetween(day, b, dayBands[idx + 1]).filter(s => scheduleSetups.includes(s)).map((s) => <SetupRow key={s.id} s={s} />)}
+                  </Fragment>
+                );
+              })}
+              {view !== "speaker" &&
+                scheduleSetups
+                  .filter((s) => s.day === day && !dayBands.some((b) => b.end === s.start))
+                  .map((s) => <SetupRow key={s.id} s={s} />)}
+            </div>
+          </section>
+        );
+      })}</>;
+  };
+  const groups = groupItemsByPart(ops, filtered);
+  const mobileEntries = [
+    ...sortItems(filtered).map(item => ({ day: item.day, start: item.start, id: item.id, item, setup: undefined as SetupBlock | undefined })),
+    ...(view === "speaker" ? [] : setups).map(setup => ({ day: setup.day, start: setup.start, id: setup.id, item: undefined as ProgrammeItem | undefined, setup })),
+  ].sort((a,b) => a.day - b.day || toMin(a.start) - toMin(b.start) || a.id.localeCompare(b.id));
   return (
     <div className="space-y-4" data-testid="ops-run-of-show">
       {ops.items.length === 0 && (
@@ -238,51 +289,21 @@ export function OpsRunOfShow({ ops, setOps }: { ops: OpsModel; setOps?: (m: OpsM
         </div>
       </div>
 
-      {days.map((day) => {
-        const dayBands = bands.filter((b) => b.day === day);
-        return (
-          <section key={day}>
-            <h4 className="sticky top-0 z-10 border-b border-navy/20 bg-background/95 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.25em] text-navy backdrop-blur">
-              Day {day}
-            </h4>
-            <div className="mt-2 space-y-2">
-              {dayBands.map((b, idx) => {
-                const lanes = b.items;
-                return (
-                  <Fragment key={b.key}>
-                    <div className="grid grid-cols-[64px_1fr] gap-3" data-testid={b.concurrent ? "concurrent-band" : "band"}>
-                      <div className="pt-2 text-right">
-                        <p className="font-mono text-sm font-semibold tabular text-accent">{b.start}</p>
-                        <p className="font-mono text-[10px] tabular text-muted-foreground">{b.end}</p>
-                        {b.concurrent && <p className="mt-1 font-mono text-[9px] font-bold uppercase text-navy">∥ {lanes.length} tracks</p>}
-                      </div>
-                      <div className="space-y-2">
-                        {b.concurrent ? (
-                          <div className="grid gap-2 md:grid-cols-2">{lanes.map(renderCell)}</div>
-                        ) : (
-                          lanes.map(renderCell)
-                        )}
-                      </div>
-                    </div>
-                    {view !== "speaker" && setupBetween(day, b, dayBands[idx + 1]).map((s) => <SetupRow key={s.id} s={s} />)}
-                  </Fragment>
-                );
-              })}
-              {view !== "speaker" &&
-                setups
-                  .filter((s) => s.day === day && !dayBands.some((b) => b.end === s.start))
-                  .map((s) => <SetupRow key={s.id} s={s} />)}
-            </div>
-          </section>
-        );
-      })}
+      <div className="space-y-2 md:hidden" data-testid="phone-schedule">{mobileEntries.map(entry => entry.item ? renderCell(entry.item, true) : entry.setup ? <SetupRow key={entry.id} s={entry.setup} mobile /> : null)}</div>
+      <div className="hidden space-y-6 md:block" data-testid="desktop-schedule">
+        {ops.parts.length <= 1 ? renderSchedule(bands, setups) : groups.map(({ part, items }) => <section key={part.id} data-testid="part-group">
+          <h3 className="text-base font-semibold text-foreground">{part.name}</h3>
+          <p className="mb-3 text-xs text-muted-foreground">Day {part.day} · {part.start || "Time not specified"}{part.end ? `–${part.end}` : items.length ? `–${items[items.length - 1]?.end}` : ""}{part.track ? ` · ${part.track}` : ""}</p>
+          {items.length ? renderSchedule(buildBands(items), setups.filter(s => s.toItemIds.some(id => items.some(i => i.id === id)))) : <p className="text-sm text-muted-foreground">No programme items in this part.</p>}
+        </section>)}
+      </div>
     </div>
   );
 }
 
-function SetupRow({ s }: { s: SetupBlock }) {
+function SetupRow({ s, mobile = false }: { s: SetupBlock; mobile?: boolean }) {
   return (
-    <div className="grid grid-cols-[64px_1fr] gap-3" data-testid="setup-block">
+    <div className={mobile ? "space-y-1" : "grid grid-cols-[64px_1fr] gap-3"} data-testid="setup-block">
       <div className="pt-1 text-right font-mono text-[10px] tabular text-muted-foreground">{s.start}</div>
       <div className={`flex flex-wrap items-start gap-2 rounded border border-dashed px-3 py-1.5 text-[11px] ${s.insufficient ? "border-destructive/50 bg-destructive/5" : "border-border bg-surface/40"}`}>
         <Wrench className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />
@@ -300,7 +321,7 @@ function SetupRow({ s }: { s: SetupBlock }) {
 
 function Cell({ k, children, wide }: { k: string; children: React.ReactNode; wide?: boolean }) {
   return (
-    <div className={wide ? "col-span-2 sm:col-span-3" : ""}>
+    <div className={wide ? "md:col-span-3" : ""}>
       <dt className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">{k}</dt>
       <dd className="text-foreground">{children}</dd>
     </div>

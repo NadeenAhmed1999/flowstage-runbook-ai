@@ -26,6 +26,8 @@ import {
   reorderPart,
   deletePart,
   partItemCounts,
+  cleanHosts,
+  eventDayCount,
 } from "@/lib/parts-edit";
 import { fromMin, toMin } from "@/lib/event-model";
 
@@ -59,6 +61,13 @@ function Checklist({
       />
     </Field>
   );
+}
+
+function DayPicker({ value, count, onChange, label }: { value?: number; count: number; onChange: (day: number) => void; label: string }) {
+  if (count <= 1) return null;
+  return <Field label="Day"><select aria-label={label} className={input} value={value ?? 1} onChange={e => onChange(Number(e.target.value))}>
+    {Array.from({ length: count }, (_, i) => i + 1).map(day => <option key={day} value={day}>Day {day}</option>)}
+  </select></Field>;
 }
 function PeoplePicker({
   label,
@@ -104,6 +113,8 @@ export function PartsSection() {
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
   const [dragging, setDragging] = useState<number | null>(null);
   const main = ops.parts.find((p) => p.id === MAIN_PART_ID);
+  const dayCount = eventDayCount(event.date, event.endDate);
+  const categories = [...new Set(COMPONENT_KINDS.map(kind => componentBlueprint(kind).category))];
   const parts = [
     {
       id: MAIN_PART_ID,
@@ -157,7 +168,7 @@ export function PartsSection() {
             + Add part
           </summary>
           <div className="absolute right-0 z-20 mt-2 max-h-80 w-72 max-w-[calc(100vw-3rem)] overflow-y-auto rounded-md border border-border bg-background p-2 shadow-lg">
-            {COMPONENT_KINDS.map((kind) => (
+            {categories.map(category => <div key={category} className="mb-3 last:mb-0"><p className="px-3 py-2 text-xs font-semibold text-muted-foreground">{category}</p>{COMPONENT_KINDS.filter(kind => componentBlueprint(kind).category === category).map((kind) => (
               <Button
                 key={kind}
                 type="button"
@@ -171,7 +182,7 @@ export function PartsSection() {
               >
                 {componentBlueprint(kind).label}
               </Button>
-            ))}
+            ))}</div>)}
           </div>
         </details>
       </div>
@@ -320,16 +331,7 @@ export function PartsSection() {
                         ))}
                       </select>
                     </Field>
-                    <Field label="Day">
-                      <input
-                        aria-label="Part day"
-                        className={input}
-                        type="number"
-                        min={1}
-                        value={c.day ?? 1}
-                        onChange={(e) => patch({ day: Math.max(1, Number(e.target.value)) })}
-                      />
-                    </Field>
+                    <DayPicker label="Part day" value={c.day} count={dayCount} onChange={day => patch({ day })} />
                     <Field label="Start">
                       <input
                         aria-label="Part start"
@@ -397,7 +399,7 @@ export function PartsSection() {
                         aria-label="Part hosts"
                         className={input}
                         value={(c.hosts ?? []).join(",")}
-                        onChange={(e) => patch({ hosts: e.target.value.split(",") })}
+                        onChange={(e) => patch({ hosts: cleanHosts(e.target.value) })}
                       />
                     </Field>
                     <Field label="Expected attendees">
@@ -502,17 +504,7 @@ export function PartsSection() {
                             }
                           />
                         </Field>
-                        <Field label="Day">
-                          <input
-                            className={input}
-                            type="number"
-                            min={1}
-                            value={s.day ?? 1}
-                            onChange={(e) =>
-                              patchSession(s.id, { day: Math.max(1, Number(e.target.value)) })
-                            }
-                          />
-                        </Field>
+                        <DayPicker label="Session day" value={s.day} count={dayCount} onChange={day => patchSession(s.id, { day })} />
                         {partDropdown(id, (value) => patchSession(s.id, { partId: assign(value) }))}
                         <Field label="Description">
                           <textarea
@@ -616,17 +608,7 @@ export function PartsSection() {
                             }
                           />
                         </Field>
-                        <Field label="Day">
-                          <input
-                            className={input}
-                            type="number"
-                            min={1}
-                            value={b.day ?? 1}
-                            onChange={(e) =>
-                              patchBreak(b.id, { day: Math.max(1, Number(e.target.value)) })
-                            }
-                          />
-                        </Field>
+                        <DayPicker label="Break day" value={b.day} count={dayCount} onChange={day => patchBreak(b.id, { day })} />
                         {partDropdown(id, (value) => patchBreak(b.id, { partId: assign(value) }))}
                       </div>
                       <Button

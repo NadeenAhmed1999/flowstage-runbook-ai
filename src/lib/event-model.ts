@@ -316,6 +316,7 @@ export function toMin(t: string): number {
 }
 
 export function fromMin(total: number): string {
+  if (!Number.isFinite(total)) return "";
   const t = ((total % 1440) + 1440) % 1440;
   return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
 }

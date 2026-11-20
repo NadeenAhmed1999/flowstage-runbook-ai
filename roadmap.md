@@ -43,4 +43,5 @@
 ## Current: step 2b (parts on screen)
 - [x] 2b-1 fixture swap, part links on sessions/breaks, sync tests, AI Part: note
 - [x] 2b-2 setup page parts UI; 47 tests and signed-out/owner in-memory browser checks at 390/1280 passed
-- [ ] 2b-3 run-of-show grouping and phone list (waiting for approval)
+- [x] 2b-3 setup review fixes, run-of-show groups/phone list, export/briefing labels; 54 tests and 390/1280 signed-out/owner read-only checks passed
+- Step 3 conflicts/per-part readiness remains out of scope.
