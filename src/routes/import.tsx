@@ -1,5 +1,7 @@
 import { EVENT_TYPES, importTypeSelection, importFileProblem, withListedType } from "@/lib/event-types";
 import { useMemo, useRef, useState } from "react";
+import { EditableMappingReview } from "@/components/import/mapping-review";
+import type { EventData } from "@/components/event-context";
 import { resetSavedEvent } from "@/hooks/use-saved-event";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -60,6 +62,7 @@ function ImportPage() {
 
   const [workbook, setWorkbook] = useState<ParsedWorkbook | null>(null);
   const [previewSheet, setPreviewSheet] = useState<string | null>(null);
+  const [reviewVersion, setReviewVersion] = useState(0);
   const [mapping, setMapping] = useState<MappedEvent | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,11 +88,18 @@ function ImportPage() {
     try {
       const result = await importFn({ data: parsed });
       setMapping(withListedType(result));
+      setReviewVersion(v => v + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "AI mapping failed. Try again or map manually.");
     } finally {
       setLoading(false);
     }
+  }
+
+  function commitEdited(eventData: EventData) {
+    setEvent(eventData);
+    resetSavedEvent();
+    navigate({ to: "/run-of-show" });
   }
 
   function commit() {
@@ -121,7 +131,7 @@ function ImportPage() {
 
           {workbook && (
             <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-              <div className="space-y-6">
+              <div className="min-w-0 space-y-6">
                 {loading && (
                   <div className="rounded-lg border border-border bg-background p-8 text-center">
                     <Loader2 className="mx-auto h-6 w-6 animate-spin text-accent" />
@@ -152,7 +162,8 @@ function ImportPage() {
                   </div>
                 )}
 
-                {mapping && !loading && (
+                {mapping && !loading && !isWordFile({ name: workbook.fileName } as File) && <EditableMappingReview key={reviewVersion} mapping={mapping} workbook={workbook} onCommit={commitEdited} />}
+                {mapping && !loading && isWordFile({ name: workbook.fileName } as File) && (
                   <MappingReview
                     mapping={mapping}
                     setMapping={setMapping}
@@ -320,7 +331,7 @@ function UploadPane({
           title="No file chosen"
           description="Import an existing Excel or Word agenda with sessions, dates, times and speakers."
           action={<>
-            <p className="mb-4 text-xs text-muted-foreground">.xlsx, .xls, .csv, .docx · up to 20 sheets, first 200 rows each · contents are sent to our AI to map columns</p>
+            <p className="mb-4 text-xs text-muted-foreground">.xlsx, .xls, .csv, .docx · large planning files supported (we read the agenda sheet first) · row titles are sent to our AI to suggest event name and type. Files without a clear agenda sheet are sent to our AI for mapping.</p>
             <Button type="button" className="min-h-11" onClick={() => inputRef.current?.click()}>Choose file</Button>
           </>}
         />

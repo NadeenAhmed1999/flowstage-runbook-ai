@@ -7,3 +7,5 @@
 - Part grouping and export/briefing labels are presentation adapters in part-presentation; AI rows get a part only for an unambiguous title/time match. Why: one-part legacy data stays unchanged and labels are never guessed across days.
 - HostsInput keeps a local text draft and commits normalized names on blur; Excel keeps Part metadata separate and ignores it during mapping. Why: commas remain typeable and re-import cannot contaminate agenda titles.
 - Excel import runs the deterministic agenda reader in src/lib/import first; AI only names/types the event and flags break rows, and files with no agenda header use the original AI mapping. Why: real master sheets are too wide and messy for AI-only mapping, while simple files must not regress.
+
+- Excel review owns one reducer draft and converts only its edited values; skipped sheets map on explicit opt-in and cache their result. Why: typing and roster merges must reach creation without duplicate AI requests; Word retains its existing path.

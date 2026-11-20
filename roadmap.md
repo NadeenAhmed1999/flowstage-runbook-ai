@@ -53,6 +53,6 @@
 
 ## Current: step 4 (Excel master-sheet import)
 - [x] Job A plain-code agenda reader, invented 28-sheet fixture, tests, sheet limit lifted (66 tests; 390/1280 upload check)
-- [ ] Job B parser review fixes, single editable draft/reducer, review UI and sheet opt-in
-- [ ] Job B tests and 390/1280 in-memory browser checks; no event saves
+- [x] Job B parser review fixes, single editable draft/reducer, review UI and sheet opt-in
+- [x] Job B tests (79) and 390/1280 signed-out/owner in-memory browser checks; no event saves
 - [ ] Job C parts proposals and conflicts/warnings (waits for approval)
