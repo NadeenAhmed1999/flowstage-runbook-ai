@@ -1,83 +1,68 @@
-# Step 2b: nested parts on screen
+# Step 4 — Excel import for real event master sheets + fully editable review
 
-Split into three sub-steps. I stop and report after each one.
+## What exists today (checked)
+- `src/lib/excel-io.ts` `parseWorkbookFile`: reads every sheet with `raw:false`, no nbsp cleaning, assumes header is row 0.
+- `src/lib/excel-import.functions.ts`: schema caps at **20 sheets** (a 28-sheet file fails validation) and 500 rows; the AI does all the mapping (header detection, times, dates, speakers) from the first 200 rows × **20 columns** — so columns after T are never seen.
+- `src/routes/import.tsx` (601 lines): `MappingReview` is mostly a read-only summary; edits are limited. `mappedEventToEventData` builds the event.
+- Word import (`word-io.ts`) shares `MappedEvent`; it stays on the current path.
 
-## 1. Keeping parts and existing features in sync (the core decision)
+## Split into three jobs
 
-**Single source of truth: the existing component list plus a part link on sessions and breaks.**
-- Every part except "Main programme" is stored as a component, as today. Components already have name, kind, day, start/end, venue, hosts, notes and the AV/staffing/protocol checklists. Add two optional fields to a component: `track`, and kind "other" for parts that aren't a ceremony, dinner and so on.
-- Add an optional `partId` to sessions and breaks. Leaving it empty means "Main programme".
-- The operational model's `parts` and each item's part link stay **derived** from this, through the existing `withParts` and `legacyToOps`. That's the same one-way flow as today, so the run sheet, Smart Review, readiness, briefings and exports keep reading what they read now.
+### Job A — Deterministic parser + fixture + tests (no UI change visible except "no 20-sheet failure")
+New `src/lib/import/`:
+- `clean.ts` — strip nbsp (U+00A0) and whitespace; nbsp-only = empty; trim trailing empty columns (285 → used columns).
+- `header-detect.ts` — scan first ~15 rows for a header by alias table (DAY, SPACE/ROOM, LEAD, #, SESSION TITLE/TITLE, DATE, OPEN/START, MINs/DURATION, CLOSE/END, FORMAT, SESSION DESCRIPTION, BLOCK & THEME NAME, SPEAKER 1..n, MODERATOR, MC). Returns column map + score.
+- `sheet-rank.ts` — agenda-likeness score per sheet (header score, count of time-like cells, row count). Picks the agenda sheet; ranks the rest.
+- `parse-values.ts` — times `HH:MM[:SS]`, Excel serial times; dates "November 29th"/"29 Nov"/ISO with year optional (returns `{month, day, year|null}`); duration = MINs, else CLOSE − OPEN (flag `derived`), else missing (flag); speaker cell "Name, Title, Org" → `{name, role}`; strip "Moderator:"/"Chair:"/"MC:" prefixes; FORMAT → session type (Panel, Fireside chat, Survey, MOU signing, Keynote, Address, Performance, else Session).
+- `year.ts` — year from file name, then title rows; returns one year, or `null` when none/conflicting (review asks; never guessed).
+- `agenda-parse.ts` — produces a `DraftImport` (rows with per-field provenance flags: `inferred`, `derived`, `missing`, `conflict`) plus rosters with dedupe keys.
+- `fixture-master-plan.ts` (tests only) — builds an invented 28-sheet workbook in code with `xlsx`: AGENDA with title rows, 285-column used range, nbsp cells, two days, text dates without year, `HH:MM:SS`, missing MINs, multi-field speaker cells, moderator prefix, names inside titles, all row kinds listed in the brief; an "Opening ceremony" sheet at 11:00–11:30 vs AGENDA 10:30; ~20 near-empty sheets. All names invented ("Dana Example", "Northwind Health").
+- Server function: raise sheet limit (accept up to e.g. 60 sheets but only *send* to AI the top 3 ranked sheets, first 120 rows, mapped/relevant columns only). New small AI prompt used only when the parser succeeds: given cleaned agenda rows (title, format, block) it returns event name, event type (exact list), and per-row classification session/break/part-candidate. If no header is found, fall back to the **current** AI mapping path unchanged (simple files don't regress).
+- `parseWorkbookFile` keeps returning the same shape; cleaning is added in the new path so the existing Part-column behaviour and round-trip stay intact.
 
-**Why this is the smallest safe option:** there's no second copy to keep in step. The parts list on screen is just the component list plus "Main programme". A one-part event has no new fields filled in, so its output stays identical to the recorded snapshot, and the existing snapshot test guards that.
+Tests (`src/lib/import/*.test.ts`): nbsp cleaning; header found below title rows; date text without year; `HH:MM:SS` and `HH:MM`; duration from CLOSE − OPEN; speaker splitting (1–3 columns, missing org); moderator prefix; FORMAT mapping; year from file name / ambiguous → null; 28-sheet fixture parses, agenda ranked first, others listed as skipped; our own Excel export re-imports through the new path; simple file falls back to old path.
 
-**What could still drift, and how I'd guard it:**
-- **Deleted part:** a session could point to a part that no longer exists. On load it falls back to Main programme, which `withParts` already does, with a test.
-- **Item settings:** rooms, status and AV set on the run-of-show for an item are kept by item id, as today. Moving an item to another part must keep them, with a test.
-- **What the AI sees:** the run-sheet prompt today lists components as blocks, but doesn't know which sessions belong to which part. I'd add a "Part: …" note per session only when it isn't in Main programme. For one-part events nothing changes. I'll state this in the report; there are no other changes to what the AI is told.
+### Job B — Editable review UI
+Split `import.tsx` review into `src/components/import/`:
+- `review-event.tsx` — name, type (shared list, "Other" fallback), start date, end date, **year field** shown and required-looking when year is unknown.
+- `review-rows.tsx` — sessions and breaks: title, day, start, duration, speakers/moderators (pick from roster or add), part, type, delete, add row; badges "inferred", "from CLOSE − OPEN", "missing time", "conflict". Phone (<md): one card per row stacked; laptop: compact table.
+- `review-roster.tsx` — speakers and moderators: edit name/role, merge duplicates (choose target; references are rewritten).
+- `review-sheets.tsx` — skipped sheets list with a tick box "Include"; ticking re-runs mapping for that sheet (one extra AI call only when ticked).
+- Review state lives in one reducer over `DraftImport`; "Create event" converts the edited draft → event via the existing conversion, so edits change the created event.
+Tests: reducer edits (rename session, change start, delete/add row, merge speakers, change year) produce the expected event; year unknown + user enters year → dates correct.
 
-## 2. Setup page (/generate): parts
+### Job C — Parts and conflicts/warnings
+- Part proposals: rows the AI/heuristics classify as ceremony/awards/registration become proposed parts (existing components + `partId`, via `parts-edit.ts` mutations). Review "Parts" section: accept, rename, change kind, delete (rows move to Main programme), move row via the row's Part dropdown.
+- `import/warnings.ts` (pure): cross-sheet time mismatch (sub-sheet window vs agenda row with matching title/part), overlapping items in same space+day, missing start, duplicate speakers (normalized name), unknown date/year, ambiguous classification. Shown in a warnings panel with affected rows; never blocks "Create event"; nothing auto-resolved.
+Tests: fixture yields the 10:30 vs 11:00 opening-ceremony conflict; overlap detection; duplicate speakers; parts proposal + rename/move changes the created event; one-part import creates no extra parts.
 
-- The "Event Components" section becomes **"Parts of this event"**. "Main programme" is always first, can be renamed but not deleted, and shows the event's sessions and breaks.
-- **Add a part:** the existing "+ Add component" menu, relabelled "+ Add part", plus an "Other part" choice.
-- **Edit a part:** name, kind, day, start/end, track, venue, hosts and notes. Reorder by dragging or with the up/down arrows, which already exist for components.
-- **Each part shows its own:**
-  - sessions and breaks: each has a "Part" dropdown, and new ones are added to the part you're in;
-  - the speakers used in those sessions, read from the one shared people list;
-  - its checklists.
-- **Deleting a part that has sessions or breaks asks first:** "This part has N sessions and M breaks. Move them to Main programme, or delete them too?" Buttons: Move to Main programme / Delete them / Cancel. An empty part is deleted without asking.
-- **Empty states:** "No sessions in this part yet. Add a session or move one here from another part."
-- Starting points still replace parts after the existing confirmation.
+## Preservation
+- Legacy snapshots and one-part generation AI prompt untouched (generation code not edited); snapshot tests must stay green. All 56 existing tests keep passing.
+- Word import and simple Excel files keep the current path.
+- Upload hint text updated only where it becomes false (the "up to 20 sheets" part) — will propose exact wording in Job A report before changing.
 
-## 3. Run-of-show: grouped by part
+## Browser checks (each job)
+Read-only at 390px and 1280px, signed out and owner session: upload the generated fixture file (written to /tmp, not kept as a real file), check review, edits, warnings; no saves.
 
-- **Laptop:** each part is a titled group (name, day, time range, track), with its items in the existing layout underneath. One-part events look exactly as today, with no group heading.
-- **Phone:** one list sorted by day and time across all parts. Each row has a small part label, plus the track when one is set. No side-by-side columns.
-- Lanes on laptop are not in this step.
+## Credit estimate (honest, wide because past estimates ran low)
+- Job A: 8–12
+- Job B: 9–14
+- Job C: 6–10
+Total roughly 23–36. Each job stops and reports.
 
-## 4. Test fixture
+## Not in this step
+- Importing the operational sheets' content (booths, gifts, podcast, awardees) beyond listing them and the ceremony time cross-check.
+- Rooms/venue model population beyond the SPACE text, resources, economics, LEAD/MC as staff roles (MC kept as a note/moderator-like role only if you want — default: note).
+- Word import changes, laptop lanes, readiness/Smart Review changes, saving changes, AI-generated descriptions.
 
-Replace the copy of the private DIA agenda in `src/lib/__fixtures__/legacy-snapshot-v1.json`. Instead, a tiny anonymous fixture with made-up titles and names ("Sample Forum", "Session 1A", "Speaker A"):
-- 2 days, one pair of sessions running at the same time, a break, a meal, one component;
-- one person in two sessions, one unknown room.
+## Risks
+- Real file layouts may differ from the described shape (merged cells, hidden rows); mitigated by alias table + fallback to the old AI path.
+- Name/role splitting is heuristic ("Name, Title, Org" with commas in titles); always editable and flagged.
+- Part classification by AI may be wrong; it's a proposal only.
+- Cross-sheet conflict matching depends on title similarity; low-confidence matches shown as "possible conflict".
+- `import.tsx` refactor in Job B is the largest change surface.
 
-The snapshot is re-recorded from the current code before any parts change. It still covers the sample and the tiny fixture, so the test keeps proving one-part output is unchanged. The DIA-agenda checks that only count items move to an in-memory check without a stored copy.
-
-## Out of scope
-Cross-part conflict checks, readiness per part, import changes, visual restyle, laptop lanes.
-
-## Sub-steps and honest credit estimate
-My last estimate was low (said 3–4, actual 6.8), so these ranges are wider.
-
-| Sub-step | Contents | Credits |
-|---|---|---|
-| 2b-1 | Fixture swap, part links on sessions/breaks, sync tests, the AI note | 4–7 |
-| 2b-2 | Setup page parts section, part dropdowns, delete confirmation, empty states | 7–12 |
-| 2b-3 | Run-of-show grouping on laptop, one list on phone | 4–7 |
-| **Total** | | **15–26** |
-
-## Technical details
-
-**Files expected**
-- 2b-1: `src/components/event-context.tsx` (Session/Break/EventComponent types), `src/lib/event-migrate.ts`, `src/lib/event-parts.ts`, `src/lib/generate-run-sheet.functions.ts`, `src/lib/run-sheet-parsing.ts` (input schema), `src/lib/__fixtures__/*`, `src/lib/event-parts.test.ts`, a new `src/lib/tiny-fixture.ts`.
-- 2b-2: `src/routes/generate.tsx` (likely split into a new `src/components/generate/parts-section.tsx` because the file is about 1,170 lines).
-- 2b-3: `src/components/document/ops-run-of-show.tsx`, `src/lib/ops-schedule.ts` if grouping needs a helper.
-
-**Tests to add**
-- A session's part link becomes the item's part link. A missing part falls back to Main programme.
-- Moving a session to another part keeps its room, status and AV settings.
-- Deleting a part with "move": its items end up in Main programme. With "delete": they're removed, and the counts match.
-- An extra part's sessions still appear in the run sheet, exports and briefings, labelled with the part name.
-- The one-part snapshot equals the stored one (sample and tiny fixture).
-- The AI prompt for a one-part event is unchanged character for character. A multi-part one gets "Part:" notes.
-- Phone list ordering: day, then time, across parts.
-
-**Browser checks (read-only: nothing saved, no real data deleted)**
-- 390px and 1280px, signed out and with your account.
-- On the setup page, in memory only:
-  - add an "Other part" and rename it;
-  - move a session into it;
-  - delete it and see the confirmation text with both choices;
-  - check empty-state hints.
-- Run-of-show: the sample shows no group headings (one part). With a two-part event built in memory, laptop shows groups and phone shows one list with part labels. Page width fits the screen.
-- My events still shows its empty state.
+## Technical notes
+- Year-less dates stored as `{month, day}` until a year is known; event `date` written only at "Create event".
+- Dedupe key: lowercase, accents/punctuation stripped, titles like "Dr." removed.
+- AI payload: cleaned strings only, ≤3 sheets, ≤120 rows, only mapped columns; prompt contains no names from code.
