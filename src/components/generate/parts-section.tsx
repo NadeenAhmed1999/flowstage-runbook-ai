@@ -26,10 +26,10 @@ import {
   reorderPart,
   deletePart,
   partItemCounts,
-  cleanHosts,
   eventDayCount,
 } from "@/lib/parts-edit";
 import { fromMin, toMin } from "@/lib/event-model";
+import { HostsInput } from "@/components/generate/hosts-input";
 
 const input =
   "w-full min-w-0 min-h-11 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground";
@@ -395,11 +395,10 @@ export function PartsSection() {
                       />
                     </Field>
                     <Field label="Hosts (comma-separated)">
-                      <input
-                        aria-label="Part hosts"
+                      <HostsInput
                         className={input}
-                        value={(c.hosts ?? []).join(",")}
-                        onChange={(e) => patch({ hosts: cleanHosts(e.target.value) })}
+                        hosts={c.hosts ?? []}
+                        onChange={(hosts) => patch({ hosts })}
                       />
                     </Field>
                     <Field label="Expected attendees">

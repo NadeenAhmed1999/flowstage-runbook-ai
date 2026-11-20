@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx";
 import type { EventData } from "@/components/event-context";
 import type { MappedEvent } from "./excel-import.functions";
-import { labelledItemTitle } from "@/lib/part-presentation";
+import { itemPartLabel } from "@/lib/part-presentation";
 
 export type ParsedWorkbook = {
   fileName: string;
@@ -20,7 +20,13 @@ export async function parseWorkbookFile(file: File): Promise<ParsedWorkbook> {
       defval: "",
       raw: false, // stringify dates/numbers so the AI reads them as text
     });
-    return { name, rows };
+    // Part is metadata, never part of the title. Part assignment import is deferred.
+    const header = rows[0];
+    const partIndex = header?.findIndex(cell => String(cell).trim().toLowerCase() === "part") ?? -1;
+    const hasItemTitle = header?.some(cell => /^(title|label)$/i.test(String(cell).trim()));
+    return { name, rows: partIndex >= 0 && hasItemTitle
+      ? rows.map(row => row.filter((_, index) => index !== partIndex))
+      : rows };
   });
   return { fileName: file.name, sheets };
 }
@@ -108,8 +114,8 @@ export function mappedEventToEventData(m: MappedEvent): EventData {
   };
 }
 
-/** Export the current event as a professionally-formatted .xlsx and trigger download. */
-export function exportEventToExcel(event: EventData) {
+/** Build the workbook without altering item titles. */
+export function buildEventWorkbook(event: EventData) {
   const wb = XLSX.utils.book_new();
 
   const overview = [
@@ -133,12 +139,12 @@ export function exportEventToExcel(event: EventData) {
   XLSX.utils.book_append_sheet(wb, wsOverview, "Overview");
 
   const sessionRows = [
-    ["Day", "Start", "Duration (min)", "Title", "Speakers", "Moderators", "Description"],
+    ["Day", "Start", "Duration (min)", "Title", "Speakers", "Moderators", "Description", "Part"],
     ...event.sessions.map((s) => [
       s.day ?? 1,
       s.startTime,
       s.durationMin,
-      labelledItemTitle(event, s, s.title),
+      s.title,
       s.speakerIds
         .map((id) => event.speakers.find((p) => p.id === id)?.name)
         .filter(Boolean)
@@ -148,6 +154,7 @@ export function exportEventToExcel(event: EventData) {
         .filter(Boolean)
         .join(", "),
       s.description,
+      itemPartLabel(event, s) ?? "",
     ]),
   ];
   const wsS = XLSX.utils.aoa_to_sheet(sessionRows);
@@ -159,6 +166,7 @@ export function exportEventToExcel(event: EventData) {
     { wch: 30 },
     { wch: 24 },
     { wch: 60 },
+    { wch: 30 },
   ];
   XLSX.utils.book_append_sheet(wb, wsS, "Sessions");
 
@@ -177,10 +185,10 @@ export function exportEventToExcel(event: EventData) {
   XLSX.utils.book_append_sheet(wb, wsMod, "Moderators");
 
   const wsB = XLSX.utils.aoa_to_sheet([
-    ["Day", "Start", "Duration (min)", "Label"],
-    ...event.breaks.map((b) => [b.day ?? 1, b.startTime, b.durationMin, labelledItemTitle(event, b, b.label)]),
+    ["Day", "Start", "Duration (min)", "Label", "Part"],
+    ...event.breaks.map((b) => [b.day ?? 1, b.startTime, b.durationMin, b.label, itemPartLabel(event, b) ?? ""]),
   ]);
-  wsB["!cols"] = [{ wch: 6 }, { wch: 8 }, { wch: 14 }, { wch: 40 }];
+  wsB["!cols"] = [{ wch: 6 }, { wch: 8 }, { wch: 14 }, { wch: 40 }, { wch: 30 }];
   XLSX.utils.book_append_sheet(wb, wsB, "Breaks");
 
   const wsSpo = XLSX.utils.aoa_to_sheet([
@@ -215,6 +223,12 @@ export function exportEventToExcel(event: EventData) {
     XLSX.utils.book_append_sheet(wb, wsC, "Components");
   }
 
+  return wb;
+}
+
+/** Export the current event as a professionally-formatted .xlsx and trigger download. */
+export function exportEventToExcel(event: EventData) {
+  const wb = buildEventWorkbook(event);
   const safeName = event.name.replace(/[^a-z0-9-_]+/gi, "_").slice(0, 60) || "flowstage_event";
   XLSX.writeFile(wb, `${safeName}.xlsx`);
 }

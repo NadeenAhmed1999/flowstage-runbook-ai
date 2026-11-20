@@ -196,15 +196,6 @@ export async function exportEventToWord(event: EventData, runSheet?: RunSheet | 
     );
   }
 
-  // AI rows lack stable IDs/day; keep authoritative labels even when matching is ambiguous.
-  if (runSheet && (event.components?.length || (event.ops?.parts.length ?? 0) > 1)) {
-    children.push(new Paragraph({ text: "" }), heading("Agenda by part"), table(
-      [700, 1000, 900, 3400, 2300, 1060],
-      ["Day", "Start", "Dur", "Session", "Speakers", "Moderators"],
-      event.sessions.map(s => [String(s.day ?? 1), s.startTime, `${s.durationMin}m`, labelledItemTitle(event, s, s.title), s.speakerIds.map(nameOf).filter(Boolean).join(", "), s.moderatorIds.map(nameOf).filter(Boolean).join(", ")]),
-    ));
-  }
-
   if (event.speakers.length || event.moderators.length) {
     children.push(
       new Paragraph({ text: "" }),

@@ -1,5 +1,10 @@
 # FlowStage roadmap
 
+## Current: 2b-3 review fixes only
+- [x] Hosts local typing draft and blur cleanup, with keystroke regression
+- [x] Excel separate Part column and title roundtrip; remove duplicate Word agenda table
+- [x] All 56 tests and read-only browser checks at 390/1280; no event writes or step 3 work
+
 ## Current: four-item follow-up only
 - [x] Clear signup outcome message, import formats hint, singular Generate brief label
 - [x] Read-only owner session checks at 390px and 1280px; no event writes or Save clicks
