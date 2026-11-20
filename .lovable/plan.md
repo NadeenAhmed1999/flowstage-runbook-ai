@@ -1,68 +1,65 @@
-# Step 4 — Excel import for real event master sheets + fully editable review
+# App shell consistency — plan
 
-## What exists today (checked)
-- `src/lib/excel-io.ts` `parseWorkbookFile`: reads every sheet with `raw:false`, no nbsp cleaning, assumes header is row 0.
-- `src/lib/excel-import.functions.ts`: schema caps at **20 sheets** (a 28-sheet file fails validation) and 500 rows; the AI does all the mapping (header detection, times, dates, speakers) from the first 200 rows × **20 columns** — so columns after T are never seen.
-- `src/routes/import.tsx` (601 lines): `MappingReview` is mostly a read-only summary; edits are limited. `mappedEventToEventData` builds the event.
-- Word import (`word-io.ts`) shares `MappedEvent`; it stays on the current path.
+## What I checked
+- `/generate` and `/import` are top-level routes; `__root.tsx` shows SiteNav/SiteFooter for every non-`/app` path and the phone MobileNav for `/app*`, `/generate`, `/import` and `/run-of-show`. So phones already get bottom tabs there; laptops/tablets get the marketing bar and no sidebar (confirms problem A for md+).
+- `app.index.tsx` imports everything from `dashboard-data.ts`; the export buttons have no `onClick` (confirms B).
+- `app.events.tsx`, `app.talent.tsx`, `app.av.tsx` and `app.activity.tsx` also read `dashboard-data.ts` (fake). Only `app.run-of-show.tsx` uses the real event.
+- Readiness is an AI call (`readiness-score.functions.ts`) run on demand; the current event context does not store a result. So Overview will **leave readiness out** rather than trigger an AI call.
+- Working exports already exist: `exportEventToExcel(event)`, `exportEventToWord(event, runSheet)` and `window.print()` (used on `/run-of-show`).
+- Links to `/generate` / `/import` exist in about 14 places (landing hero, pricing, resources, solution template, site nav, sidebar, topbar, mobile nav, run-of-show pages, ops-run-of-show).
 
-## Split into three jobs
+## Route approach (safest)
+Move the pages under the app layout as `/app/new` and `/app/import`, and turn `/generate` and `/import` into small redirect routes.
+- New files: `src/routes/app.new.tsx` and `src/routes/app.import.tsx` hold the existing page bodies, moved unchanged apart from the header.
+- `generate.tsx` / `import.tsx` become `beforeLoad: () => throw redirect({ to: "/app/new" | "/app/import", replace: true })`, keeping any search params. Bookmarks, marketing CTAs and old links keep working.
+- Update the in-app links (sidebar, topbar, mobile nav, app.run-of-show, ops-run-of-show, run-of-show, generate→import link) to point at the new paths directly. Marketing links (hero, pricing, resources, solution template, site nav) can stay on `/generate`; they redirect.
+- `__root.tsx`: change the phone-nav list from `/import`, `/generate` to the new paths (they fall under `isApp` automatically); keep `/run-of-show`.
+- Signed out: `/app` has no auth guard today, so the new pages stay usable signed out. The sidebar already shows the same items to everyone, with "Sign in" in the account area. No change needed.
+- Leave `/run-of-show` (the full document page) where it is in this job.
 
-### Job A — Deterministic parser + fixture + tests (no UI change visible except "no 20-sheet failure")
-New `src/lib/import/`:
-- `clean.ts` — strip nbsp (U+00A0) and whitespace; nbsp-only = empty; trim trailing empty columns (285 → used columns).
-- `header-detect.ts` — scan first ~15 rows for a header by alias table (DAY, SPACE/ROOM, LEAD, #, SESSION TITLE/TITLE, DATE, OPEN/START, MINs/DURATION, CLOSE/END, FORMAT, SESSION DESCRIPTION, BLOCK & THEME NAME, SPEAKER 1..n, MODERATOR, MC). Returns column map + score.
-- `sheet-rank.ts` — agenda-likeness score per sheet (header score, count of time-like cells, row count). Picks the agenda sheet; ranks the rest.
-- `parse-values.ts` — times `HH:MM[:SS]`, Excel serial times; dates "November 29th"/"29 Nov"/ISO with year optional (returns `{month, day, year|null}`); duration = MINs, else CLOSE − OPEN (flag `derived`), else missing (flag); speaker cell "Name, Title, Org" → `{name, role}`; strip "Moderator:"/"Chair:"/"MC:" prefixes; FORMAT → session type (Panel, Fireside chat, Survey, MOU signing, Keynote, Address, Performance, else Session).
-- `year.ts` — year from file name, then title rows; returns one year, or `null` when none/conflicting (review asks; never guessed).
-- `agenda-parse.ts` — produces a `DraftImport` (rows with per-field provenance flags: `inferred`, `derived`, `missing`, `conflict`) plus rosters with dedupe keys.
-- `fixture-master-plan.ts` (tests only) — builds an invented 28-sheet workbook in code with `xlsx`: AGENDA with title rows, 285-column used range, nbsp cells, two days, text dates without year, `HH:MM:SS`, missing MINs, multi-field speaker cells, moderator prefix, names inside titles, all row kinds listed in the brief; an "Opening ceremony" sheet at 11:00–11:30 vs AGENDA 10:30; ~20 near-empty sheets. All names invented ("Dana Example", "Northwind Health").
-- Server function: raise sheet limit (accept up to e.g. 60 sheets but only *send* to AI the top 3 ranked sheets, first 120 rows, mapped/relevant columns only). New small AI prompt used only when the parser succeeds: given cleaned agenda rows (title, format, block) it returns event name, event type (exact list), and per-row classification session/break/part-candidate. If no header is found, fall back to the **current** AI mapping path unchanged (simple files don't regress).
-- `parseWorkbookFile` keeps returning the same shape; cleaning is added in the new path so the existing Part-column behaviour and round-trip stay intact.
+What could break:
+- routeTree regenerates automatically; any `Link to="/generate"` with typed search must still type-check against the redirect route (search validator kept on both).
+- head/og: each new route gets its own head() copied from the old one; redirect routes need no head. The `/app` layout head stays.
+- Layout: inside the shell, the pages lose SiteFooter and gain a sidebar. Content width is narrower at 768–1279px, so the editable import review tables need a 1280/768 check.
+- SSR redirect is a 307; acceptable (site not published yet).
+- Tests: none of the 79 reference these paths (search found no matches), so the risk is low.
 
-Tests (`src/lib/import/*.test.ts`): nbsp cleaning; header found below title rows; date text without year; `HH:MM:SS` and `HH:MM`; duration from CLOSE − OPEN; speaker splitting (1–3 columns, missing org); moderator prefix; FORMAT mapping; year from file name / ambiguous → null; 28-sheet fixture parses, agenda ranked first, others listed as skipped; our own Excel export re-imports through the new path; simple file falls back to old path.
+## Overview with the real event
+Rewrite `app.index.tsx` against `useEvent()` + `useSavedEvent()`:
+- Header: event name, date range formatted with `Intl.DateTimeFormat(undefined, …)` (browser locale, no time zone), day count, and counts for sessions, speakers+moderators and parts (`ops.parts.length`; shown only when >1).
+- Actions: Open run-of-show (`/app/run-of-show`), Edit setup (`/app/new` without reset), Import (`/app/import`).
+- Example mode: when the current event is the built-in Meridian sample (no `savedId` and the event still equals the seed), show the existing ExampleDataBanner labelled "Example data". It uses the same real-event layout with sample values, not the old fake KPIs.
+- Empty state (event has no sessions and no components): shared EmptyState with "Set up your event" and "Import existing event".
+- Delete the fake KPI strip, alerts, timeline, sponsors, speaker progress, system tiles and the "T-minus"/PT clock.
+- Readiness: omitted (see above).
 
-### Job B — Editable review UI
-Split `import.tsx` review into `src/components/import/`:
-- `review-event.tsx` — name, type (shared list, "Other" fallback), start date, end date, **year field** shown and required-looking when year is unknown.
-- `review-rows.tsx` — sessions and breaks: title, day, start, duration, speakers/moderators (pick from roster or add), part, type, delete, add row; badges "inferred", "from CLOSE − OPEN", "missing time", "conflict". Phone (<md): one card per row stacked; laptop: compact table.
-- `review-roster.tsx` — speakers and moderators: edit name/role, merge duplicates (choose target; references are rewritten).
-- `review-sheets.tsx` — skipped sheets list with a tick box "Include"; ticking re-runs mapping for that sheet (one extra AI call only when ticked).
-- Review state lives in one reducer over `DraftImport`; "Create event" converts the edited draft → event via the existing conversion, so edits change the created event.
-Tests: reducer edits (rename session, change start, delete/add row, merge speakers, change year) produce the expected event; year unknown + user enters year → dates correct.
+## Export buttons
+Wire the three header buttons in a few lines to the existing helpers: Excel → `exportEventToExcel`, Word → `exportEventToWord`, Print briefing → `window.print()`. Replace the old "Export PDF/CSV" labels with "Export Excel", "Export Word" and "Print". Remove the per-section "Export" buttons along with their sections.
 
-### Job C — Parts and conflicts/warnings
-- Part proposals: rows the AI/heuristics classify as ceremony/awards/registration become proposed parts (existing components + `partId`, via `parts-edit.ts` mutations). Review "Parts" section: accept, rename, change kind, delete (rows move to Main programme), move row via the row's Part dropdown.
-- `import/warnings.ts` (pure): cross-sheet time mismatch (sub-sheet window vs agenda row with matching title/part), overlapping items in same space+day, missing start, duplicate speakers (normalized name), unknown date/year, ambiguous classification. Shown in a warnings panel with affected rows; never blocks "Create event"; nothing auto-resolved.
-Tests: fixture yields the 10:30 vs 11:00 opening-ceremony conflict; overlap detection; duplicate speakers; parts proposal + rename/move changes the created event; one-part import creates no extra parts.
+## One header pattern
+Use **AppTopbar** everywhere inside `/app`, because it already carries Save controls, the account menu and New event. On New event and Import, swap PageHeader for AppTopbar (title and subtitle text unchanged; `primary="none"` on New event). Keep PageHeader for marketing pages only. No colour or font changes.
 
-## Preservation
-- Legacy snapshots and one-part generation AI prompt untouched (generation code not edited); snapshot tests must stay green. All 56 existing tests keep passing.
-- Word import and simple Excel files keep the current path.
-- Upload hint text updated only where it becomes false (the "up to 20 sheets" part) — will propose exact wording in Job A report before changing.
+## Jobs
+**Job 1 — routes + header (est. 14–22 credits)**
+Files: `app.new.tsx`, `app.import.tsx` (new), `generate.tsx`, `import.tsx` (redirects), `__root.tsx`, `sidebar.tsx`, `mobile-nav.tsx`, `topbar.tsx`, `app.run-of-show.tsx`, `run-of-show.tsx`, `ops-run-of-show.tsx`, AGENTS.md, roadmap.md.
+Tests: add `app-routes.test.ts`, which checks that the redirect target maps `/generate`→`/app/new` and `/import`→`/app/import` (target constants exported). All 79 existing tests still pass.
 
-## Browser checks (each job)
-Read-only at 390px and 1280px, signed out and owner session: upload the generated fixture file (written to /tmp, not kept as a real file), check review, edits, warnings; no saves.
+**Job 2 — real Overview + exports (est. 14–22 credits)**
+Files: `app.index.tsx`, a small pure `src/lib/overview-summary.ts` (counts, day count, date range, isExample), plus a test for it.
+Tests: one-part event counts, multi-day day count, parts count, empty detection and example detection, with invented data only.
 
-## Credit estimate (honest, wide because past estimates ran low)
-- Job A: 8–12
-- Job B: 9–14
-- Job C: 6–10
-Total roughly 23–36. Each job stops and reports.
+Browser checks (both jobs): 390px and 1280px, signed out and as owner (read-only), old URLs redirect, sidebar/bottom tabs visible, delayed typing in import review still works, export buttons download, no saves, no horizontal scroll.
 
-## Not in this step
-- Importing the operational sheets' content (booths, gifts, podcast, awardees) beyond listing them and the ceremony time cross-check.
-- Rooms/venue model population beyond the SPACE text, resources, economics, LEAD/MC as staff roles (MC kept as a note/moderator-like role only if you want — default: note).
-- Word import changes, laptop lanes, readiness/Smart Review changes, saving changes, AI-generated descriptions.
+Total honest estimate: **28–44 credits** (past jobs ran over, mostly on browser checks and fixes).
 
-## Risks
-- Real file layouts may differ from the described shape (merged cells, hidden rows); mitigated by alias table + fallback to the old AI path.
-- Name/role splitting is heuristic ("Name, Title, Org" with commas in titles); always editable and flagged.
-- Part classification by AI may be wrong; it's a proposal only.
-- Cross-sheet conflict matching depends on title similarity; low-confidence matches shown as "possible conflict".
-- `import.tsx` refactor in Job B is the largest change surface.
+## Pages still showing fake data (for a later plan)
+- Events (`app.events.tsx`): sample event list, not My events.
+- Talent (`app.talent.tsx`): sample people.
+- AV checklist (`app.av.tsx`): sample checklist.
+- Activity (`app.activity.tsx`): sample feed.
+These stay untouched, keep their ExampleDataBanner, and keep working.
 
-## Technical notes
-- Year-less dates stored as `{month, day}` until a year is known; event `date` written only at "Create event".
-- Dedupe key: lowercase, accents/punctuation stripped, titles like "Dr." removed.
-- AI payload: cleaned strings only, ≤3 sheets, ≤120 rows, only mapped columns; prompt contains no names from code.
+## Will NOT do
+- No rebuild of Events/Talent/AV/Activity, no readiness AI call, no moving `/run-of-show`.
+- No changes to colours, fonts, parts model, import parser, AI prompts or one-part snapshots.
+- No data saves or deletes in checks; no Job C (parts/conflicts in import).
