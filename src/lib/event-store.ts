@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { OpsModel } from "@/lib/event-model";
 import type { EventMeta } from "@/lib/event-persist";
+import { duplicateEventInput } from "@/lib/event-list-summary";
 
 /**
  * Browser-side persistence for saved events. All reads and writes go through
@@ -14,6 +15,8 @@ export type SavedEventSummary = {
   title: string;
   ownerId: string;
   updatedAt: string;
+  eventMeta: EventMeta;
+  ops: OpsModel;
 };
 
 export type SavedEventInput = {
@@ -34,10 +37,20 @@ export type LoadedEvent = {
 export async function listSavedEvents(): Promise<SavedEventSummary[]> {
   const { data, error } = await supabase
     .from("events")
-    .select("id, title, owner_id, updated_at")
+    .select("id, title, owner_id, updated_at, event_meta, ops")
     .order("updated_at", { ascending: false });
   if (error) throw error;
-  return (data ?? []).map((r) => ({ id: r.id, title: r.title, ownerId: r.owner_id, updatedAt: r.updated_at }));
+  return (data ?? []).map((r) => ({ id: r.id, title: r.title, ownerId: r.owner_id, updatedAt: r.updated_at, eventMeta: r.event_meta as EventMeta, ops: r.ops as OpsModel }));
+}
+
+export async function duplicateSavedEvent(id: string): Promise<string> {
+  const source = await loadSavedEvent(id);
+  const copy = duplicateEventInput(source);
+  const { data, error } = await supabase.from("events").insert({
+    id: copy.id, title: copy.title, event_meta: copy.eventMeta, ops: copy.ops,
+  }).select("id").single();
+  if (error) throw error;
+  return data.id;
 }
 
 export async function saveEventRow(input: SavedEventInput): Promise<string> {

@@ -1,5 +1,11 @@
 # FlowStage roadmap
 
+## Current: real saved Events page only
+- [x] Saved list, current event state, Open/Duplicate/owner-confirmed Delete, signed-out/empty/error states
+- [x] 129 tests (111 existing + 18 new), all persistence tests mocked; Open-before-navigation and owner confirmation verified
+- [x] One read-only browser pass at 390/1280 signed out and owner; no overflow, page errors or event writes. Owner list was empty, so populated/Open browser verification unavailable; mocked action tests passed.
+- Talent/AV/Activity, Overview, import, exports, parts and AI prompts are out of scope.
+
 ## Current: 2b-3 review fixes only
 - [x] Hosts local typing draft and blur cleanup, with keystroke regression
 - [x] Excel separate Part column and title roundtrip; remove duplicate Word agenda table
@@ -63,4 +69,4 @@
 - [x] Job 1: New event (/app/new) and Import (/app/import) inside app shell; /generate and /import redirect; shared AppTopbar
 - [x] Job 2: real Overview + wired exports; 91 tests (81 existing + 10 new), signed-out/owner 390/1280 sample/imported/empty checks, no saves
 - [x] Job 2: read-only parts summaries, setup preservation, Excel/Word downloads and Print handler verified; Word used an in-memory invented run sheet (no AI generation)
-- [ ] Later: Events/Talent/AV/Activity still show sample data
+- [ ] Later: Talent/AV/Activity still show sample data (outside this request)
