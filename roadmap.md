@@ -59,5 +59,6 @@
 
 ## App shell consistency
 - [x] Job 1: New event (/app/new) and Import (/app/import) inside app shell; /generate and /import redirect; shared AppTopbar
-- [ ] Job 2: real Overview + wired exports (awaiting approval)
+- [x] Job 2: real Overview + wired exports; 91 tests (81 existing + 10 new), signed-out/owner 390/1280 sample/imported/empty checks, no saves
+- [x] Job 2: read-only parts summaries, setup preservation, Excel/Word downloads and Print handler verified; Word used an in-memory invented run sheet (no AI generation)
 - [ ] Later: Events/Talent/AV/Activity still show sample data
