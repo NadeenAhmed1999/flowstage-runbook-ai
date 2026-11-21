@@ -1,11 +1,15 @@
 import type { MappedEvent } from "../excel-import.functions";
 import { mappedEventToEventData } from "../excel-io";
 import { toIsoDate } from "./values";
+import type { ParsedWorkbook } from "../excel-io";
+import { partWindow, preparePartProposals, reviewRows, type ReviewPart, type RowMetadata } from "./part-proposals";
+import { addPart, editPart } from "../parts-edit";
+import { componentPartId, MAIN_PART_ID } from "../event-parts";
 
-type Session = MappedEvent["sessions"][number] & { sourceSheet?: string };
-type Break = MappedEvent["breaks"][number] & { sourceSheet?: string };
+type Session = MappedEvent["sessions"][number] & RowMetadata;
+type Break = MappedEvent["breaks"][number] & RowMetadata;
 export type ReviewEvent = Omit<MappedEvent, "sessions" | "breaks"> & { sessions: Session[]; breaks: Break[] };
-export type ReviewDraft = { event: ReviewEvent; year: string; sheets: Record<string, { included: boolean; loading: boolean; error: string; cached?: MappedEvent }> };
+export type ReviewDraft = { event: ReviewEvent; parts: ReviewPart[]; year: string; sheets: Record<string, { included: boolean; loading: boolean; error: string; cached?: MappedEvent }> };
 export type ReviewAction =
   | { type: "event"; patch: Partial<ReviewEvent> }
   | { type: "year"; value: string }
@@ -15,10 +19,14 @@ export type ReviewAction =
   | { type: "person"; kind: "speakers" | "moderators"; index: number; patch: Partial<{ name: string; role: string }> }
   | { type: "merge"; kind: "speakers" | "moderators"; index: number; target: number }
   | { type: "add-person"; kind: "speakers" | "moderators" }
+  | { type: "part"; id: string; patch: Partial<Pick<ReviewPart, "name" | "kind" | "accepted">> }
+  | { type: "delete-part"; id: string }
+  | { type: "move-row"; kind: "sessions" | "breaks"; index: number; partId: string }
   | { type: "sheet"; name: string; included: boolean; loading?: boolean; error?: string; mapped?: MappedEvent };
 
-export function createReviewDraft(event: MappedEvent): ReviewDraft {
-  return { event: structuredClone(event), year: String(event.importReview?.year ?? event.date.match(/^\d{4}/)?.[0] ?? ""), sheets: {} };
+export function createReviewDraft(event: MappedEvent, workbook?: ParsedWorkbook): ReviewDraft {
+  const prepared = preparePartProposals(structuredClone(event), workbook);
+  return { ...prepared, year: String(event.importReview?.year ?? event.date.match(/^\d{4}/)?.[0] ?? ""), sheets: {} };
 }
 
 const replaceReferences = (event: ReviewEvent, kind: "speakers" | "moderators", from: string, to: string) => ({
@@ -29,6 +37,15 @@ const replaceReferences = (event: ReviewEvent, kind: "speakers" | "moderators", 
 export function reviewReducer(state: ReviewDraft, action: ReviewAction): ReviewDraft {
   const e = state.event;
   switch (action.type) {
+    case "part": return { ...state, parts: state.parts.map(part => part.id === action.id ? { ...part, ...action.patch } : part) };
+    case "delete-part": {
+      const clear = <T extends RowMetadata>(row: T): T => row.partId === componentPartId(action.id) ? { ...row, partId: MAIN_PART_ID } : row;
+      return { ...state, parts: state.parts.filter(part => part.id !== action.id), event: { ...e, sessions: e.sessions.map(clear), breaks: e.breaks.map(clear) } };
+    }
+    case "move-row": {
+      if (action.partId !== MAIN_PART_ID && !state.parts.some(part => part.accepted && componentPartId(part.id) === action.partId)) return state;
+      return { ...state, event: { ...e, [action.kind]: e[action.kind].map((row, index) => index === action.index ? { ...row, partId: action.partId } : row) } };
+    }
     case "event": return { ...state, event: { ...e, ...action.patch } };
     case "year": {
       const year = Number(action.value);
@@ -82,7 +99,7 @@ export function reviewReducer(state: ReviewDraft, action: ReviewAction): ReviewD
   }
 }
 
-/** Keep type edits in existing description-based legacy format; no parts or Word changes. */
+/** Convert edited values only; accepted proposals use the existing component/part adapter. */
 export function reviewToEventData(state: ReviewDraft) {
   const mapped: MappedEvent = { ...state.event, sessions: state.event.sessions.map(s => {
     if (!s.sessionType) return s;
@@ -90,8 +107,19 @@ export function reviewToEventData(state: ReviewDraft) {
     return { ...s, description: [`Format: ${s.sessionType}`, description].filter(Boolean).join(" · ") };
   }) };
   const event = mappedEventToEventData(mapped);
-  return { ...event, avRequirements: mapped.avRequirements,
-    sessions: event.sessions.map((s, i) => ({ ...s, durationMin: mapped.sessions[i]?.durationMin ?? s.durationMin })),
-    breaks: event.breaks.map((b, i) => ({ ...b, durationMin: mapped.breaks[i]?.durationMin ?? b.durationMin })),
+  const accepted = state.parts.filter(part => part.accepted);
+  const assigned = (row?: RowMetadata) => row?.partId && row.partId !== MAIN_PART_ID && accepted.some(part => componentPartId(part.id) === row.partId) ? { partId: row.partId } : {};
+  let result = { ...event, avRequirements: mapped.avRequirements,
+    sessions: event.sessions.map((s, i) => ({ ...s, ...assigned(state.event.sessions[i]), durationMin: mapped.sessions[i]?.durationMin ?? s.durationMin })),
+    breaks: event.breaks.map((b, i) => ({ ...b, ...assigned(state.event.breaks[i]), durationMin: mapped.breaks[i]?.durationMin ?? b.durationMin })),
   };
+  for (const part of accepted) {
+    const window = partWindow(reviewRows(state.event).filter(row => row.partId === componentPartId(part.id)));
+    result = editPart(addPart(result, part.kind, part.id), part.id, {
+      name: part.name, day: window.day, startTime: window.start, endTime: window.end,
+      durationMin: window.durationMin, venue: window.room,
+      operationalRequirements: { av: [], staffing: [], protocol: [] },
+    });
+  }
+  return result;
 }

@@ -5,7 +5,7 @@ import { ReviewField, reviewInput } from "./review-field";
 export function ReviewRoster({ draft, dispatch, kind }: { draft: ReviewDraft; dispatch: Dispatch<ReviewAction>; kind: "speakers" | "moderators" }) {
   const people = draft.event[kind];
   const singular = kind === "speakers" ? "Speaker" : "Moderator";
-  return <section className="border-t border-border p-4"><div className="mb-3 flex items-center justify-between gap-2"><h3 className="font-semibold">{singular} roster</h3><Button variant="outline" className="min-h-11" onClick={() => dispatch({ type: "add-person", kind })}>Add {singular.toLowerCase()}</Button></div>
+  return <section id={`import-${kind}`} className="border-t border-border p-4"><div className="mb-3 flex items-center justify-between gap-2"><h3 className="font-semibold">{singular} roster</h3><Button variant="outline" className="min-h-11" onClick={() => dispatch({ type: "add-person", kind })}>Add {singular.toLowerCase()}</Button></div>
     {!people.length && <p className="text-sm text-muted-foreground">No {kind} yet. Add a {singular.toLowerCase()} to assign to sessions.</p>}
     <div className="space-y-3">{people.map((p, index) => <div key={index} className="grid gap-2 md:grid-cols-3">
       <ReviewField label="Name"><input aria-label={`${singular} ${index + 1} name`} className={reviewInput} value={p.name} onChange={v => dispatch({ type: "person", kind, index, patch: { name: v.target.value } })} /></ReviewField>

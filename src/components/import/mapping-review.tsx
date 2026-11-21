@@ -11,9 +11,12 @@ import { ReviewRoster } from "./review-roster";
 import { ReviewSheets } from "./review-sheets";
 import { ReviewField, reviewInput } from "./review-field";
 import { COMPONENT_BLUEPRINTS } from "@/lib/event-components";
+import { ReviewParts } from "./review-parts";
+import { ReviewWarnings } from "./review-warnings";
+import { importWarnings } from "@/lib/import/warnings";
 
 export function EditableMappingReview({ mapping, workbook, onCommit }: { mapping: MappedEvent; workbook: ParsedWorkbook; onCommit: (event: EventData) => void }) {
-  const [draft, dispatch] = useReducer(reviewReducer, mapping, createReviewDraft);
+  const [draft, dispatch] = useReducer(reviewReducer, { mapping, workbook }, ({ mapping, workbook }) => createReviewDraft(mapping, workbook));
   const importFn = useServerFn(importEventFromExcel);
   const pending = useRef(new Set<string>());
   const names = mapping.importReview?.skippedSheets ?? [];
@@ -31,7 +34,7 @@ export function EditableMappingReview({ mapping, workbook, onCommit }: { mapping
     finally { pending.current.delete(name); }
   }
   const e = draft.event;
-  const missing = e.sessions.filter(s => !s.startTime).length + e.breaks.filter(b => !b.startTime).length;
+  const advisory = importWarnings(draft, workbook);
   const warnings = e.confidence.unclear.filter(w => {
     if (/Year not found/.test(w)) return !/^\d{4}$/.test(draft.year);
     if (/Event date not found/.test(w)) return !e.date;
@@ -40,8 +43,9 @@ export function EditableMappingReview({ mapping, workbook, onCommit }: { mapping
   });
   return <section className="min-w-0 rounded-lg border border-border bg-background">
     <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-4"><h2 className="text-lg font-semibold">Review import</h2><Button className="min-h-11" onClick={() => onCommit(reviewToEventData(draft))}>Create event</Button></header>
-    {(warnings.length > 0 || missing > 0) && <div className="border-b border-border bg-surface p-4 text-sm"><p className="font-semibold">Needs your eyes</p><ul className="mt-1 list-inside list-disc text-muted-foreground">{warnings.map((w, i) => <li key={i}>{w}</li>)}{missing > 0 && <li>{missing} row(s): missing time. Set a start time or leave it unspecified.</li>}</ul></div>}
+    <ReviewWarnings warnings={advisory} notes={warnings} />
     <ReviewEventFields draft={draft} dispatch={dispatch} />
+    <ReviewParts draft={draft} dispatch={dispatch} />
     <ReviewRows draft={draft} dispatch={dispatch} kind="sessions" />
     <ReviewRows draft={draft} dispatch={dispatch} kind="breaks" />
     <ReviewRoster draft={draft} dispatch={dispatch} kind="speakers" />

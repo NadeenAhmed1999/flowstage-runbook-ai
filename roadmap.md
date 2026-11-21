@@ -55,7 +55,9 @@
 - [x] Job A plain-code agenda reader, invented 28-sheet fixture, tests, sheet limit lifted (66 tests; 390/1280 upload check)
 - [x] Job B parser review fixes, single editable draft/reducer, review UI and sheet opt-in
 - [x] Job B tests (79) and 390/1280 signed-out/owner in-memory browser checks; no event saves
-- [ ] Job C parts proposals and conflicts/warnings (waits for approval)
+- [x] Job C: deterministic editable part proposals, row Part selectors and non-blocking import warnings; 111 tests (91 existing + 20 new), snapshots/prompts unchanged
+- [x] Job C: invented 28-sheet upload at 390/1280 signed out and owner; ceremony mismatch, move/rename/kind/accept/delete, Go to row and in-memory creation verified; no saves, writes, overflow or page errors
+- Step 3 cross-part operational conflicts/readiness and Events/Talent/AV/Activity remain out of scope.
 
 ## App shell consistency
 - [x] Job 1: New event (/app/new) and Import (/app/import) inside app shell; /generate and /import redirect; shared AppTopbar
