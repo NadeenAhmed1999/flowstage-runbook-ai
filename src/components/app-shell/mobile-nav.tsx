@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Activity, Cable, CalendarRange, FileSpreadsheet, FileText, LayoutDashboard, MoreHorizontal, Users } from "lucide-react";
+import { Cable, CalendarRange, FileSpreadsheet, FileText, LayoutDashboard, MoreHorizontal, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -12,7 +12,6 @@ const tabs = [
 const more = [
   { to: "/app/av", label: "AV", icon: Cable },
   { to: "/app/import", label: "Import", icon: FileSpreadsheet },
-  { to: "/app/activity", label: "Activity", icon: Activity },
 ] as const;
 
 export function MobileNav() {

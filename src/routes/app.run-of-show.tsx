@@ -6,16 +6,24 @@ import { TimelineTable } from "@/components/document/timeline-table";
 import { OpsRunOfShow } from "@/components/document/ops-run-of-show";
 import { ArrowUpRight, Printer, Pencil } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { formatOverviewDateRange } from "@/lib/overview-summary";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/app/run-of-show")({
-  head: () => ({ meta: [{ title: "Run-of-show · FlowStage" }] }),
+  head: () => ({ meta: [
+    { title: "Run-of-show · FlowStage" },
+    { name: "description", content: "Your current event programme and operational run-of-show in FlowStage." },
+    { property: "og:title", content: "Run-of-show · FlowStage" },
+    { property: "og:description", content: "Event cues and programme details for your current event." },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: AppRunOfShow,
 });
 
 function AppRunOfShow() {
   const { event, ops, reset } = useEvent();
   const rows = buildTimeline(event);
+  const dateRange = formatOverviewDateRange(event);
 
   return (
     <>
@@ -23,7 +31,7 @@ function AppRunOfShow() {
         breadcrumb={`Events / ${event.name}`}
         title="Run-of-show"
         primary="none"
-        subtitle={`${event.type} · ${event.date} · ${rows.length} cues`}
+        subtitle={`${event.type} · ${dateRange} · ${rows.length} cues`}
       />
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1fr_280px]">
@@ -31,7 +39,7 @@ function AppRunOfShow() {
             <div className="flex items-center justify-between border-b border-border px-5 py-3">
               <div>
                 <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-accent">
-                  Document · Live
+                  Run-of-show
                 </p>
                 <h2 className="mt-0.5 text-sm font-semibold text-navy">{event.name}</h2>
               </div>
@@ -75,7 +83,7 @@ function AppRunOfShow() {
 
           <aside className="space-y-4">
             <Panel title="Show Vitals">
-              <Row k="Date" v={event.date} />
+              <Row k="Date" v={dateRange} />
               <Row k="Type" v={event.type} />
               <Row k="Sessions" v={String(event.sessions.length)} />
               <Row k="Speakers" v={String(event.speakers.length)} />
@@ -87,13 +95,7 @@ function AppRunOfShow() {
               <p className="text-xs leading-relaxed text-muted-foreground">{event.avRequirements}</p>
             </Panel>
 
-            <Panel title="Stage Manager Notes">
-              <ul className="space-y-1.5 text-xs text-foreground">
-                <li>· All cues called from booth.</li>
-                <li>· Green Room A reserved for keynote speakers.</li>
-                <li>· Holding area stage-right 15 min before each session.</li>
-              </ul>
-            </Panel>
+
           </aside>
         </div>
       </div>

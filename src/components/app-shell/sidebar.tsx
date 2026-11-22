@@ -9,7 +9,6 @@ import {
   FileText,
   Users,
   Cable,
-  Activity,
   Sparkles,
   FileSpreadsheet,
   PanelLeftOpen,
@@ -23,7 +22,6 @@ const nav = [
   { to: "/app/talent", label: "Talent", icon: Users },
   { to: "/app/av", label: "AV checklist", icon: Cable },
   { to: "/app/import", label: "Import", icon: FileSpreadsheet },
-  { to: "/app/activity", label: "Activity", icon: Activity },
 ];
 
 export function AppSidebar() {

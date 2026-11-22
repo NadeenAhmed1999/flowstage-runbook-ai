@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { SAMPLE_META } from "@/lib/sample-summit-event";
 
 export const Route = createFileRoute("/resources")({
   head: () => ({
@@ -7,6 +8,7 @@ export const Route = createFileRoute("/resources")({
       { name: "description", content: "Guides, templates, and the interactive demo for FlowStage — the AI Operating System for Professional Events." },
       { property: "og:title", content: "FlowStage Resources" },
       { property: "og:description", content: "How teams operate professional events with an AI OS." },
+      { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: () => (
@@ -24,20 +26,20 @@ export const Route = createFileRoute("/resources")({
         <ResourceCard
           to="/demo"
           eyebrow="Interactive"
-          title="Explore a live multi-component event"
-          body="Walk through the Helios Healthcare Innovation Summit with run sheet, readiness, review, and briefings pre-generated."
+          title="Explore the sample event"
+          body={`Explore ${SAMPLE_META.name}: a fictional two-day run-of-show with parallel tracks, changeover checks, and conflicts you can review.`}
         />
         <ResourceCard
           to="/generate"
           eyebrow="Get started"
           title="Generate your first event plan"
-          body="Pick a template, add components, and let FlowStage produce the run sheet, review, and briefings in one pass."
+          body="Pick a template, add components, and let FlowStage generate a run sheet. Review, readiness, and briefings are available separately."
         />
         <ResourceCard
           to="/pricing"
           eyebrow="Plans"
-          title="Pricing for teams and enterprises"
-          body="Starter, Professional, and Enterprise plans for solo producers through to global event agencies."
+          title="Free during early access"
+          body="Explore the available features. Paid plans will be announced later."
         />
         <div className="rounded-xl border border-border bg-surface p-6">
           <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Concept</p>

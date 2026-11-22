@@ -1,5 +1,12 @@
 # FlowStage roadmap
 
+## Current: honest-app cleanup only
+- [x] Real current-event Talent and AV summaries; remove Activity navigation and redirect its old address
+- [x] Remove invented run-of-show notes and footer links; honest early-access pricing and sample resource wording
+- [x] All 139 tests (129 existing + 10 summary tests); read-only 390/1280 signed-out/owner checklist passed with event writes blocked
+- Browser checked current sample Talent and empty AV; populated AV and edited/saved rosters covered by invented pure tests, not browser. The same browser script needed retries for heading timing/selectors; no extra exploratory pass.
+- Overview, Events, import/export, parts, AI prompts, auth and solutions remain untouched.
+
 ## Current: real saved Events page only
 - [x] Saved list, current event state, Open/Duplicate/owner-confirmed Delete, signed-out/empty/error states
 - [x] 129 tests (111 existing + 18 new), all persistence tests mocked; Open-before-navigation and owner confirmation verified
@@ -69,4 +76,4 @@
 - [x] Job 1: New event (/app/new) and Import (/app/import) inside app shell; /generate and /import redirect; shared AppTopbar
 - [x] Job 2: real Overview + wired exports; 91 tests (81 existing + 10 new), signed-out/owner 390/1280 sample/imported/empty checks, no saves
 - [x] Job 2: read-only parts summaries, setup preservation, Excel/Word downloads and Print handler verified; Word used an in-memory invented run sheet (no AI generation)
-- [ ] Later: Talent/AV/Activity still show sample data (outside this request)
+- [x] Talent/AV use the current event; fake Activity removed in the honest-app cleanup

@@ -14,3 +14,5 @@
 - Overview derives summaries from the current event through overview-summary; example detection requires the original unchanged seed reference and no saved ID. Why: imported copies and personal edits must never be presented as example data.
 - Events uses account-keyed saved-list queries and event-list-summary adapters; duplication inserts a fresh ID without the source owner. Why: account changes cannot show cached lists from another account and copies belong to their creator.
 - Account menu items (app pages, New event with resetSavedEvent, Back to website, Sign out) live in one AccountMenuItems shared by the site nav avatar and sidebar account block; the in-app logo links to /app. Why: one menu keeps signed-in navigation consistent everywhere.
+
+- Talent and AV are read-only current-event adapters in talent-summary and av-summary; no activity feed is simulated, and /app/activity redirects to Overview. Why: operational pages must not invent people, equipment, statuses or history.
