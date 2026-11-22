@@ -34,7 +34,7 @@ export function AppSidebar() {
   return (
     <aside aria-label="Operations sidebar" className={`sticky top-0 hidden h-dvh shrink-0 flex-col overflow-y-auto border-r border-border bg-surface transition-[width] duration-200 motion-reduce:transition-none md:flex lg:w-60 ${expanded ? "w-60" : "w-16"}`}>
       <div className="flex h-14 shrink-0 items-center justify-between border-b border-border px-2 lg:px-5">
-        <Link to="/" className={`${labels} pl-3 font-mono text-sm font-bold uppercase tracking-tighter text-foreground lg:pl-0`}>
+        <Link to="/app" className={`${labels} pl-3 font-mono text-sm font-bold uppercase tracking-tighter text-foreground lg:pl-0`}>
           FlowStage //
         </Link>
         <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0 lg:hidden" aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"} aria-expanded={expanded} onClick={() => setExpanded((value) => !value)}>

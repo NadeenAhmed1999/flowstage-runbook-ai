@@ -5,12 +5,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 const tabs = [
   { to: "/app", label: "Overview", icon: LayoutDashboard },
+  { to: "/app/events", label: "Events", icon: CalendarRange },
   { to: "/app/run-of-show", label: "Run-of-show", icon: FileText },
   { to: "/app/talent", label: "Talent", icon: Users },
-  { to: "/app/av", label: "AV", icon: Cable },
 ] as const;
 const more = [
-  { to: "/app/events", label: "Events", icon: CalendarRange },
+  { to: "/app/av", label: "AV", icon: Cable },
   { to: "/app/import", label: "Import", icon: FileSpreadsheet },
   { to: "/app/activity", label: "Activity", icon: Activity },
 ] as const;

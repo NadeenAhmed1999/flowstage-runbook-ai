@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { LogOut, UserRound } from "lucide-react";
+import { CalendarRange, FileSpreadsheet, Globe, LayoutDashboard, LogOut, Plus, UserRound } from "lucide-react";
+import { resetSavedEvent } from "@/hooks/use-saved-event";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -43,8 +44,6 @@ export function useAuthState() {
 
 export function AccountMenu() {
   const { userId, email, ready } = useAuthState();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   if (!ready) return <span aria-label="Loading account" className="block h-11 w-11" />;
 
@@ -62,13 +61,6 @@ export function AccountMenu() {
 
   const initial = (email ?? "?").slice(0, 1).toUpperCase();
 
-  async function handleSignOut() {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await supabase.auth.signOut();
-    void navigate({ to: "/auth", search: { next: "" }, replace: true });
-  }
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -80,16 +72,32 @@ export function AccountMenu() {
           {initial}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="truncate text-xs font-medium text-muted-foreground">
-          {email}
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut} className="min-h-11 text-xs">
-          <LogOut className="h-3.5 w-3.5" /> Sign out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
+      <AccountMenuItems email={email} align="end" />
     </DropdownMenu>
+  );
+}
+
+function AccountMenuItems({ email, align }: { email: string | null; align: "end" | "start" }) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  async function handleSignOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    void navigate({ to: "/auth", search: { next: "" }, replace: true });
+  }
+  const item = "min-h-11 text-xs";
+  return (
+    <DropdownMenuContent align={align} className="w-56">
+      <DropdownMenuLabel className="truncate text-xs font-medium text-muted-foreground">{email}</DropdownMenuLabel>
+      <DropdownMenuItem asChild className={item}><Link to="/app"><LayoutDashboard className="h-3.5 w-3.5" /> Overview</Link></DropdownMenuItem>
+      <DropdownMenuItem asChild className={item}><Link to="/app/events"><CalendarRange className="h-3.5 w-3.5" /> My events</Link></DropdownMenuItem>
+      <DropdownMenuItem asChild className={item}><Link to="/app/new" onClick={() => resetSavedEvent()}><Plus className="h-3.5 w-3.5" /> New event</Link></DropdownMenuItem>
+      <DropdownMenuItem asChild className={item}><Link to="/app/import"><FileSpreadsheet className="h-3.5 w-3.5" /> Import existing event</Link></DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem asChild className={item}><Link to="/"><Globe className="h-3.5 w-3.5" /> Back to website</Link></DropdownMenuItem>
+      <DropdownMenuItem onClick={handleSignOut} className={item}><LogOut className="h-3.5 w-3.5" /> Sign out</DropdownMenuItem>
+    </DropdownMenuContent>
   );
 }
 
@@ -114,7 +122,9 @@ export function SidebarAccount({ compact = false }: { compact?: boolean }) {
 
   const initial = (email ?? "?").slice(0, 1).toUpperCase();
   return (
-    <div className="flex min-w-0 items-center gap-2 px-1" title={email ?? undefined}>
+    <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+    <button type="button" aria-label="Account menu" className="flex min-h-11 w-full min-w-0 items-center gap-2 rounded-md px-1 text-left transition hover:bg-background" title={email ?? undefined}>
       <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-navy text-[10px] font-bold text-navy-foreground">
         {initial}
       </div>
@@ -122,6 +132,9 @@ export function SidebarAccount({ compact = false }: { compact?: boolean }) {
         <p className="truncate text-xs font-medium text-foreground">{email}</p>
         <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Signed in</p>
       </div>
-    </div>
+    </button>
+    </DropdownMenuTrigger>
+    <AccountMenuItems email={email} align="start" />
+    </DropdownMenu>
   );
 }

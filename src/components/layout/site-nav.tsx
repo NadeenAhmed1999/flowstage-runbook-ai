@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { AccountMenu } from "@/components/app-shell/account-menu";
+import { AccountMenu, useAuthState } from "@/components/app-shell/account-menu";
 import { resetSavedEvent } from "@/hooks/use-saved-event";
 
 const SOLUTIONS = [
@@ -12,6 +12,7 @@ const SOLUTIONS = [
 
 export function SiteNav() {
   const [openSolutions, setOpenSolutions] = useState(false);
+  const { userId } = useAuthState();
   return (
     <nav className="no-print sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="mx-auto grid h-14 max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 sm:flex sm:justify-between sm:px-6">
@@ -54,6 +55,11 @@ export function SiteNav() {
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+          {userId && (
+            <Link to="/app" className="hidden min-h-11 items-center px-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex">
+              Open app
+            </Link>
+          )}
           <AccountMenu />
           <Link
             to="/generate"
