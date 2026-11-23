@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 import { generateValidatedJSON } from "./ai-json.server";
 import { parseAgendaWorkbook, rankSheets } from "./import/agenda-parse";
+import { mergeSessionPersonRoles, normalizeSessionNames } from "./import/session-people";
 
 /**
  * Raw workbook payload sent from the browser after parsing with xlsx.
@@ -31,7 +32,12 @@ const Provenance = {
 
 const PersonSchema = z.object({ name: z.string(), role: z.string().default("") });
 
-export const MappedEventSchema = z.object({
+const SessionPersonSchema = z.union([
+  z.string().transform(name => name.trim()),
+  z.object({ name: z.string().transform(name => name.trim()), role: z.string().optional() }),
+]).catch(""); // Ignore nulls, nameless objects and other unusable assignments.
+
+const MappedEventInputSchema = z.object({
   importReview: z.object({
     year: z.number().nullable(),
     dayDates: z.array(z.object({ day: z.number(), month: z.number(), dateDay: z.number() })),
@@ -52,8 +58,8 @@ export const MappedEventSchema = z.object({
       startTime: z.string(), // HH:MM
       durationMin: z.number().int().nonnegative().default(30),
       description: z.string().default(""),
-      speakers: z.array(z.string()).default([]),
-      moderators: z.array(z.string()).default([]),
+      speakers: z.array(SessionPersonSchema).default([]),
+      moderators: z.array(SessionPersonSchema).default([]),
       room: z.string().default(""),
       day: z.number().int().min(1).default(1),
     }),
@@ -93,6 +99,19 @@ export const MappedEventSchema = z.object({
   }),
 });
 
+export const MappedEventSchema = MappedEventInputSchema.transform(mapped => ({
+  ...mapped,
+  sessions: mapped.sessions.map(session => ({
+    ...session,
+    speakers: normalizeSessionNames(session.speakers),
+    moderators: normalizeSessionNames(session.moderators),
+  })),
+}));
+// Validate first, then preserve embedded roles only for the AI fallback.
+export const AiFallbackMappedEventSchema = MappedEventInputSchema.transform(mapped =>
+  mergeSessionPersonRoles(MappedEventSchema.parse(mapped), mapped.sessions),
+);
+
 export type MappedEvent = z.infer<typeof MappedEventSchema>;
 
 export const importEventFromExcel = createServerFn({ method: "POST" })
@@ -129,6 +148,8 @@ export const importEventFromExcel = createServerFn({ method: "POST" })
 - Text lines like "09:00–09:30 Opening Remarks" contain start time, end time and title; derive durationMin from the time range.
 - "Session Chair(s)" are moderators; "Speaker(s)" and "Proposed Speaker(s)" are speakers. Bracketed confirmed/invited/TBC labels are status, not names or roles: drop them. Ignore email addresses. Split a person line "Name, Title, Org" into name and role (retain Title and Org in role).
 - Dedupe speakers/moderators into their rosters (name + role if available).
+- sessions[].speakers and sessions[].moderators must be arrays of plain name STRINGS, never objects. Roles go only in the top-level speakers/moderators rosters as {name, role}.
+- Do not turn "Overview", "Description", or "Learning Objectives" text into sessions; put that text in the relevant session's description.
 - Put anything you cannot map cleanly into the top-level "notes" field, and list unclear areas in confidence.unclear.
 - Set confidence.overall (0-1): 1 = highly confident structural match, 0.5 = partial, <0.4 = user should map manually.
 - Event type: "type" must be exactly one value from this list, or Other: ${EVENT_TYPES.join(", ")}. Return only that value.
@@ -148,7 +169,7 @@ ${compact
 
     const result = await generateValidatedJSON({
       model,
-      schema: MappedEventSchema,
+      schema: AiFallbackMappedEventSchema,
       system,
       prompt,
       repairInstructions:

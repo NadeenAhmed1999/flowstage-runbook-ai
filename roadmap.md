@@ -1,5 +1,11 @@
 # FlowStage roadmap
 
+## Current: bounded AI session people fix
+- [x] Forgiving session name validation, fallback-only role merge, and explicit fallback instructions
+- [x] Constrain import grid, error text and source-preview header intrinsic widths
+- [x] All 147 tests passed (143 existing + 4 people regressions), preview build OK; read-only signed-out 390/1280 import page had no horizontal scroll or page errors; no uploads or saves
+- Real Word/AI interpretation and populated error/source-preview browser checks are unavailable without an upload; deterministic Excel, snapshots and briefing prompt stay untouched.
+
 ## Current: bounded Word/AI fallback fix
 - [x] Accept missing AI-mapped dates; reuse advisory date warnings and the editable review for Word
 - [x] Clarify fallback text-agenda instructions and show friendly mapping errors with collapsed details

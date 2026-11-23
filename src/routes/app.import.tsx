@@ -110,12 +110,12 @@ function ImportPage() {
         primary="none"
         subtitle="Migrate an existing event plan. AI maps sessions, speakers, breaks, sponsors & components."
       />
-      <div className="flex-1 overflow-auto p-6">
-        <div className="mx-auto max-w-6xl space-y-6">
+      <div className="min-w-0 flex-1 overflow-auto p-6">
+        <div className="mx-auto min-w-0 max-w-6xl space-y-6">
           {!workbook && <UploadPane onFile={handleFile} dragOver={dragOver} setDragOver={setDragOver} inputRef={inputRef} />}
 
           {workbook && (
-            <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+            <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
               <div className="min-w-0 space-y-6">
                 {loading && (
                   <div className="rounded-lg border border-border bg-background p-8 text-center">
@@ -133,7 +133,7 @@ function ImportPage() {
                   <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
                     <div className="flex items-start gap-2">
                       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                      <div>
+                      <div className="min-w-0 break-words">
                         <p className="font-semibold">Mapping error</p>
                         <p className="mt-0.5 text-destructive/80">We couldn't read this file's layout. Check that it has an agenda with times and titles, then retry.</p>
                         <details className="mt-2 text-xs text-muted-foreground">
@@ -155,10 +155,10 @@ function ImportPage() {
                 {mapping && !loading && <EditableMappingReview key={reviewVersion} mapping={mapping} workbook={workbook} onCommit={commitEdited} />}
 
                 {previewData && (
-                  <section className="rounded-lg border border-border bg-background">
-                    <div className="flex items-center justify-between border-b border-border px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Table2 className="h-4 w-4 text-muted-foreground" />
+                  <section className="min-w-0 rounded-lg border border-border bg-background">
+                    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-border px-4 py-3">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Table2 className="h-4 w-4 shrink-0 text-muted-foreground" />
                         <p className="text-sm font-semibold text-foreground">
                           Source preview
                         </p>
@@ -166,7 +166,7 @@ function ImportPage() {
                       <select
                         value={previewSheet ?? ""}
                         onChange={(e) => setPreviewSheet(e.target.value)}
-                        className="rounded-md border border-border bg-background px-2 py-1 text-xs"
+                        className="min-w-0 max-w-32 rounded-md border border-border bg-background px-2 py-1 text-xs sm:max-w-48"
                       >
                         {workbook.sheets.map((s) => (
                           <option key={s.name} value={s.name}>
@@ -197,7 +197,7 @@ function ImportPage() {
                 )}
               </div>
 
-              <aside className="space-y-4">
+              <aside className="min-w-0 space-y-4">
                 <section className="rounded-lg border border-border bg-background p-4">
                   <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground">
                     Source file
