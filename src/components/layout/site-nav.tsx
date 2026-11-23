@@ -57,7 +57,7 @@ export function SiteNav() {
         <div className="flex shrink-0 items-center gap-2 sm:gap-4">
           {userId && (
             <Link to="/app" className="hidden min-h-11 items-center px-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex">
-              Open app
+              Dashboard
             </Link>
           )}
           <AccountMenu />

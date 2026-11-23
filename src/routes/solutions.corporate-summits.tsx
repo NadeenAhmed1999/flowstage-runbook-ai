@@ -22,7 +22,7 @@ export const Route = createFileRoute("/solutions/corporate-summits")({
       ]}
       outcomes={[
         { title: "Modular event builder", body: "Add ceremonies, receptions, press, exhibitions, and site visits as first-class components that share one timeline." },
-        { title: "Instant stakeholder briefings", body: "Speaker, moderator, sponsor, and production briefings regenerate the moment plans change." },
+        { title: "Instant stakeholder briefings", body: "Speaker, moderator, sponsor, and production briefings generated from your current plan, ready to copy or export." },
         { title: "Readiness Score & Smart Review", body: "0–100 readiness across 10 categories with top risks and specific recommended actions." },
       ]}
     />

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const tabs = [
-  { to: "/app", label: "Overview", icon: LayoutDashboard },
+  { to: "/app", label: "Dashboard", icon: LayoutDashboard },
   { to: "/app/events", label: "Events", icon: CalendarRange },
   { to: "/app/run-of-show", label: "Run-of-show", icon: FileText },
   { to: "/app/talent", label: "Talent", icon: Users },

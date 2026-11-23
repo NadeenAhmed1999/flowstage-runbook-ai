@@ -21,9 +21,9 @@ export const Route = createFileRoute("/solutions/executive-forums")({
         { title: "Executive stakeholders get too much detail", body: "Leadership needs a one-page brief, not a 40-page run sheet." },
       ]}
       outcomes={[
-        { title: "Protocol codified per component", body: "VIP dinners, opening ceremonies, and press moments inherit the right protocol reminders automatically." },
+        { title: "Protocol codified per component", body: "VIP dinners, opening ceremonies, and press moments come with suggested protocol checklists." },
         { title: "Executive summary briefings", body: "One-page briefs generated on demand for chair, board, and senior sponsors." },
-        { title: "Ops discipline enforced by AI", body: "Smart Review flags any recording, media, or arrival slip before it hits the day." },
+        { title: "Ops discipline supported by AI", body: "Smart Review can flag recording, media, or arrival gaps when you run it before the day." },
       ]}
     />
   ),

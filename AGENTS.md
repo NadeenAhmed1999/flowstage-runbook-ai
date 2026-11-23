@@ -16,3 +16,4 @@
 - Account menu items (app pages, New event with resetSavedEvent, Back to website, Sign out) live in one AccountMenuItems shared by the site nav avatar and sidebar account block; the in-app logo links to /app. Why: one menu keeps signed-in navigation consistent everywhere.
 
 - Talent and AV are read-only current-event adapters in talent-summary and av-summary; no activity feed is simulated, and /app/activity redirects to Overview. Why: operational pages must not invent people, equipment, statuses or history.
+- Marketing copy must only state what the code actually does; verify claims against the implementation before writing them.

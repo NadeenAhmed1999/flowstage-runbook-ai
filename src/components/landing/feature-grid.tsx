@@ -21,7 +21,7 @@ const PILLARS = [
     label: "Stakeholder Coordination",
     tile: "bg-secondary ring-1 ring-border",
     items: [
-      { title: "Speaker Briefings", body: "Arrival, mic type, stage layout, and moderator handoff — sent to talent." },
+      { title: "Speaker Briefings", body: "Arrival, mic type, stage layout, and moderator handoff — ready to copy or export." },
       { title: "Moderator Briefings", body: "Sessions owned, hard in/out timing, sponsor reads, Q&A discipline." },
       { title: "Sponsor Briefings", body: "Activation windows, on-stage acknowledgements, decision-makers in room." },
       { title: "Production Team Briefings", body: "Show-calling detail, mic plot, presets, transitions, contingency." },
@@ -33,8 +33,8 @@ const PILLARS = [
     items: [
       { title: "Timeline Management", body: "One integrated schedule across days, components, and parallel activities." },
       { title: "Session Coordination", body: "Speakers, moderators, sponsors, and AV wired to every timeline row." },
-      { title: "Operational Alerts", body: "Real-time flags for missing rehearsals, unstaffed windows, and slippage." },
-      { title: "Event Dashboard", body: "Live view of readiness, findings, briefings, and open actions." },
+      { title: "Operational Alerts", body: "Flags timing conflicts and missing details in your schedule when you review it." },
+      { title: "Event Dashboard", body: "Your event at a glance: dates, sessions, people, and parts, with readiness scored on request." },
     ],
   },
 ];

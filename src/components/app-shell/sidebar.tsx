@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 const nav = [
-  { to: "/app", label: "Overview", icon: LayoutDashboard, exact: true },
+  { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/app/events", label: "Events", icon: CalendarRange },
   { to: "/app/run-of-show", label: "Run-of-show", icon: FileText },
   { to: "/app/talent", label: "Talent", icon: Users },

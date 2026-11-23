@@ -21,7 +21,7 @@ export const Route = createFileRoute("/solutions/event-agencies")({
         { title: "Handovers between planners lose context", body: "Documents, chats, and email threads never fully hand over." },
       ]}
       outcomes={[
-        { title: "Reusable event templates", body: "Healthcare, executive, awards, launches — pre-built blueprints with production-tested AV, protocol, and staffing." },
+        { title: "Reusable event templates", body: "Healthcare, executive, awards, launches — pre-built blueprints with suggested AV, protocol, and staffing checklists." },
         { title: "Institutional expertise, on tap", body: "Smart Review and Readiness Score bring senior showcaller-level judgement to every plan." },
         { title: "A shared operating picture", body: "Copilot answers questions across the whole plan — no more chasing threads." },
       ]}

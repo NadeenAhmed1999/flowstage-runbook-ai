@@ -14,9 +14,9 @@ import { formatOverviewDateRange, isExampleEvent, overviewSummary } from "@/lib/
 
 export const Route = createFileRoute("/app/")({
   head: () => ({ meta: [
-    { title: "Event overview · FlowStage" },
+    { title: "Dashboard · FlowStage" },
     { name: "description", content: "Your current event's programme, people, parts and run-of-show exports in FlowStage." },
-    { property: "og:title", content: "Event overview · FlowStage" },
+    { property: "og:title", content: "Dashboard · FlowStage" },
     { property: "og:description", content: "View your event summary and export professional event documents." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },
@@ -48,7 +48,7 @@ function Overview() {
 
   return (
     <>
-      <AppTopbar breadcrumb="Operations" title="Overview" primary="none" />
+      <AppTopbar breadcrumb="Operations" title="Dashboard" primary="none" />
       {isExampleEvent(event, savedId) && <ExampleDataBanner currentEvent />}
       <div className="min-w-0 flex-1 p-4 sm:p-6">
         <div className="mx-auto max-w-7xl space-y-6">

@@ -90,7 +90,7 @@ function AccountMenuItems({ email, align }: { email: string | null; align: "end"
   return (
     <DropdownMenuContent align={align} className="w-56">
       <DropdownMenuLabel className="truncate text-xs font-medium text-muted-foreground">{email}</DropdownMenuLabel>
-      <DropdownMenuItem asChild className={item}><Link to="/app"><LayoutDashboard className="h-3.5 w-3.5" /> Overview</Link></DropdownMenuItem>
+      <DropdownMenuItem asChild className={item}><Link to="/app"><LayoutDashboard className="h-3.5 w-3.5" /> Dashboard</Link></DropdownMenuItem>
       <DropdownMenuItem asChild className={item}><Link to="/app/events"><CalendarRange className="h-3.5 w-3.5" /> My events</Link></DropdownMenuItem>
       <DropdownMenuItem asChild className={item}><Link to="/app/new" onClick={() => resetSavedEvent()}><Plus className="h-3.5 w-3.5" /> New event</Link></DropdownMenuItem>
       <DropdownMenuItem asChild className={item}><Link to="/app/import"><FileSpreadsheet className="h-3.5 w-3.5" /> Import existing event</Link></DropdownMenuItem>
