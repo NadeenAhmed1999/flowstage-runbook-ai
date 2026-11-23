@@ -1,5 +1,11 @@
 # FlowStage roadmap
 
+## Current: bounded Word/AI fallback fix
+- [x] Accept missing AI-mapped dates; reuse advisory date warnings and the editable review for Word
+- [x] Clarify fallback text-agenda instructions and show friendly mapping errors with collapsed details
+- [x] All 143 tests passed (139 existing + 4 missing-date/edit regressions); preview build OK; no real-backend import checks
+- Deterministic Excel parsing/refineDraft, snapshots and briefing prompts are out of scope.
+
 ## Current: honest-app cleanup only
 - [x] Real current-event Talent and AV summaries; remove Activity navigation and redirect its old address
 - [x] Remove invented run-of-show notes and footer links; honest early-access pricing and sample resource wording

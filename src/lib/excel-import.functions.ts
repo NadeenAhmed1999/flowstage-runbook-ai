@@ -41,7 +41,7 @@ export const MappedEventSchema = z.object({
   name: z.string(),
   type: z.string().default("Other"),
   primaryEventType: z.string().optional(),
-  date: z.string(), // YYYY-MM-DD
+  date: z.string().default(""), // YYYY-MM-DD, or empty when unknown
   endDate: z.string().optional(),
   sessions: z.array(
     z.object({
@@ -120,11 +120,14 @@ export const importEventFromExcel = createServerFn({ method: "POST" })
       ),
     }));
 
-    const system = `You are an event operations data-mapping engine. You receive raw Excel worksheet contents from a customer migrating an event plan into FlowStage. Your job is to detect and map: sessions, dates, times, speakers, moderators, rooms, breaks, sponsors, event components (ceremonies, galas, receptions, press conferences, awards, etc.), and general notes.
+    const system = `You are an event operations data-mapping engine. You receive raw worksheet contents or Word agenda text from a customer migrating an event plan into FlowStage. Your job is to detect and map: sessions, dates, times, speakers, moderators, rooms, breaks, sponsors, event components (ceremonies, galas, receptions, press conferences, awards, etc.), and general notes.
 
 - Detect header rows even when column order varies. Common aliases: "Start", "Time", "From" = startTime. "Session", "Topic", "Title", "Agenda Item" = title. "Speaker(s)", "Presenter" = speakers. "Chair", "Facilitator" = moderators. "Room", "Location", "Venue" = room. "Break", "Coffee", "Lunch", "Networking" rows are breaks. "Sponsor", "Partner" columns = sponsors. Rows tagged Opening/Closing Ceremony, Gala Dinner, Awards, Press Conference, Reception, VIP Dinner, Site Visit = event components (kind = one of: opening-ceremony, closing-ceremony, gala-dinner, awards-ceremony, welcome-reception, networking-reception, vip-dinner, sponsor-exhibition, product-showcase, press-conference, site-visit, celebration-event).
 - Normalize times to 24-hour HH:MM. Compute durationMin from start/end when both present, else default 30.
 - Normalize dates to YYYY-MM-DD. Detect multi-day events (assign day: 1,2,3...). If a sheet is labelled "Day 2" etc, use that. Set endDate when multi-day.
+- Dates often appear in headings such as "Wednesday, 02 December 2026" or "01-03 December 2026". Use a dated heading as that day's date; use a range's first date for date and last date for endDate. If no date is supplied, return date: "" and flag the missing date in confidence.unclear; never invent a date or year.
+- Text lines like "09:00–09:30 Opening Remarks" contain start time, end time and title; derive durationMin from the time range.
+- "Session Chair(s)" are moderators; "Speaker(s)" and "Proposed Speaker(s)" are speakers. Bracketed confirmed/invited/TBC labels are status, not names or roles: drop them. Ignore email addresses. Split a person line "Name, Title, Org" into name and role (retain Title and Org in role).
 - Dedupe speakers/moderators into their rosters (name + role if available).
 - Put anything you cannot map cleanly into the top-level "notes" field, and list unclear areas in confidence.unclear.
 - Set confidence.overall (0-1): 1 = highly confident structural match, 0.5 = partial, <0.4 = user should map manually.
@@ -149,7 +152,7 @@ ${compact
       system,
       prompt,
       repairInstructions:
-        "Return a single JSON object matching the MappedEvent schema exactly. All required fields must be present. Times must be HH:MM strings, dates YYYY-MM-DD.",
+        "Return a single JSON object matching the MappedEvent schema exactly. All required fields must be present. Times must be HH:MM strings, dates YYYY-MM-DD or an empty string when unknown.",
       label: "excel-import-mapping",
     });
 

@@ -1,4 +1,4 @@
-import { EVENT_TYPES, importTypeSelection, importFileProblem, withListedType } from "@/lib/event-types";
+import { importFileProblem, withListedType } from "@/lib/event-types";
 import { useMemo, useRef, useState } from "react";
 import { EditableMappingReview } from "@/components/import/mapping-review";
 import type { EventData } from "@/components/event-context";
@@ -11,7 +11,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import {
   parseWorkbookFile,
-  mappedEventToEventData,
   type ParsedWorkbook,
 } from "@/lib/excel-io";
 import { parseWordFile, isWordFile } from "@/lib/word-io";
@@ -24,8 +23,6 @@ import {
   FileSpreadsheet,
   Sparkles,
   AlertTriangle,
-  CheckCircle2,
-  ArrowRight,
   Loader2,
   RefreshCw,
   Table2,
@@ -51,8 +48,6 @@ export const Route = createFileRoute("/app/import")({
   }),
   component: ImportPage,
 });
-
-const uid = () => Math.random().toString(36).slice(2, 9);
 
 function ImportPage() {
   const navigate = useNavigate();
@@ -102,16 +97,6 @@ function ImportPage() {
     navigate({ to: "/run-of-show" });
   }
 
-  function commit() {
-    if (!mapping) return;
-    const eventData = mappedEventToEventData(mapping);
-    setEvent(eventData);
-    resetSavedEvent();
-    navigate({ to: "/run-of-show" });
-  }
-
-  const confidencePct = mapping ? Math.round(mapping.confidence.overall * 100) : 0;
-  const needsReview = mapping ? mapping.confidence.overall < 0.6 : false;
   const previewData = useMemo(
     () => workbook?.sheets.find((s) => s.name === previewSheet) ?? workbook?.sheets[0],
     [workbook, previewSheet],
@@ -150,29 +135,24 @@ function ImportPage() {
                       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                       <div>
                         <p className="font-semibold">Mapping error</p>
-                        <p className="mt-0.5 text-destructive/80">{error}</p>
-                        <button
+                        <p className="mt-0.5 text-destructive/80">We couldn't read this file's layout. Check that it has an agenda with times and titles, then retry.</p>
+                        <details className="mt-2 text-xs text-muted-foreground">
+                          <summary className="cursor-pointer">Details</summary>
+                          <p className="mt-1 break-words">{error}</p>
+                        </details>
+                        <Button
+                          variant="outline"
                           onClick={() => runMapping(workbook)}
                           className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-destructive/30 bg-background px-2.5 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10"
                         >
                           <RefreshCw className="h-3.5 w-3.5" /> Retry
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {mapping && !loading && !isWordFile({ name: workbook.fileName } as File) && <EditableMappingReview key={reviewVersion} mapping={mapping} workbook={workbook} onCommit={commitEdited} />}
-                {mapping && !loading && isWordFile({ name: workbook.fileName } as File) && (
-                  <MappingReview
-                    mapping={mapping}
-                    setMapping={setMapping}
-                    onRetry={() => runMapping(workbook)}
-                    onCommit={commit}
-                    confidencePct={confidencePct}
-                    needsReview={needsReview}
-                  />
-                )}
+                {mapping && !loading && <EditableMappingReview key={reviewVersion} mapping={mapping} workbook={workbook} onCommit={commitEdited} />}
 
                 {previewData && (
                   <section className="rounded-lg border border-border bg-background">
@@ -363,250 +343,5 @@ function FeatureLine({ text }: { text: string }) {
       <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
       <span className="text-muted-foreground">{text}</span>
     </div>
-  );
-}
-
-function MappingReview({
-  mapping,
-  setMapping,
-  onRetry,
-  onCommit,
-  confidencePct,
-  needsReview,
-}: {
-  mapping: MappedEvent;
-  setMapping: (m: MappedEvent) => void;
-  onRetry: () => void;
-  onCommit: () => void;
-  confidencePct: number;
-  needsReview: boolean;
-}) {
-  const update = <K extends keyof MappedEvent>(key: K, value: MappedEvent[K]) =>
-    setMapping({ ...mapping, [key]: value });
-
-  return (
-    <section className="rounded-lg border border-border bg-background">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-4">
-        <div>
-          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-accent">
-            AI Mapping · Review
-          </p>
-          <h3 className="mt-0.5 text-base font-semibold text-navy">{mapping.name || "Untitled event"}</h3>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              Confidence
-            </p>
-            <p
-              className={`font-mono text-sm font-bold ${
-                needsReview ? "text-amber-600" : "text-emerald-600"
-              }`}
-            >
-              {confidencePct}%
-            </p>
-          </div>
-          <button
-            onClick={onRetry}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs font-medium hover:bg-surface"
-          >
-            <RefreshCw className="h-3.5 w-3.5" /> Re-run
-          </button>
-          <button
-            onClick={onCommit}
-            className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground hover:bg-accent/90"
-          >
-            Import & Generate <ArrowRight className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </div>
-
-      {mapping.confidence.unclear.length > 0 && (
-        <div className="border-b border-border bg-amber-50/70 px-5 py-3">
-          <div className="flex items-start gap-2 text-xs text-amber-900">
-            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            <div>
-              <p className="font-semibold">Needs your eyes</p>
-              <ul className="mt-1 list-inside list-disc space-y-0.5">
-                {mapping.confidence.unclear.map((u, i) => (
-                  <li key={i}>{u}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="grid gap-4 p-5 md:grid-cols-2">
-        <Field label="Event name">
-          <input
-            value={mapping.name}
-            onChange={(e) => update("name", e.target.value)}
-            className={inputCls}
-          />
-        </Field>
-        <Field label="Event type">
-          <select
-            value={importTypeSelection(mapping.type)}
-            onChange={(e) => update("type", e.target.value)}
-            className={inputCls}
-          >
-            {EVENT_TYPES.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Start date">
-          <input
-            type="date"
-            value={mapping.date}
-            onChange={(e) => update("date", e.target.value)}
-            className={inputCls}
-          />
-        </Field>
-        <Field label="End date (optional)">
-          <input
-            type="date"
-            value={mapping.endDate ?? ""}
-            onChange={(e) => update("endDate", e.target.value || undefined)}
-            className={inputCls}
-          />
-        </Field>
-      </div>
-
-      <SectionSummary
-        title="Sessions"
-        count={mapping.sessions.length}
-        columns={["Day", "Start", "Min", "Title", "Speakers", "Room"]}
-        rows={mapping.sessions.slice(0, 25).map((s) => [
-          String(s.day),
-          s.startTime,
-          String(s.durationMin),
-          s.title,
-          s.speakers.join(", "),
-          s.room,
-        ])}
-      />
-      <SectionSummary
-        title="Speakers"
-        count={mapping.speakers.length}
-        columns={["Name", "Role"]}
-        rows={mapping.speakers.map((p) => [p.name, p.role])}
-      />
-      <SectionSummary
-        title="Moderators"
-        count={mapping.moderators.length}
-        columns={["Name", "Role"]}
-        rows={mapping.moderators.map((p) => [p.name, p.role])}
-      />
-      <SectionSummary
-        title="Breaks"
-        count={mapping.breaks.length}
-        columns={["Day", "Start", "Min", "Label"]}
-        rows={mapping.breaks.map((b) => [String(b.day), b.startTime, String(b.durationMin), b.label])}
-      />
-      <SectionSummary
-        title="Sponsors"
-        count={mapping.sponsors.length}
-        columns={["Name", "Placement"]}
-        rows={mapping.sponsors.map((s) => [s.name, s.placement])}
-      />
-      <SectionSummary
-        title="Event components"
-        count={mapping.components.length}
-        columns={["Kind", "Name", "Day", "Start", "Min", "Venue"]}
-        rows={mapping.components.map((c) => [
-          c.kind,
-          c.name,
-          String(c.day),
-          c.startTime,
-          String(c.durationMin),
-          c.venue,
-        ])}
-      />
-
-      <div className="flex items-center justify-between border-t border-border px-5 py-4">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-          Import will auto-generate the run sheet, Smart Review and Readiness Score.
-        </div>
-        <button
-          onClick={onCommit}
-          className="inline-flex items-center gap-1.5 rounded-md bg-navy px-3 py-2 text-xs font-semibold text-navy-foreground hover:bg-navy/90"
-        >
-          Import & Generate <ArrowRight className="h-3.5 w-3.5" />
-        </button>
-      </div>
-    </section>
-  );
-}
-
-const inputCls =
-  "w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        {label}
-      </span>
-      <div className="mt-1">{children}</div>
-    </label>
-  );
-}
-
-function SectionSummary({
-  title,
-  count,
-  columns,
-  rows,
-}: {
-  title: string;
-  count: number;
-  columns: string[];
-  rows: string[][];
-}) {
-  if (count === 0) {
-    return (
-      <div className="border-t border-border px-5 py-3 text-xs text-muted-foreground">
-        <span className="font-mono uppercase tracking-widest">{title}</span> · none detected
-      </div>
-    );
-  }
-  return (
-    <details className="border-t border-border" open={count <= 8}>
-      <summary className="flex cursor-pointer items-center justify-between px-5 py-3 text-sm">
-        <span className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-foreground">
-          {title}
-        </span>
-        <span className="rounded-full bg-accent/10 px-2 py-0.5 font-mono text-[10px] font-bold text-accent">
-          {count}
-        </span>
-      </summary>
-      <div className="overflow-x-auto px-5 pb-4">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-border font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              {columns.map((c) => (
-                <th key={c} className="py-1.5 pr-3 text-left font-medium">
-                  {c}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/60">
-            {rows.map((r, i) => (
-              <tr key={i}>
-                {r.map((cell, j) => (
-                  <td key={j} className="py-1.5 pr-3 align-top text-foreground">
-                    {cell || <span className="text-muted-foreground/50">—</span>}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </details>
   );
 }
