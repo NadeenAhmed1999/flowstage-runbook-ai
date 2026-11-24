@@ -28,6 +28,8 @@ export type ExcelWorkbookInput = z.infer<typeof WorkbookInputSchema>;
 const Provenance = {
   durationSource: z.enum(["provided", "derived", "inferred"]).optional(),
   inferredDay: z.boolean().optional(),
+  /** AI fallback omitted the day even after retries; shown on Day 1 with a review warning. */
+  dayMissing: z.boolean().optional(),
 };
 
 const PersonSchema = z.object({ name: z.string(), role: z.string().default("") });
@@ -82,6 +84,7 @@ const MappedEventInputSchema = z.object({
     .array(
       z.object({
         kind: z.string().default("opening-ceremony"),
+        dayMissing: z.boolean().optional(),
         name: z.string(),
         day: z.number().int().min(1).default(1),
         startTime: z.string().default("09:00"),
@@ -107,10 +110,27 @@ export const MappedEventSchema = MappedEventInputSchema.transform(mapped => ({
     moderators: normalizeSessionNames(session.moderators),
   })),
 }));
-// Validate first, then preserve embedded roles only for the AI fallback.
-export const AiFallbackMappedEventSchema = MappedEventInputSchema.transform(mapped =>
-  mergeSessionPersonRoles(MappedEventSchema.parse(mapped), mapped.sessions),
-);
+const DAY_LISTS = ["sessions", "breaks", "components"] as const;
+const hasDay = (item: unknown) => { const day = (item as { day?: unknown } | null)?.day; return typeof day === "number" && Number.isInteger(day) && day >= 1; };
+/** Paths of AI rows without a usable day number. */
+export function missingDayPaths(raw: unknown): (string | number)[][] {
+  if (!raw || typeof raw !== "object") return [];
+  return DAY_LISTS.flatMap(list => { const items = (raw as Record<string, unknown>)[list]; return Array.isArray(items) ? items.flatMap((item, i) => hasDay(item) ? [] : [[list, i, "day"]]) : []; });
+}
+/** Final-attempt fallback: keep rows, place them on Day 1 and flag them for a review warning. */
+export function markMissingDays(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object") return raw;
+  const out: Record<string, unknown> = { ...(raw as Record<string, unknown>) };
+  for (const list of DAY_LISTS) { const items = out[list]; if (Array.isArray(items)) out[list] = items.map(item => hasDay(item) || !item || typeof item !== "object" ? item : { ...item, day: 1, dayMissing: true }); }
+  return out;
+}
+const withRoles = (mapped: z.infer<typeof MappedEventInputSchema>) => mergeSessionPersonRoles(MappedEventSchema.parse(mapped), mapped.sessions);
+// AI fallback: every session/break/component must carry its day, so omissions fail validation and retry.
+export const AiFallbackMappedEventSchema = z.unknown().superRefine((raw, ctx) => {
+  for (const path of missingDayPaths(raw)) ctx.addIssue({ code: z.ZodIssueCode.custom, path, message: "day Required: use the day number of the dated heading this row appears under" });
+}).pipe(MappedEventInputSchema).transform(withRoles);
+/** Used only after the final retry still omits days. */
+export const AiFallbackLenientSchema = z.preprocess(markMissingDays, MappedEventInputSchema).transform(withRoles);
 
 export type MappedEvent = z.infer<typeof MappedEventSchema>;
 
@@ -144,6 +164,7 @@ export const importEventFromExcel = createServerFn({ method: "POST" })
 - Detect header rows even when column order varies. Common aliases: "Start", "Time", "From" = startTime. "Session", "Topic", "Title", "Agenda Item" = title. "Speaker(s)", "Presenter" = speakers. "Chair", "Facilitator" = moderators. "Room", "Location", "Venue" = room. "Break", "Coffee", "Lunch", "Networking" rows are breaks. "Sponsor", "Partner" columns = sponsors. Rows tagged Opening/Closing Ceremony, Gala Dinner, Awards, Press Conference, Reception, VIP Dinner, Site Visit = event components (kind = one of: opening-ceremony, closing-ceremony, gala-dinner, awards-ceremony, welcome-reception, networking-reception, vip-dinner, sponsor-exhibition, product-showcase, press-conference, site-visit, celebration-event).
 - Normalize times to 24-hour HH:MM. Compute durationMin from start/end when both present, else default 30.
 - Normalize dates to YYYY-MM-DD. Detect multi-day events (assign day: 1,2,3...). If a sheet is labelled "Day 2" etc, use that. Set endDate when multi-day.
+- EVERY session, break (including coffee breaks and lunches) and component MUST carry "day": the day index of the dated heading it appears under, counted within the event's date range. Example: for an event running 01-03 December 2026, rows under "Wednesday, 02 December 2026" are day 2 and rows under "Thursday, 03 December 2026" are day 3 (01 December is day 1, even when it has no rows). Never omit day and never default it to 1.
 - Dates often appear in headings such as "Wednesday, 02 December 2026" or "01-03 December 2026". Use a dated heading as that day's date; use a range's first date for date and last date for endDate. If no date is supplied, return date: "" and flag the missing date in confidence.unclear; never invent a date or year.
 - Text lines like "09:00–09:30 Opening Remarks" contain start time, end time and title; derive durationMin from the time range.
 - "Session Chair(s)" are moderators; "Speaker(s)" and "Proposed Speaker(s)" are speakers. Bracketed confirmed/invited/TBC labels are status, not names or roles: drop them. Ignore email addresses. Split a person line "Name, Title, Org" into name and role (retain Title and Org in role).
@@ -173,8 +194,9 @@ ${compact
       system,
       prompt,
       repairInstructions:
-        "Return a single JSON object matching the MappedEvent schema exactly. All required fields must be present. Times must be HH:MM strings, dates YYYY-MM-DD or an empty string when unknown.",
+        "Return a single JSON object matching the MappedEvent schema exactly. All required fields must be present, including day on every session, break and component. Times must be HH:MM strings, dates YYYY-MM-DD or an empty string when unknown.",
       label: "excel-import-mapping",
+      fallbackSchema: AiFallbackLenientSchema,
     });
 
     return result;

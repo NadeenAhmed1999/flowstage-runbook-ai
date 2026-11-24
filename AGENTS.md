@@ -18,3 +18,4 @@
 - Talent and AV are read-only current-event adapters in talent-summary and av-summary; no activity feed is simulated, and /app/activity redirects to Overview. Why: operational pages must not invent people, equipment, statuses or history.
 - Marketing copy must only state what the code actually does; verify claims against the implementation before writing them.
 - AI fallback validates mixed session person shapes before normalizing assignments and merging embedded roles through session-people; deterministic Excel stays separate. Why: malformed AI name objects must not fail imports or lose roles.
+- AI fallback requires day on every session/break/component (retries), and only after the final retry falls back to Day 1 with dayMissing and a review warning; session assignment UI (setup and import review) shares AssignedPeople/assignments helpers. Why: omitted days must never silently land on Day 1, and one picker pattern scales to large rosters.

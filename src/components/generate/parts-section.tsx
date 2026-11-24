@@ -8,6 +8,7 @@ import {
   type Person,
 } from "@/components/event-context";
 import { Button } from "@/components/ui/button";
+import { AssignedPeople } from "@/components/import/assigned-people";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -69,41 +70,15 @@ function DayPicker({ value, count, onChange, label }: { value?: number; count: n
     {Array.from({ length: count }, (_, i) => i + 1).map(day => <option key={day} value={day}>Day {day}</option>)}
   </select></Field>;
 }
-function PeoplePicker({
-  label,
-  people,
-  ids,
-  onChange,
-}: {
-  label: string;
-  people: Person[];
-  ids: string[];
-  onChange: (ids: string[]) => void;
-}) {
+function PeoplePicker({ label, people, ids, onChange }: { label: string; people: Person[]; ids: string[]; onChange: (ids: string[]) => void }) {
   return (
     <div>
       <p className="mb-2 text-xs font-medium text-muted-foreground">{label}</p>
-      <div className="flex flex-wrap gap-2">
-        {!people.length && (
-          <p className="text-sm text-muted-foreground">
-            No {label.toLowerCase()} yet. Add them to the shared list below.
-          </p>
-        )}
-        {people.map((p) => (
-          <Button
-            key={p.id}
-            type="button"
-            variant={ids.includes(p.id) ? "secondary" : "outline"}
-            className="min-h-11 h-auto max-w-full whitespace-normal"
-            aria-pressed={ids.includes(p.id)}
-            onClick={() =>
-              onChange(ids.includes(p.id) ? ids.filter((id) => id !== p.id) : [...ids, p.id])
-            }
-          >
-            {p.name || "Unnamed person"}
-          </Button>
-        ))}
-      </div>
+      {!people.length ? (
+        <p className="text-sm text-muted-foreground">No {label.toLowerCase()} yet. Add them to the shared list below.</p>
+      ) : (
+        <AssignedPeople label={label} noun={label === "Moderators" ? "moderator" : "speaker"} options={people.map((p) => ({ value: p.id, label: p.name || "Unnamed person" }))} assigned={ids} onChange={onChange} />
+      )}
     </div>
   );
 }

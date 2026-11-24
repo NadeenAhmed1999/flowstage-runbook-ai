@@ -89,3 +89,6 @@
 - [x] Job 2: real Overview + wired exports; 91 tests (81 existing + 10 new), signed-out/owner 390/1280 sample/imported/empty checks, no saves
 - [x] Job 2: read-only parts summaries, setup preservation, Excel/Word downloads and Print handler verified; Word used an in-memory invented run sheet (no AI generation)
 - [x] Talent/AV use the current event; fake Activity removed in the honest-app cleanup
+
+- [x] AI-mapped breaks keep their day (required + retry + missing-day warning; breaks-only-day warning)
+- [x] Setup speaker/moderator picker: assigned chips + searchable Assign dropdown

@@ -5,7 +5,7 @@ import { cleanCell, parseTime } from "./values";
 import { fromMin, toMin } from "../event-model";
 
 export type WarningTarget = { id: string; label: string };
-export type ImportWarning = { id: string; code: "sheet-time" | "overlap" | "missing-time" | "duplicate-speaker" | "unknown-date" | "unknown-year" | "duration"; message: string; possible?: boolean; rows: WarningTarget[] };
+export type ImportWarning = { id: string; code: "sheet-time" | "overlap" | "missing-time" | "duplicate-speaker" | "unknown-date" | "unknown-year" | "duration" | "missing-day" | "breaks-only-day"; message: string; possible?: boolean; rows: WarningTarget[] };
 export const rowTargetId = (kind: "sessions" | "breaks", index: number) => `import-${kind}-${index}`;
 export const normalizeSpeakerName = (name: string) => name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\bdr\b\.?\s*/g, "").replace(/[^\p{L}\p{N}]/gu, "");
 
@@ -56,6 +56,12 @@ export function importWarnings(draft: ReviewDraft, workbook: ParsedWorkbook): Im
   for (const row of rows) {
     if (!parseTime(row.startTime)) warnings.push({ id: `time-${row.kind}-${row.index}`, code: "missing-time", message: "Missing start time", rows: [target(row)] });
     if (row.kind === "sessions" && (row.durationMin <= 0 || row.durationSource === "inferred")) warnings.push({ id: `duration-${row.index}`, code: "duration", message: row.durationMin <= 0 ? "Session has no duration" : "Session duration was not supplied; the displayed duration is inferred", rows: [target(row)] });
+  }
+  for (const row of rows) if (row.dayMissing) warnings.push({ id: `day-${row.kind}-${row.index}`, code: "missing-day", message: `Day not supplied — shown on Day ${row.day}; check the day`, rows: [target(row)] });
+  draft.event.components.forEach((c, i) => { if (c.dayMissing) warnings.push({ id: `day-component-${i}`, code: "missing-day", message: `Day not supplied for "${c.name}" — shown on Day ${c.day}; check the day`, rows: [{ id: "import-parts", label: c.name }] }); });
+  const sessionDays = new Set(rows.filter(row => row.kind === "sessions").map(row => row.day));
+  for (const day of [...new Set(rows.filter(row => row.kind === "breaks").map(row => row.day))].sort((a, b) => a - b)) {
+    if (!sessionDays.has(day)) warnings.push({ id: `breaks-only-${day}`, code: "breaks-only-day", message: `Day ${day} has breaks but no sessions`, rows: rows.filter(row => row.kind === "breaks" && row.day === day).map(target) });
   }
   for (let i = 0; i < rows.length; i++) {
     const a = rows[i];

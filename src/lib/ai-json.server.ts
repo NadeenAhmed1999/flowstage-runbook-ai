@@ -34,12 +34,15 @@ export async function generateValidatedJSON<T extends z.ZodTypeAny>(opts: {
   repairInstructions: string;
   maxAttempts?: number;
   label: string;
+  /** Optional lenient schema tried on the last parsed output after the final attempt fails. */
+  fallbackSchema?: z.ZodTypeAny;
 }): Promise<z.infer<T>> {
   const { model, schema, system, prompt, repairInstructions, label } = opts;
   const maxAttempts = opts.maxAttempts ?? 3;
 
   let lastError: unknown = null;
   let lastRaw: string | undefined;
+  let lastParsed: unknown = undefined;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const repairBlock =
@@ -62,10 +65,15 @@ OUTPUT FORMAT: Respond with a SINGLE valid JSON object only. No prose, no explan
       });
       lastRaw = text;
       const parsed = extractJSON(text);
+      lastParsed = parsed;
       return schema.parse(parsed);
     } catch (err) {
       lastError = err;
       if (attempt === maxAttempts) {
+        if (opts.fallbackSchema && lastParsed !== undefined) {
+          const lenient = opts.fallbackSchema.safeParse(lastParsed);
+          if (lenient.success) return lenient.data as z.infer<T>;
+        }
         throw new Error(
           `${label} failed after ${maxAttempts} attempts: ${
             err instanceof Error ? err.message : String(err)

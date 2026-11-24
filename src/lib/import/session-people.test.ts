@@ -5,7 +5,7 @@ import { mergeSessionPersonRoles } from "./session-people";
 const input = () => ({
   name: "Invented Forum",
   sessions: [{
-    title: "Opening discussion", startTime: "09:00",
+    title: "Opening discussion", startTime: "09:00", day: 1,
     speakers: [" Mira Vale ", { name: " Tomas Reed ", role: "Director" }, { name: "" }, null, {}, 7],
     moderators: [{ name: " Lena Park " }, { name: " ", role: "Chair" }],
   }],
