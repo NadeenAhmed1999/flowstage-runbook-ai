@@ -1,3 +1,5 @@
+import { friendlyAiError, type FriendlyAiError } from "@/lib/ai-errors";
+import { AiErrorNotice } from "@/components/ai-error-notice";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Mic, Users, Headphones, Megaphone, Printer, RefreshCw, ClipboardList, Crown } from "lucide-react";
@@ -68,7 +70,7 @@ const CHANNELS: Channel[] = [
 type ChannelState = {
   brief: Briefing | null;
   loading: boolean;
-  error: string | null;
+  error: FriendlyAiError | null;
 };
 
 const EMPTY_STATE: ChannelState = { brief: null, loading: false, error: null };
@@ -115,7 +117,7 @@ export function BriefingCenter({
     } catch (e) {
       update(id, {
         loading: false,
-        error: e instanceof Error ? e.message : "Failed to generate briefing.",
+        error: friendlyAiError(e, "Couldn't generate this briefing. Try again."),
       });
     }
   };
@@ -129,9 +131,8 @@ export function BriefingCenter({
       {/* Command bar */}
       <header className="flex items-center justify-between border-b border-border bg-navy px-5 py-3 text-navy-foreground">
         <div className="flex items-center gap-3">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-accent" />
           <p className="font-mono text-[10px] font-bold uppercase tracking-[0.3em]">
-            Briefing Center · Live
+            Briefing Center
           </p>
         </div>
         <p className="hidden font-mono text-[10px] uppercase tracking-[0.25em] text-navy-foreground/70 sm:block">
@@ -223,7 +224,7 @@ export function BriefingCenter({
           <div className="p-6">
             {activeState.error && (
               <div className="mb-4 rounded-sm border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
-                {activeState.error}
+                <AiErrorNotice error={activeState.error} />
               </div>
             )}
 

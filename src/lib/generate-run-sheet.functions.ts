@@ -1,4 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { limitedValidator } from "./ai-limits";
 import { generateText } from "ai";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 import { extractJSON } from "./ai-json.server";
@@ -14,7 +16,8 @@ import { buildRunSheetPrompt } from "./run-sheet-prompt";
 
 
 export const generateRunSheet = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => InputSchema.parse(input))
+  .middleware([requireSupabaseAuth])
+  .inputValidator(limitedValidator(InputSchema))
   .handler(async ({ data }): Promise<RunSheet> => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("AI gateway not configured");

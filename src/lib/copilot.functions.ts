@@ -1,7 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
-import { generateObject } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
+import { generateValidatedJSON } from "./ai-json.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { capList, limitedValidator, normalizeCopilot } from "./ai-limits";
 
 const MessageSchema = z.object({
   role: z.enum(["user", "assistant"]),
@@ -81,7 +83,8 @@ const AnswerSchema = z.object({
 export type CopilotAnswer = z.infer<typeof AnswerSchema>;
 
 export const askCopilot = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => InputSchema.parse(input))
+  .middleware([requireSupabaseAuth])
+  .inputValidator(limitedValidator(InputSchema, { maxString: 50_000 }))
   .handler(async ({ data }): Promise<CopilotAnswer> => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("AI gateway not configured");
@@ -89,7 +92,13 @@ export const askCopilot = createServerFn({ method: "POST" })
     const gateway = createLovableAiGatewayProvider(key);
     const model = gateway("google/gemini-3-flash-preview");
 
-    const ctx = data.context;
+    const ctx = {
+      ...data.context,
+      sessions: capList(data.context.sessions, 150),
+      breaks: capList(data.context.breaks, 60),
+      sponsors: capList(data.context.sponsors, 40),
+      components: capList(data.context.components, 40),
+    };
 
     const system = `You are the FlowStage Event Copilot — an expert event production director embedded inside a live planning workspace. You answer the operator's questions about THIS specific event using ONLY the data provided in the context block. Do not invent speakers, sessions, sponsors, times, or risks that are not in the data.
 
@@ -163,12 +172,13 @@ ${data.question}
 
 Answer using only the event data above.`;
 
-    const { object } = await generateObject({
+    return generateValidatedJSON({
       model,
       schema: AnswerSchema,
       system,
-      prompt,
+      prompt: `${prompt}\n\nReturn JSON: {answer: markdown string, citations: string[] (max 6), followUps: string[] (max 4)}.`,
+      repairInstructions: "Return one JSON object with answer (string), citations (max 6 strings), followUps (max 4 strings).",
+      label: "copilot",
+      fallbackSchema: z.unknown().transform(normalizeCopilot),
     });
-
-    return AnswerSchema.parse(object);
   });

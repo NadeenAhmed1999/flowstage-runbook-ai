@@ -1,4 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { limitedValidator } from "./ai-limits";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 import { generateValidatedJSON } from "./ai-json.server";
@@ -75,7 +77,8 @@ const InputSchema = z.object({
 });
 
 export const reviewRunSheet = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => InputSchema.parse(input))
+  .middleware([requireSupabaseAuth])
+  .inputValidator(limitedValidator(InputSchema))
   .handler(async ({ data }): Promise<SmartReview> => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("AI gateway not configured");

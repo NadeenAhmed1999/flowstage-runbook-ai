@@ -1,3 +1,5 @@
+import { friendlyAiError, type FriendlyAiError } from "@/lib/ai-errors";
+import { AiErrorNotice } from "@/components/ai-error-notice";
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Bot, Send, Sparkles, User as UserIcon, AlertCircle } from "lucide-react";
@@ -35,7 +37,7 @@ export function CopilotPanel({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<FriendlyAiError | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -108,7 +110,7 @@ export function CopilotPanel({
         },
       ]);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Copilot request failed");
+      setError(friendlyAiError(e, "Couldn't get an answer. Try again."));
     } finally {
       setLoading(false);
     }
@@ -213,7 +215,7 @@ export function CopilotPanel({
         {error && (
           <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
             <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            <span>{error}</span>
+            <AiErrorNotice error={error} />
           </div>
         )}
       </div>

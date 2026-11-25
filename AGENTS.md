@@ -21,3 +21,4 @@
 - AI fallback requires day on every session/break/component (retries), and only after the final retry falls back to Day 1 with dayMissing and a review warning; session assignment UI (setup and import review) shares AssignedPeople/assignments helpers. Why: omitted days must never silently land on Day 1, and one picker pattern scales to large rosters.
 
 - Device draft autosave/restore, unsaved-changes warning, sign-in keeps draft, truthful save check and JSON backup live in event-draft + DraftGuard (root layout). Why: in-progress work survives reloads and sign-in redirects without new database fields.
+- AI server functions use requireSupabaseAuth + limitedValidator (ai-limits); briefing/Copilot use generateValidatedJSON with lenient normalizers; UI maps failures via friendlyAiError. Why: signed-out/oversized calls never reach the model and failures stay readable.

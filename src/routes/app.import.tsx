@@ -1,3 +1,5 @@
+import { AI_SIGN_IN_MESSAGE, isAuthError } from "@/lib/ai-errors";
+import { AiErrorNotice } from "@/components/ai-error-notice";
 import { importFileProblem, withListedType } from "@/lib/event-types";
 import { useMemo, useRef, useState } from "react";
 import { EditableMappingReview } from "@/components/import/mapping-review";
@@ -85,7 +87,7 @@ function ImportPage() {
       setMapping(withListedType(result));
       setReviewVersion(v => v + 1);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "AI mapping failed. Try again or map manually.");
+      setError(isAuthError(err) ? AI_SIGN_IN_MESSAGE : err instanceof Error ? err.message : "AI mapping failed. Try again or map manually.");
     } finally {
       setLoading(false);
     }
@@ -129,7 +131,11 @@ function ImportPage() {
                   </div>
                 )}
 
-                {error && (
+                {error === AI_SIGN_IN_MESSAGE ? (
+                  <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-destructive">
+                    <AiErrorNotice error={{ message: AI_SIGN_IN_MESSAGE, signIn: true }} />
+                  </div>
+                ) : error && (
                   <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
                     <div className="flex items-start gap-2">
                       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />

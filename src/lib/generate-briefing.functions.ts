@@ -1,7 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
-import { NoObjectGeneratedError, generateObject } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
+import { generateValidatedJSON } from "./ai-json.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { capList, limitedValidator, normalizeBriefing } from "./ai-limits";
 
 export const BRIEFING_AUDIENCES = [
   "speaker",
@@ -95,8 +97,11 @@ const AUDIENCE_BRIEFS: Record<BriefingAudience, { recipient: string; focus: stri
 };
 
 export const generateBriefing = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => InputSchema.parse(input))
+  .middleware([requireSupabaseAuth])
+  .inputValidator(limitedValidator(InputSchema))
   .handler(async ({ data }): Promise<Briefing> => {
+    const timeline = capList(data.timeline, 120);
+    const sponsors = capList(data.sponsors, 40);
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("AI gateway not configured");
 
@@ -120,7 +125,7 @@ PRODUCTION SUMMARY:
 ${data.productionSummary}
 
 TIMELINE:
-${data.timeline
+${timeline
   .map(
     (b) =>
       `- ${b.time} (${b.durationMin}min) [${b.kind.toUpperCase()}] ${b.title}${
@@ -134,7 +139,7 @@ ${data.timeline
   .join("\n")}
 
 SPONSORS:
-${data.sponsors.map((s) => `- ${s.name} — ${s.placement}`).join("\n") || "None"}
+${sponsors.map((s) => `- ${s.name} — ${s.placement}`).join("\n") || "None"}
 
 AV POSTURE:
 ${data.avRequirements}
@@ -142,20 +147,14 @@ ${data.partAssignments ? `\nPART ASSIGNMENTS (source agenda; retain the part nam
 
 Produce a professional ${audienceMeta.recipient} briefing.`;
 
-    try {
-      const { object } = await generateObject({
-        model,
-        schema: BriefingSchema,
-        system,
-        prompt,
-      });
-      return BriefingSchema.parse({ ...object, audience: data.audience });
-    } catch (error) {
-      if (NoObjectGeneratedError.isInstance(error)) {
-        throw new Error(
-          `Briefing generation failed: ${error.message ?? "model returned no usable object"}`,
-        );
-      }
-      throw error;
-    }
+    const result = await generateValidatedJSON({
+      model,
+      schema: BriefingSchema,
+      system,
+      prompt: `${prompt}\n\nReturn JSON: {audience, title, subtitle, recipient, headline, keyMoments: [{time, label, note?}] (1-8), sections: [{heading, body}] (3-7), reminders: string[] (2-8), contact}.`,
+      repairInstructions: "Return one JSON object matching the shape exactly; keep keyMoments to at most 8, sections 3-7, reminders 2-8.",
+      label: "briefing",
+      fallbackSchema: z.unknown().transform((raw) => normalizeBriefing(raw, data.audience)),
+    });
+    return { ...result, audience: data.audience };
   });

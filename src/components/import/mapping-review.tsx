@@ -1,3 +1,4 @@
+import { AI_SIGN_IN_MESSAGE, isAuthError } from "@/lib/ai-errors";
 import { useReducer, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,7 @@ export function EditableMappingReview({ mapping, workbook, onCommit }: { mapping
     try {
       const mapped = await importFn({ data: { fileName: workbook.fileName, sheets: [sheet], forceAi: true } });
       dispatch({ type: "sheet", name, included: true, mapped });
-    } catch { dispatch({ type: "sheet", name, included: false, error: "This sheet could not be mapped. Tick Include to try again." }); }
+    } catch (e) { dispatch({ type: "sheet", name, included: false, error: isAuthError(e) ? AI_SIGN_IN_MESSAGE : "This sheet could not be mapped. Tick Include to try again." }); }
     finally { pending.current.delete(name); }
   }
   const e = draft.event;

@@ -1,3 +1,4 @@
+import { friendlyAiError } from "@/lib/ai-errors";
 import { partNameFor } from "@/lib/event-parts";
 import { InlineError } from "@/components/ui/inline-error";
 import { useEffect, useRef, useState } from "react";
@@ -106,7 +107,7 @@ function RunOfShowPage() {
       const result = await reviewFn({ data: buildReviewInput() });
       setReview(result);
     } catch (e) {
-      setReviewError(e instanceof Error ? e.message : "Smart Review failed");
+      setReviewError(friendlyAiError(e, "Couldn't run Smart Review. Try again.").message);
     } finally {
       setReviewLoading(false);
     }
@@ -121,7 +122,7 @@ function RunOfShowPage() {
       });
       setReadiness(result);
     } catch (e) {
-      setReadinessError(e instanceof Error ? e.message : "Readiness scoring failed");
+      setReadinessError(friendlyAiError(e, "Couldn't update readiness. Try again.").message);
     } finally {
       setReadinessLoading(false);
     }
@@ -168,7 +169,7 @@ function RunOfShowPage() {
       });
       setRunSheet(sheet);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Generation failed");
+      setError(friendlyAiError(e, "Couldn't generate the run sheet. Try again.").message);
     } finally {
       setLoading(false);
     }

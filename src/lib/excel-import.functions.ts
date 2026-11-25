@@ -1,5 +1,7 @@
 import { EVENT_TYPES } from "@/lib/event-types";
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { limitedValidator } from "./ai-limits";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 import { generateValidatedJSON } from "./ai-json.server";
@@ -135,7 +137,8 @@ export const AiFallbackLenientSchema = z.preprocess(markMissingDays, MappedEvent
 export type MappedEvent = z.infer<typeof MappedEventSchema>;
 
 export const importEventFromExcel = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => WorkbookInputSchema.parse(input))
+  .middleware([requireSupabaseAuth])
+  .inputValidator(limitedValidator(WorkbookInputSchema, { maxJsonChars: 6_000_000, maxString: 20_000, maxArray: 2_000 }))
   .handler(async ({ data }): Promise<MappedEvent> => {
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("AI gateway not configured");
