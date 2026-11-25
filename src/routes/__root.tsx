@@ -12,6 +12,7 @@ import {
 import appCss from "../styles.css?url";
 import { EventProvider } from "@/components/event-context";
 import { SignOutReset } from "@/components/app-shell/signout-reset";
+import { DraftGuard } from "@/components/app-shell/draft-guard";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteNav } from "@/components/layout/site-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -131,6 +132,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <EventProvider>
         <SignOutReset />
+        <DraftGuard />
         <div className="flex min-h-screen flex-col bg-background">
           {!isApp && <SiteNav />}
           <main className={hasPhoneNav ? "flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0" : "flex-1"}>

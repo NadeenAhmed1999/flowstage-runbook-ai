@@ -51,7 +51,7 @@ export function AccountMenu() {
     return (
       <Link
         to="/auth"
-        search={{ next: "/app" }}
+        search={{ next: currentPath() }}
         className="inline-flex min-h-11 shrink-0 items-center rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold text-navy shadow-sm transition hover:bg-surface"
       >
         Sign in
@@ -84,7 +84,7 @@ function AccountMenuItems({ email, align }: { email: string | null; align: "end"
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
-    void navigate({ to: "/auth", search: { next: "" }, replace: true });
+    void navigate({ to: "/auth", search: { next: "/app" }, replace: true });
   }
   const item = "min-h-11 text-xs";
   return (
@@ -109,7 +109,7 @@ export function SidebarAccount({ compact = false }: { compact?: boolean }) {
     return (
       <Link
         to="/auth"
-        search={{ next: "/app" }}
+        search={{ next: currentPath() }}
         aria-label="Sign in"
         title="Sign in"
         className="flex min-h-11 items-center gap-2 rounded-md border border-border bg-background px-3.5 py-2 text-xs font-medium text-navy shadow-sm transition hover:bg-surface lg:px-2.5"
@@ -137,4 +137,11 @@ export function SidebarAccount({ compact = false }: { compact?: boolean }) {
     <AccountMenuItems email={email} align="start" />
     </DropdownMenu>
   );
+}
+
+/** Current in-app path (with search) for the sign-in return trip; client-only. */
+export function currentPath(): string {
+  if (typeof window === "undefined") return "/app";
+  const p = window.location.pathname + window.location.search;
+  return p.startsWith("/auth") ? "/app" : p;
 }

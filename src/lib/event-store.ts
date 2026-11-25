@@ -56,13 +56,21 @@ export async function duplicateSavedEvent(id: string): Promise<string> {
 export async function saveEventRow(input: SavedEventInput): Promise<string> {
   const row = { title: input.title, event_meta: input.eventMeta, ops: input.ops };
   if (input.id) {
-    const { error } = await supabase.from("events").update(row).eq("id", input.id);
+    const { data, error } = await supabase.from("events").update(row).eq("id", input.id).select("id");
     if (error) throw error;
+    assertRowsUpdated(data);
     return input.id;
   }
   const { data, error } = await supabase.from("events").insert(row).select("id").single();
   if (error) throw error;
   return data.id;
+}
+
+export const SAVE_FAILED_MESSAGE = "Couldn't save. Your changes are still on this device.";
+
+/** An update that matched zero rows (deleted, or no access) is a failed save. */
+export function assertRowsUpdated(data: unknown[] | null | undefined): void {
+  if (!data || data.length === 0) throw new Error(SAVE_FAILED_MESSAGE);
 }
 
 export async function loadSavedEvent(id: string): Promise<LoadedEvent> {
