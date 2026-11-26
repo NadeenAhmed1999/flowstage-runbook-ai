@@ -13,3 +13,12 @@ describe("session assignments", () => {
     expect(assignableOptions(people, ["p1"], "ito").map(o => o.value)).toEqual(["p3"]);
   });
 });
+
+describe("picker search filter", () => {
+  const opts = [{ value: "a", label: "Ama Kesse" }, { value: "b", label: "Bruno Tal" }, { value: "c", label: "Cara Amari" }];
+  it("matches case-insensitively, excludes assigned, empty when no match", () => {
+    expect(assignableOptions(opts, [], "AMA").map(o => o.value)).toEqual(["a", "c"]);
+    expect(assignableOptions(opts, ["a"], "ama").map(o => o.value)).toEqual(["c"]);
+    expect(assignableOptions(opts, [], "zzz")).toEqual([]);
+  });
+});

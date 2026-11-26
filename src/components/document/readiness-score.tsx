@@ -76,7 +76,7 @@ export function ReadinessScorePanel({
           disabled={loading}
           className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-surface disabled:opacity-60"
         >
-          {loading ? "Scoring…" : report ? "Re-score" : "Run score"}
+          {loading ? "Scoring…" : report ? "Re-score" : "Update readiness"}
         </button>
       </header>
 

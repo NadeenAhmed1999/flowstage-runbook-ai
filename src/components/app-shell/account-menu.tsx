@@ -1,3 +1,4 @@
+import { useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { CalendarRange, FileSpreadsheet, Globe, LayoutDashboard, LogOut, Plus, UserRound } from "lucide-react";
 import { resetSavedEvent } from "@/hooks/use-saved-event";
@@ -44,6 +45,7 @@ export function useAuthState() {
 
 export function AccountMenu() {
   const { userId, email, ready } = useAuthState();
+  const nextPath = useCurrentPath();
 
   if (!ready) return <span aria-label="Loading account" className="block h-11 w-11" />;
 
@@ -51,7 +53,7 @@ export function AccountMenu() {
     return (
       <Link
         to="/auth"
-        search={{ next: currentPath() }}
+        search={{ next: nextPath }}
         className="inline-flex min-h-11 shrink-0 items-center rounded-md border border-border bg-background px-3 py-1.5 text-xs font-semibold text-navy shadow-sm transition hover:bg-surface"
       >
         Sign in
@@ -104,12 +106,13 @@ function AccountMenuItems({ email, align }: { email: string | null; align: "end"
 /** Sidebar footer account block — real session state, no invented personas. */
 export function SidebarAccount({ compact = false }: { compact?: boolean }) {
   const { userId, email } = useAuthState();
+  const nextPath = useCurrentPath();
 
   if (!userId) {
     return (
       <Link
         to="/auth"
-        search={{ next: currentPath() }}
+        search={{ next: nextPath }}
         aria-label="Sign in"
         title="Sign in"
         className="flex min-h-11 items-center gap-2 rounded-md border border-border bg-background px-3.5 py-2 text-xs font-medium text-navy shadow-sm transition hover:bg-surface lg:px-2.5"
@@ -140,6 +143,12 @@ export function SidebarAccount({ compact = false }: { compact?: boolean }) {
 }
 
 /** Current in-app path (with search) for the sign-in return trip; client-only. */
+/** Real current path from the router (identical on server and client, so no hydration mismatch). */
+export function useCurrentPath(): string {
+  const p = useRouterState({ select: s => s.location.href });
+  return p.startsWith("/auth") ? "/app" : p;
+}
+
 export function currentPath(): string {
   if (typeof window === "undefined") return "/app";
   const p = window.location.pathname + window.location.search;

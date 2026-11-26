@@ -1,3 +1,4 @@
+import { factsBlock } from "@/lib/ai-facts";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
@@ -150,7 +151,7 @@ Produce a professional ${audienceMeta.recipient} briefing.`;
     const result = await generateValidatedJSON({
       model,
       schema: BriefingSchema,
-      system,
+      system: system + factsBlock(timeline.filter(t => /session|panel|keynote|talk/i.test(t.kind)).map(t => ({ startTime: t.time, durationMin: t.durationMin, people: (t.talent ?? "").split(/[,;]/) })), false),
       prompt: `${prompt}\n\nReturn JSON: {audience, title, subtitle, recipient, headline, keyMoments: [{time, label, note?}] (1-8), sections: [{heading, body}] (3-7), reminders: string[] (2-8), contact}.`,
       repairInstructions: "Return one JSON object matching the shape exactly; keep keyMoments to at most 8, sections 3-7, reminders 2-8.",
       label: "briefing",

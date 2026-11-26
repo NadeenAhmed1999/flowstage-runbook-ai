@@ -1,7 +1,7 @@
 import { friendlyAiError } from "@/lib/ai-errors";
 import { partNameFor } from "@/lib/event-parts";
 import { InlineError } from "@/components/ui/inline-error";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { FileSpreadsheet, FileText } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
@@ -175,33 +175,9 @@ function RunOfShowPage() {
     }
   };
 
-  const autoTriggered = useRef(false);
-  useEffect(() => {
-    if (ops.items.length > 0 && !runSheet && !loading && !autoTriggered.current) {
-      autoTriggered.current = true;
-      void handleGenerate();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const reviewAutoTriggered = useRef(false);
-  useEffect(() => {
-    if (runSheet && !review && !reviewLoading && !reviewAutoTriggered.current) {
-      reviewAutoTriggered.current = true;
-      void handleReview();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [runSheet]);
-
-  const lastScoredSheet = useRef<unknown>(null);
-  useEffect(() => {
-    if (runSheet && lastScoredSheet.current !== runSheet && !readinessLoading) {
-      lastScoredSheet.current = runSheet;
-      void handleScore();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [runSheet]);
-
+  // AI parts run only on explicit button presses (no auto-run on open).
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
 
   const moderationNotes = rows
     .filter((r) => r.moderationNote)
@@ -210,8 +186,8 @@ function RunOfShowPage() {
     .filter((r) => r.backstageNote)
     .map((r) => `${r.time} — ${r.backstageNote}`);
 
-  const formattedDate = event.date
-    ? new Date(event.date).toLocaleDateString("en-US", {
+  const formattedDate = event.date && hydrated
+    ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(event.date) ? `${event.date}T00:00:00` : event.date).toLocaleDateString(undefined, {
         weekday: "long",
         year: "numeric",
         month: "long",
@@ -309,6 +285,12 @@ function RunOfShowPage() {
             <div className="shimmer h-2 w-2/3" />
             <div className="shimmer h-2 w-5/6" />
           </div>
+        </div>
+      )}
+
+      {!runSheet && !loading && !error && (
+        <div className="no-print mb-6 rounded-sm border border-dashed border-border bg-surface p-4 text-sm text-muted-foreground">
+          AI summary and timeline: Not generated yet. Press "Generate run sheet" to create them.
         </div>
       )}
 

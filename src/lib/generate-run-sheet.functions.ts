@@ -1,3 +1,4 @@
+import { factsBlock } from "@/lib/ai-facts";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { limitedValidator } from "./ai-limits";
@@ -72,7 +73,7 @@ Repair instructions:
       try {
         const { text } = await generateText({
           model,
-          system: `${system}\n\nOUTPUT FORMAT: Respond with a single JSON object only. The first character must be "{" and the last character must be "}".`,
+          system: `${system}${factsBlock(data.sessions.map(x => ({ day: x.day, startTime: x.startTime, durationMin: x.durationMin, people: [...x.speakers, ...x.moderators] })))}\n\nOUTPUT FORMAT: Respond with a single JSON object only. The first character must be "{" and the last character must be "}".`,
           prompt: `${prompt}\n\n${outputInstructions}${repairNote}`,
         });
         lastRawText = text;

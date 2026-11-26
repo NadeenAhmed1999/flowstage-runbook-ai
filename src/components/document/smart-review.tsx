@@ -86,7 +86,7 @@ export function SmartReviewPanel({ review, loading, error, onRun }: Props) {
                 Analyzing…
               </>
             ) : (
-              <>✶ {review ? "Re-run review" : "Run Smart Review"}</>
+              <>✶ {review ? "Re-run review" : "Run smart review"}</>
             )}
           </button>}
         </div>
@@ -111,7 +111,7 @@ export function SmartReviewPanel({ review, loading, error, onRun }: Props) {
           <EmptyState
             icon={ShieldCheck}
             title="Not run yet"
-            action={<Button type="button" className="min-h-11" onClick={onRun}>Run Smart Review</Button>}
+            action={<Button type="button" className="min-h-11" onClick={onRun}>Run smart review</Button>}
           />
         )}
 

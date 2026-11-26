@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { currentPath, useAuthState } from "@/components/app-shell/account-menu";
+import { useCurrentPath, useAuthState } from "@/components/app-shell/account-menu";
 import { useEvent } from "@/components/event-context";
 import { backupFilename, backupJson, parseBackup } from "@/lib/event-draft";
 import { downloadBlob } from "@/lib/download-blob";
@@ -21,6 +21,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 
 export function SaveControls() {
   const { userId } = useAuthState();
+  const nextPath = useCurrentPath();
   const { status, save, load, savedId, reset } = useSavedEvent();
   const [items, setItems] = useState<SavedEventSummary[] | null>(null);
   const [listError, setListError] = useState<string | null>(null);
@@ -67,7 +68,7 @@ export function SaveControls() {
       <div className="flex flex-nowrap items-center gap-2">
         {backup}
         <Button asChild variant="outline" className={btn}>
-          <Link to="/auth" search={{ next: currentPath() }}>
+          <Link to="/auth" search={{ next: nextPath }}>
             <Save className="h-3.5 w-3.5" /> Sign in to save
           </Link>
         </Button>

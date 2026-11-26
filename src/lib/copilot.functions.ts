@@ -1,3 +1,4 @@
+import { factsBlock } from "@/lib/ai-facts";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
@@ -175,7 +176,7 @@ Answer using only the event data above.`;
     return generateValidatedJSON({
       model,
       schema: AnswerSchema,
-      system,
+      system: system + factsBlock(ctx.sessions.map(x => ({ day: x.day, startTime: x.startTime, durationMin: x.durationMin, people: [...x.speakers, ...x.moderators] }))),
       prompt: `${prompt}\n\nReturn JSON: {answer: markdown string, citations: string[] (max 6), followUps: string[] (max 4)}.`,
       repairInstructions: "Return one JSON object with answer (string), citations (max 6 strings), followUps (max 4 strings).",
       label: "copilot",
