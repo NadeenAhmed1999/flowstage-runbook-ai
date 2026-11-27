@@ -16,6 +16,7 @@ import {
   type ParsedWorkbook,
 } from "@/lib/excel-io";
 import { parseWordFile, isWordFile } from "@/lib/word-io";
+import { parseWordAgenda } from "@/lib/import/word-agenda-parse";
 import {
   importEventFromExcel,
   type MappedEvent,
@@ -73,6 +74,13 @@ function ImportPage() {
       const parsed = isWordFile(file) ? await parseWordFile(file) : await parseWorkbookFile(file);
       setWorkbook(parsed);
       setPreviewSheet(parsed.sheets[0]?.name ?? null);
+      // Timed Word agendas are read locally: instant, free, and unaffected by leaving the app.
+      const local = isWordFile(file) ? parseWordAgenda(parsed) : null;
+      if (local) {
+        setMapping(withListedType(local));
+        setReviewVersion(v => v + 1);
+        return;
+      }
       await runMapping(parsed);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to read workbook");
@@ -141,7 +149,9 @@ function ImportPage() {
                       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                       <div className="min-w-0 break-words">
                         <p className="font-semibold">Mapping error</p>
-                        <p className="mt-0.5 text-destructive/80">We couldn't read this file's layout. Check that it has an agenda with times and titles, then retry.</p>
+                        <p className="mt-0.5 text-destructive/80">{/Failed to fetch|Load failed|NetworkError/i.test(error)
+                          ? "The connection dropped, probably because the app went to the background. Stay on this screen and try again."
+                          : "We couldn't read this file's layout. Check that it has an agenda with times and titles, then retry."}</p>
                         <details className="mt-2 text-xs text-muted-foreground">
                           <summary className="cursor-pointer">Details</summary>
                           <p className="mt-1 break-words">{error}</p>
